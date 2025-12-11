@@ -1,0 +1,53 @@
+name: Generate API Documentation
+
+on:
+  # Запуск по расписанию (каждый день в 6:00 UTC)
+  schedule:
+    - cron: "0 6 * * *"
+
+  # Ручной запуск
+  workflow_dispatch:
+
+  # При push в main (для первоначальной генерации)
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/generate-api.py"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate API documentation
+        run: python scripts/generate-api.py
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git add -A
+          if git diff --staged --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "docs: update API documentation from SVETlANNa main"
+          git push

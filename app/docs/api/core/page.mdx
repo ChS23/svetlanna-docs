@@ -1,0 +1,950 @@
+# Core
+
+Основные классы для работы с оптическими симуляциями
+
+```python
+from svetlanna import Wavefront, SimulationParameters, Parameter
+```
+
+## Классы
+
+### Wavefront
+
+<small>Наследует: `torch.Tensor`</small>
+
+Class that represents wavefront
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">intensity</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Calculates intensity of the wavefront</p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">max_intensity</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Calculates maximum intensity of the wavefront</p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">phase</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Calculates phase of the wavefront</p>
+</div>
+</div>
+
+
+#### Фабричные методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`plane_wave`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">classmethod</small>
+
+```python
+plane_wave(cls, simulation_parameters: SimulationParameters, distance: float = 0.0, wave_direction: Any = None, initial_phase: float = 0.0) -> Self
+```
+
+Generate wavefront of the plane wave
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | simulation parameters |
+| `distance` | `float, optional` | free wave propagation distance, by default 0. |
+| `wave_direction` | `Any, optional` | three component tensor-like vector with x,y,z coordinates. The resulting field propagates along the vector, by default the wave propagates along z direction. |
+| `initial_phase` | `float, optional` | additional phase to the resulting field, by default 0. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+plane wave field.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`gaussian_beam`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">classmethod</small>
+
+```python
+gaussian_beam(cls, simulation_parameters: SimulationParameters, waist_radius: float, distance: float = 0.0, dx: float = 0.0, dy: float = 0.0) -> Self
+```
+
+Generates the Gaussian beam.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | simulation parameters |
+| `waist_radius` | `float` | Waist radius of the beam |
+| `distance` | `float, optional` | free wave propagation distance, by default 0. |
+| `dx` | `float, optional` | Horizontal position of the beam center, by default 0. |
+| `dy` | `float, optional` | Horizontal position of the beam center, by default 0. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+Beam field in the plane oXY propagated over the distance
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`spherical_wave`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">classmethod</small>
+
+```python
+spherical_wave(cls, simulation_parameters: SimulationParameters, distance: float, initial_phase: float = 0.0, dx: float = 0.0, dy: float = 0.0) -> Self
+```
+
+Generate wavefront of the spherical wave
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | simulation parameters |
+| `distance` | `float` | distance between the source and the oXY plane. |
+| `initial_phase` | `float, optional` | additional phase to the resulting field, by default 0. |
+| `dx` | `float, optional` | Horizontal position of the spherical wave center, by default 0. |
+| `dy` | `float, optional` | Horizontal position of the spherical wave center, by default 0. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+Beam field
+
+
+</details>
+
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`fwhm`**
+
+```python
+fwhm(self, simulation_parameters: SimulationParameters) -> tuple[float, float]
+```
+
+Calculates full width at half maximum of the wavefront
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`tuple[float, float]`**
+
+full width at half maximum along x and y axes
+
+
+</details>
+
+</div>
+
+
+### Axes
+
+Axes storage
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">names</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Non-scalar axes' names</p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, axes: dict[str, torch.Tensor]) -> None
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`index`**
+
+```python
+index(self, name: str) -> int
+```
+
+Index of specific axis in the tensor.
+The index is negative.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `name` | `str` | name of the axis |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`int`**
+
+index of the axis
+
+
+</details>
+
+</div>
+
+
+### SimulationParameters
+
+A class which describes characteristic parameters of the system
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">device</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, axes: dict[str, torch.Tensor | float]) -> None
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`meshgrid`**
+
+```python
+meshgrid(self, x_axis: str, y_axis: str)
+```
+
+Returns a meshgrid for a selected pair of axes.
+...
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `x_axis, y_axis` | `str` | Axis names to compose a meshgrid. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`x_grid, y_grid: torch.Tensor`**
+
+A torch.meshgrid of selected axis. Comment: indexing='xy' the first dimension corresponds to the cardinality of the second axis (`y_axis`) and the second dimension corresponds to the cardinality of the first axis (`x_axis`).
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`axes_size`**
+
+```python
+axes_size(self, axs: Iterable[str]) -> torch.Size
+```
+
+Returns a size of axes in specified order.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `axs` | `Iterable[str]` | An order of axis. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`torch.Size()`**
+
+Size of axes in a specified order.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to`**
+
+```python
+to(self, device: str | torch.device | int) -> 'SimulationParameters'
+```
+
+</div>
+
+
+### Parameter
+
+<small>Наследует: `torch.Tensor`</small>
+
+`torch.Parameter` replacement.
+Added for further feature enrichment.
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, data: Any, requires_grad: bool = True)
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `data` | `Any` | parameter tensor |
+| `requires_grad` | `bool, optional` | if the parameter requires gradient, by default True |
+
+</details>
+
+</div>
+
+
+### ConstrainedParameter
+
+<small>Наследует: `Parameter`</small>
+
+Constrained parameter
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">value</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Parameter value</p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, data: Any, min_value: Any, max_value: Any, bound_func: Callable[[torch.Tensor], torch.Tensor] = torch.sigmoid, inv_bound_func: Callable[[torch.Tensor], torch.Tensor] = sigmoid_inv, requires_grad: bool = True)
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `data` | `Any` | parameter tensor |
+| `min_value` | `Any` | minimum value tensor |
+| `max_value` | `Any` | maximum value tensor |
+| `bound_func` | `Callable[[torch.Tensor], torch.Tensor], optional` | function that map $\\mathbb&#123;R&#125;\to[0,1]$, by default torch.sigmoid |
+| `inv_bound_func` | `Callable[[torch.Tensor], torch.Tensor], optional` | inverse function of `bound_func` |
+| `requires_grad` | `bool, optional` | if the parameter requires gradient, by default True |
+
+</details>
+
+</div>
+
+
+### LinearOpticalSetup
+
+<small>Наследует: `nn.Module`</small>
+
+A linear optical network composed of Element's
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, elements: Iterable[Element]) -> None
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `elements` | `Iterable[Element]` | A set of optical elements which make up a setup. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, input_wavefront: Tensor) -> Tensor
+```
+
+A forward function for a network assembled from elements.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `input_wavefront` | `torch.Tensor` | A wavefront that enters the optical network. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`torch.Tensor`**
+
+A wavefront after the last element of the network (output of the network).
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`stepwise_forward`**
+
+```python
+stepwise_forward(self, input_wavefront: Tensor)
+```
+
+Function that consistently applies forward method of each element
+to an input wavefront.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `input_wavefront` | `torch.Tensor` | A wavefront that enters the optical network. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`str`**
+
+A string that represents a scheme of a propagation through a setup.
+
+**`list(torch.Tensor)`**
+
+A list of an input wavefront evolution during a propagation through a setup.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`reverse`**
+
+```python
+reverse(self, Ein: Tensor) -> Tensor
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
+```
+
+</div>
+
+
+### Clerk
+
+<small>Наследует: `Generic[ConditionsType]`</small>
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, experiment_directory: str) -> None
+```
+
+A lightweight alternative to TensorBoard and other logging frameworks
+for tracking the training process, storing experiment metadata,
+and handling checkpoints.
+
+
+The Clerk is not a new concept but a minimal implementation included
+in the framework to start training models without any dependencies.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `experiment_directory` | `str` | The directory where experiment data will be stored. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`save_conditions`**
+
+```python
+save_conditions(self, conditions: ConditionsType)
+```
+
+Save the experiment conditions. The conditions are stored
+in the experiment directory in the file `conditions.json`.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `None` | `conditions : Any` | Any data that can be serialized into JSON. For example, a `dict` with string keys. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`load_conditions`**
+
+```python
+load_conditions(self) -> ConditionsType
+```
+
+Read and return the experiment conditions.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Any`**
+
+The experiment conditions.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`set_checkpoint_targets`**
+
+```python
+set_checkpoint_targets(self, targets: dict[str, StatefulTorchClass])
+```
+
+Set the targets with state dict to be saved in the checkpoint.
+The same targets will be automatically used when loading from the checkpoint.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `targets` | `dict[str, StatefulTorchClass]` | Targets with unique keys. The same keys should be used when loading the checkpoint. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`begin`**
+
+```python
+begin(self, resume: bool = False, resume_load_last_checkpoint: bool = True, autosave_checkpoint: bool = False) -> Self
+```
+
+Configure the clerk for a new context.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `resume` | `bool, optional` | If True, logs will continue to append to the files if they already exist, and the number of checkpoints will continue to grow. By default, False. |
+| `resume_load_last_checkpoint` | `bool, optional` | If True, the very last checkpoint (if available) will be used to load checkpoint targets' states before entering the context. By default, True. This mechanism works only if `resume=True`. The last checkpoint is identified in `checkpoints.txt` and has the largest index. |
+| `autosave_checkpoint` | `bool, optional` | If True, a backup checkpoint will be saved in case the clerk context exits unexpectedly. By default, False. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Self`**
+
+The clerk.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`write_log`**
+
+```python
+write_log(self, tag: str, data: dict, flush: bool = False)
+```
+
+Write new data to a log file with a specific tag.
+The data should be a dictionary that can be serialized into JSON.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `tag` | `str` | The tag for the data. The name of the log file will be based on this tag: `<tag>.jsonl`. |
+| `data` | `dict` | The data to be logged. It should be serializable into JSON. |
+| `None` | `flush: bool` | If flush is true, the underlying stream is forcibly flushed. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`write_checkpoint`**
+
+```python
+write_checkpoint(self, metadata: object | None = None)
+```
+
+Write the states of selected targets into a new checkpoint file.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `metadata` | `object | None, optional` | The metadata for the new checkpoint, by default None. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`load_checkpoint`**
+
+```python
+load_checkpoint(self, index: str | int, targets: dict[str, StatefulTorchClass] | None = None, weights_only: bool = True) -> object | None
+```
+
+Load the checkpoint with a specific index and apply state dicts to
+checkpoint targets. If the targets are not provided, the checkpoint
+targets are obtained from the clerk settings.
+
+If the index is integer, that the checkpoint `<index>.pt` is used.
+Otherwise, index is used as a filename.
+
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `index` | `str | int` | The checkpoint index. |
+| `targets` | `dict[str, StatefulTorchClass] | None, optional` | Targets with unique keys, by default None. See the `set_checkpoint_targets` method. |
+| `weights_only` | `bool` | See `torch.load` function docs, by default True. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`object | None`**
+
+The checkpoint metadata, if it exists.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`load_logs`**
+
+```python
+load_logs(self, tag: str) -> Generator[dict, None, None]
+```
+
+Load logs from the file specified by the tag.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `tag` | `str` | The tag for the data. The name of the log file will be read is `<tag>.jsonl`. |
+
+</details>
+
+
+**Yields**
+
+- *Generator[dict, None, None]* — Log data with the specific tag.
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`load_logs_to_pandas`**
+
+```python
+load_logs_to_pandas(self, tag: str) -> 'pandas.DataFrame'
+```
+
+Load logs from the file specified by the tag and return them as a pandas
+DataFrame.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `tag` | `str` | The tag for the data. The name of the log file will be read is `<tag>.jsonl`. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`pd.DataFrame`**
+
+Log data with the specific tag.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`clean_checkpoints`**
+
+```python
+clean_checkpoints(self)
+```
+
+Remove checkpoints that are not listed in `checkpoints.txt`.
+If `checkpoints.txt` does not exist, then remove all `<n>.pt` files,
+where `<n>` is an integer.
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`clean_backup_checkpoints`**
+
+```python
+clean_backup_checkpoints(self)
+```
+
+Remove checkpoints that are matches backup checkpoints name pattern.
+</div>
+
+
+### Detector
+
+<small>Наследует: `Element`</small>
+
+Object that plays a role of a physical detector in an optical system:
+(1) func='intensity'
+    transforms incident field to intensities for further image analysis
+(2) ...
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, func = 'intensity')
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters for a further optical network. |
+| `func` | `str` | A parameter that defines a function that will be applied to an incident field to obtain a detector image. (1) func='intensity' – detector returns intensities (2) ... |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, input_field: Wavefront) -> torch.Tensor
+```
+
+Method that returns the image obtained from the incident field by a detector
+using self.func.
+in the simplest case the image on a detector is an intensities image)
+...
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `input_field` | `Wavefront` | A tensor (Wavefront) of an incident field on a detector. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`detector_output`** : `torch.Tensor`
+
+The image on a detector (according to self.func).
+
+
+</details>
+
+</div>
+
+
+
+## Функции
+
+### `mul(wf: Wavefront, b: Any, b_axis: str | Iterable[str], sim_params: SimulationParameters | None = None) -> Wavefront`
+
+Multiplication of the wavefront and tensor.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `wf` | `Wavefront` | wavefront |
+| `b` | `Any` | tensor |
+| `b_axis` | `str | Iterable[str]` | tensor's axis name |
+| `sim_params` | `SimulationParameters | None, optional` | simulation parameters, by default None |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+product result
+
+
+</details>
+

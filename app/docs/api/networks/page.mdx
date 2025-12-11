@@ -1,0 +1,453 @@
+# Networks
+
+Нейронные сети и оптические системы
+
+```python
+from svetlanna.networks import ...
+```
+
+## Классы
+
+### LinearAutoencoder
+
+<small>Наследует: `nn.Module`</small>
+
+A simple autoencoder network consisting of consistent encoder and decoder
+for a simultaneous training.
+    .encode() - forward propagation through encoder elements
+    .decode() - forward propagation through decoder elements
+
+Comment: Works only for a single wavelength, input wavefront ['h', 'w']
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">device</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, sim_params: SimulationParameters, encoder_elements_list: list[Element] | Iterable[Element], decoder_elements_list: list[Element] | Iterable[Element], to_return: Literal['wf', 'amps'] = 'wf', device: str | torch.device = torch.get_default_device())
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `sim_params` | `SimulationParameters` | Simulation parameters for the task. |
+| `encoder_elements_list` | `list[Element] | Iterable[Element]` | List of elements to compose an encoder. |
+| `decoder_elements_list` | `list[Element] | Iterable[Element]` | List of elements to compose a decoder. |
+| `to_return` | `Literal['wf', 'amps']` | Specifies what to return in .encode() and .decode(). (1) 'wf' – just a wavefront as it is (2) 'amps' – a wavefront without phases |
+| `device` | `torch.device` | Device. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`encode`**
+
+```python
+encode(self, wavefront_in)
+```
+
+Propagation through the encoder part – encode an image wavefront (input).
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`wavefront_encoded`** : `Wavefront`
+
+An encoded input wavefront.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`decode`**
+
+```python
+decode(self, wavefront_encoded)
+```
+
+Propagation through the decoder part – decode an encoded image.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`wavefront_decoded`** : `Wavefront`
+
+A decoded wavefront.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, wavefront_in)
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `None` | `wavefront_in: Wavefront('bs', 'H', 'W')` |  |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`wavefront_encoded, wavefront_decoded`** : `torch.Wavefront`
+
+Encoded and decoded wavefronts.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to`**
+
+```python
+to(self, device: str | torch.device | int) -> 'LinearAutoencoder'
+```
+
+</div>
+
+
+### ConvLayer4F
+
+<small>Наследует: `nn.Module`</small>
+
+Diffractive convolutional layer based on a 4f system.
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, sim_params: SimulationParameters, focal_length: float, conv_diffractive_mask: torch.Tensor, learnable_mask: bool = False, max_phase: float = 2 * torch.pi, fs_method: Literal['fresnel', 'AS'] = 'AS')
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `None` | `sim_params: SimulationParameters` | Simulation parameters for the task. |
+| `None` | `focal_length: float` | A focal length for ThinLense's in a 4f system. |
+| `None` | `conv_diffractive_mask: torch.Tensor` | An initial mask for a DiffractiveLayer placed between two lenses in the system. |
+| `None` | `learnable_mask: bool` | If True – a mask for a DiffractiveLayer in the 4f system will be learnable. Else – not learnable (const). |
+| `None` | `max_phase: float` | A maximal phase for a Diffractive layer in the system. |
+| `None` | `fs_method: Literal['fresnel', 'AS']` | A method for FreeSpace's in the system. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`get_free_space`**
+
+```python
+get_free_space(self)
+```
+
+Returns a FreeSpace of a focal length for a 4f system.
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`get_thin_lens`**
+
+```python
+get_thin_lens(self)
+```
+
+Returns a ThinLens with a pre-defined focal length.
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`get_diffractive_layer`**
+
+```python
+get_diffractive_layer(self)
+```
+
+Returns a DiffractiveLayer according to pre-defined settings from init.
+It can be trainable or not according to `self.learnable_mask` flag.
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`get_conv_layer_4f`**
+
+```python
+get_conv_layer_4f(self)
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, input_wf: Wavefront)
+```
+
+Forward propagation through a convolutional diffractive system based on a 4f system.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `None` | `input_wf: Wavefront('batch_size', 'H', 'W')` | An input wavefront(s). |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`: Wavefront`**
+
+A wavefront after a propagation through a system.
+
+
+</details>
+
+</div>
+
+
+### ConvDiffNetwork4F
+
+<small>Наследует: `nn.Module`</small>
+
+A simple convolutional network with a 4f system as an optical convolutional layer.
+Comment: -> [4f system (convolution)] -> [some system of elements] ->
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">device</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, sim_params: SimulationParameters, network_elements_list: list, focal_length: float, conv_phase_mask: torch.Tensor, learnable_mask: bool = False, max_phase: float = 2 * torch.pi, fs_method: Literal['fresnel', 'AS'] = 'AS', device: str | torch.device = torch.get_default_device())
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `sim_params` | `SimulationParameters` | Simulation parameters for the task. |
+| `network_elements_list` | `list` | List of Elements for a Network after a convolutional layer (4f system). |
+| `None` | `focal_length: float` | A focal length for ThinLense's in a 4f system. |
+| `None` | `conv_phase_mask: torch.Tensor` | An initial mask for a DiffractiveLayer placed between two lenses in the system. |
+| `None` | `learnable_mask: bool` | If True – a mask for a DiffractiveLayer will be learnable. Else – not learnable (const). |
+| `None` | `max_phase: float` | A maximal phase for a Diffractive layer in the 4f system. |
+| `None` | `fs_method: Literal['fresnel', 'AS']` | A method for FreeSpace's in the system. |
+| `None` | `device: str | torch.device` | Device. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, wavefront_in)
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `None` | `wavefront_in: Wavefront('bs', 'H', 'W')` | Input wavefront or a batch of Wavefronts. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`: torch.Tensor | Wavefront`**
+
+Output after a Wavefront propagation through a Convolutional layer and the Other Part of all Network.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to`**
+
+```python
+to(self, device: str | torch.device | int) -> 'ConvDiffNetwork4F'
+```
+
+</div>
+
+
+### DiffractiveRNN
+
+<small>Наследует: `nn.Module`</small>
+
+A simple recurrent diffractive network of an architecture proposed in the article:
+https://www.nature.com/articles/s41566-021-00796-w
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">device</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, sim_params: SimulationParameters, sequence_len: int, fusing_coeff: float, read_in_layer: nn.Sequential, memory_layer: nn.Sequential, hidden_forward_layer: nn.Sequential, read_out_layer: nn.Sequential, detector_layer: nn.Sequential, device: str | torch.device = torch.get_default_device())
+```
+
+sim_params: SimulationParameters
+    Simulation parameters for the task.
+sequence_len: int
+    A size (number of frames) of sequences (of Wavefronts) for prediction.
+fusing_coeff: float
+    A coefficient in a function for a hidden state (lambda in methods of the article).
+read_in_layer, memory_layer: nn.Sequential
+    Systems of elements for a D-RNN parts (see the article).
+hidden_forward_layer: nn.Sequential
+    System for a hidden state after each frame input.
+    Comment:
+        mix_i = (1 - fusing_coeff) * read_in_layer(input_i) + fusing_coeff * hidden_i
+        hidden_i = hidden_forward_layer(mix_i)
+read_out_layer, detector_layer: nn.Sequential
+    System of elements for a D-RNN output. `detector_layer` ends with a Detector!
+device: torch.device
+    Specified device.
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, subsequence_wf: Wavefront)
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `None` | `subsequence_wf: Wavefront('batch_size', 'sequence_len', 'H', 'W')` | Wavefronts for a sequence. Comment: works for a single wavelength in SimulationParameters! |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to`**
+
+```python
+to(self, device: str | torch.device | int) -> 'DiffractiveRNN'
+```
+
+</div>
+

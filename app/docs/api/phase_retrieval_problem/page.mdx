@@ -1,0 +1,178 @@
+# Phase Retrieval Problem
+
+Алгоритмы восстановления фазы
+
+```python
+from svetlanna.phase_retrieval_problem import ...
+```
+
+## Классы
+
+### SetupLike
+
+<small>Наследует: `Protocol`</small>
+
+A class for phase_retrieval_problem with personal realizations of
+forward and reverse methods instead of methods in
+svetlanna.setup.LinearOpticalSetup
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `Protocol` | `_type_` | _description_ |
+
+</details>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, input_field: torch.Tensor) -> torch.Tensor
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`reverse`**
+
+```python
+reverse(self, transmission_field: torch.Tensor) -> torch.Tensor
+```
+
+</div>
+
+
+### AlgorithmOptions
+
+<small>Наследует: `TypedDict`</small>
+
+### PhaseRetrievalResult
+
+Represents the phase retrieval result
+
+
+## Функции
+
+### `gerchberg_saxton_algorithm(target_intensity: torch.Tensor, source_intensity: torch.Tensor, forward: Callable, reverse: Callable, initial_approximation: torch.Tensor, tol: float, maxiter: int, target_phase: torch.Tensor | None = None, target_region: torch.Tensor | None = None) -> prr.PhaseRetrievalResult`
+
+Gerchberg-Saxton algorithm(GS) for solving the phase retrieval problem
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `target_intensity` | `torch.Tensor` | Intensity profile in the Fourier plane |
+| `source_intensity` | `torch.Tensor` | Intensity distribution before the optical setup(in the image plane) |
+| `forward` | `Callable` | Function which describes forward propagation through the optical system |
+| `reverse` | `Callable` | Function which describes reverse propagation through the optical system |
+| `initial_approximation` | `torch.Tensor` | Initial approximation for the phase profile |
+| `tol` | `float` | Accuracy for the algorithm |
+| `maxiter` | `int` | Maximum number of iterations |
+| `target_phase` | `torch.Tensor | None, optional` | Phase profile on the Fourier plane(optional for the generating target intensity profile problem) for reconstructing phase profile problem, by default None |
+| `target_region` | `torch.Tensor | None, optional` | Region to preserve phase and amplitude profiles in the Fourier plane for reconstructing phase profile problem(optional for the generating target intensity profile problem), by default None |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`prr.PhaseRetrievalResult`**
+
+Exemplar of class PhaseRetrievalResult which presents result of optimization
+
+
+</details>
+
+
+### `hybrid_input_output(target_intensity: torch.Tensor, source_intensity: torch.Tensor, forward: Callable, reverse: Callable, initial_approximation: torch.Tensor, tol: float, maxiter: int, target_phase: torch.Tensor | None = None, target_region: torch.Tensor | None = None, constant_factor: float = 0.9) -> prr.PhaseRetrievalResult`
+
+Hybrid Input-Output(HIO) algorithm for for solving the phase retrieval
+problem
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `target_intensity` | `torch.Tensor` | Intensity profile in the Fourier plane |
+| `source_intensity` | `torch.Tensor` | Intensity distribution before the optical setup(in the image plane) |
+| `forward` | `Callable` | Function which describes forward propagation through the optical system |
+| `reverse` | `Callable` | Function which describes reverse propagation through the optical system |
+| `initial_approximation` | `torch.Tensor` | Initial approximation for the phase profile |
+| `tol` | `float` | Accuracy for the algorithm |
+| `maxiter` | `int` | Maximum number of iterations |
+| `target_phase` | `torch.Tensor | None, optional` | Phase profile on the Fourier plane(optional for the generating target intensity profile problem) for reconstructing phase profile problem, by default None |
+| `target_region` | `torch.Tensor | None, optional` | Region to preserve phase and amplitude profiles in the Fourier plane for reconstructing phase profile problem(optional for the generating target intensity profile problem), by default None |
+| `None` | `constant_factor: float` | Learning rate value for the HIO algorithm, by default 0.9 |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`prr.PhaseRetrievalResult`**
+
+Exemplar of class PhaseRetrievalResult which presents result of optimization
+
+
+</details>
+
+
+### `retrieve_phase(source_intensity: torch.Tensor, optical_setup: LinearOpticalSetup | SetupLike, target_intensity: torch.Tensor) -> prr.PhaseRetrievalResult`
+
+### `retrieve_phase(source_intensity: torch.Tensor, optical_setup: LinearOpticalSetup | SetupLike, target_intensity: torch.Tensor, target_phase: torch.Tensor, target_region: torch.Tensor) -> prr.PhaseRetrievalResult`
+
+### `retrieve_phase(source_intensity: torch.Tensor, optical_setup: LinearOpticalSetup | SetupLike, target_intensity: torch.Tensor, target_phase: torch.Tensor | None = None, target_region: torch.Tensor | None = None) -> prr.PhaseRetrievalResult`
+
+Function for solving phase retrieval problem: generating target
+intensity profile or reconstructing the phase profile of the field
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `source_intensity` | `torch.Tensor` | Intensity distribution before the optical setup |
+| `optical_setup` | `LinearOpticalSetup | SetupLike` | Optical system through which the beam is propagated |
+| `target_intensity` | `torch.Tensor` | Intensity profile in the Fourier plane |
+| `target_phase` | `torch.Tensor | None, optional` | Phase profile on the Fourier plane(optional for the generating target intensity profile problem) |
+| `target_region` | `torch.Tensor, optional` | Region to preserve phase and amplitude profiles in the Fourier plane( optional for the generating target intensity profile problem) |
+| `initial_phase` | `torch.Tensor, optional` | Initial approximation for the phase profile, by default None |
+| `method` | `Literal[&#39;GS&#39;, &#39;HIO&#39;], optional` | Algorithms for phase retrieval problem, by default 'GS' |
+| `options` | `dict, optional` | Dictionary with optimization parameters, by default &#123; 'tol': 1e-16,   # criteria for stop optimization 'maxiter': 100, # maximum number of iterations 'constant_factor': 0.9,    # convergence parameter for HIO 'disp': False   # show result of optimization &#125; |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`prr.PhaseRetrievalResult`**
+
+Exemplar of class PhaseRetrievalResult which presents result of optimization
+
+
+</details>
+
+
+<details>
+<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Исключения</summary>
+
+- **`ValueError`** — Unknown optimization method
+
+</details>
+

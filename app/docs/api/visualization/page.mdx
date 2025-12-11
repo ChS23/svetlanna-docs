@@ -1,0 +1,159 @@
+# Visualization
+
+Инструменты визуализации
+
+```python
+from svetlanna.visualization import ...
+```
+
+## Классы
+
+### StepwiseForwardWidget
+
+<small>Наследует: `anywidget.AnyWidget`</small>
+
+### SpecsWidget
+
+<small>Наследует: `anywidget.AnyWidget`</small>
+
+### ElementHTML
+
+Representation of an element in HTML format.
+
+
+## Функции
+
+### `default_widget_html_method(index: int, name: str, element_type: str | None, subelements: list[ElementHTML]) -> str`
+
+Default `_widget_html_` method used for rendering `Specsable` elements.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `index` | `int` | The unique index of the element. Should be used as an id of HTML element containing the element. |
+| `name` | `str` | Human readable name of the element |
+| `element_type` | `str | None` | Human readable type of the element as a subelement, if any |
+| `subelements` | `list[ElementHTML]` | Subelements of the element. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`str`**
+
+rendered HTML
+
+
+</details>
+
+
+### `generate_structure_html(subelements: list[_ElementInTree]) -> str`
+
+Generate HTML for a setup structure.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `subelements` | `list[_ElementInTree]` | Elements tree |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`str`**
+
+Rendered HTML
+
+
+</details>
+
+
+### `show_structure(*specsable: Specsable)`
+
+Display a setup structure using IPython's HTML display.
+Useful for previewing specs hierarchies in notebooks.
+
+### `show_specs(*specsable: Specsable) -> SpecsWidget`
+
+Display a setup structure with interactive specs preview
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`SpecsWidget`**
+
+The widget
+
+
+</details>
+
+
+### `draw_wavefront(wavefront: torch.Tensor, simulation_parameters: SimulationParameters, types_to_plot: tuple[StepwisePlotTypes, ...] = ('I', 'phase')) -> bytes`
+
+Show field propagation in the setup via widget.
+Currently only wavefronts of shape `(W, H)` are supported.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `wavefront` | `Tensor` | The Input wavefront |
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters |
+| `types_to_plot` | `tuple[StepwisePlotTypes, ...], optional` | Field properties to plot, by default ('I', 'phase') |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`bytes`**
+
+byte-coded image
+
+
+</details>
+
+
+### `show_stepwise_forward(*specsable: Specsable) -> StepwiseForwardWidget`
+
+Display the wavefront propagation through a setup structure
+using a widget interface. Currently only wavefronts
+of shape `(W, H)` are supported.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `input` | `torch.Tensor` | The Input wavefront |
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters |
+| `types_to_plot` | `tuple[StepwisePlotTypes, ...], optional` | Field properties to plot, by default ('I', 'phase') |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`StepwiseForwardWidget`**
+
+The widget
+
+
+</details>
+
