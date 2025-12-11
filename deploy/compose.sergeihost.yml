@@ -1,5 +1,6 @@
 services:
   docs:
+    container_name: svetlanna-docs
     build:
       context: ..
       dockerfile: deploy/Dockerfile
