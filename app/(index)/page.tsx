@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 
 export default function Home() {
   return (
@@ -30,12 +29,12 @@ export default function Home() {
         </p>
 
         <div className="flex flex-wrap gap-3 mb-12">
-          <Link
+          <a
             href="/docs"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-lg hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors"
           >
             Документация
-          </Link>
+          </a>
           <a
             href="https://github.com/CompPhysLab/SVETlANNa"
             target="_blank"
@@ -47,12 +46,12 @@ export default function Home() {
             </svg>
             GitHub
           </a>
-          <Link
+          <a
             href="/course"
             className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-300 dark:border-neutral-700 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-900 transition-colors"
           >
             Курс OCAC
-          </Link>
+          </a>
         </div>
 
         {/* Install */}
