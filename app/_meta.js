@@ -4,6 +4,9 @@ export default {
     type: "page",
     display: "hidden",
   },
+  docs: {
+    title: "Docs",
+  },
   course: {
     title: "Course",
     type: "page",
