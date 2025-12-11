@@ -1,0 +1,12 @@
+services:
+  docs:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    networks:
+      - gateway-net
+
+networks:
+  gateway-net:
+    external: true
