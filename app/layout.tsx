@@ -3,6 +3,7 @@ import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import type { Metadata } from "next";
 import Link from "next/link";
+import 'katex/dist/katex.min.css'
 import "nextra-theme-docs/style.css";
 
 export const metadata: Metadata = {

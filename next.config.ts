@@ -14,6 +14,21 @@ const nextConfig: NextConfig = {
 };
 
 const withNextra = nextra({
+  latex: {
+    renderer: "katex",
+    options: {
+      output: "htmlAndMathml",
+      strict: "ignore",
+      trust: true,
+      macros: {
+        "\\R": "\\mathbb{R}",
+        "\\C": "\\mathbb{C}",
+        "\\N": "\\mathbb{N}",
+        "\\Z": "\\mathbb{Z}",
+        "\\vec": "\\mathbf",
+      },
+    },
+  },
 });
 
 export default withNextra(nextConfig);

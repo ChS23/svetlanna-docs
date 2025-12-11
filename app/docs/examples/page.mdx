@@ -1,0 +1,66 @@
+# Примеры LaTeX
+
+## Инлайн формулы
+
+Комплексная амплитуда волны $E(x,y) = A(x,y) e^{i\phi(x,y)}$, где $A$ — амплитуда, $\phi$ — фаза.
+
+Множества: $x \in \R$, $z \in \C$, $n \in \N$, $k \in \Z$.
+
+## Блочные формулы
+
+Преобразование Фурье:
+
+$$
+\mathcal{F}\{f(x)\} = \int_{-\infty}^{\infty} f(x) e^{-2\pi i \xi x} \, dx
+$$
+
+Дифракция Френеля:
+
+$$
+U(x', y') = \frac{e^{ikz}}{i\lambda z} \iint U(x, y) \exp\left[\frac{ik}{2z}\left((x'-x)^2 + (y'-y)^2\right)\right] dx \, dy
+$$
+
+## Уравнения
+
+Уравнение Гельмгольца:
+
+$$
+\nabla^2 U + k^2 U = 0
+$$
+
+где $k = \frac{2\pi}{\lambda}$ — волновое число.
+
+## Матрицы
+
+Матрица передачи тонкой линзы:
+
+$$
+\begin{pmatrix}
+1 & 0 \\
+-\frac{1}{f} & 1
+\end{pmatrix}
+$$
+
+## Выравнивание
+
+$$
+\begin{aligned}
+E_{out} &= t(x,y) \cdot E_{in} \\
+&= |t| e^{i\phi_t} \cdot A_{in} e^{i\phi_{in}} \\
+&= |t| A_{in} e^{i(\phi_t + \phi_{in})}
+\end{aligned}
+$$
+
+## Дроби и индексы
+
+Угловой спектр:
+
+$$
+H(f_x, f_y) = \exp\left(ikz\sqrt{1 - \lambda^2 f_x^2 - \lambda^2 f_y^2}\right)
+$$
+
+Функция рассеяния точки:
+
+$$
+I(x,y) = \left|\mathcal{F}^{-1}\{H \cdot \mathcal{F}\{U_0\}\}\right|^2
+$$
