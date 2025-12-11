@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 const navbar = (
   <Navbar
     logo={<b>Svetlanna</b>}
+    projectLink="https://github.com/CompPhysLab/SVETlANNa"
   />
 );
 
@@ -30,6 +31,8 @@ export default async function RootLayout({
           navbar={navbar}
           pageMap={await getPageMap()}
           footer={footer}
+          editLink={<></>}
+          feedback={{ content: <></> }}
         >
           {children}
         </Layout>
