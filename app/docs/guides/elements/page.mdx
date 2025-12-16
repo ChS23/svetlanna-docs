@@ -1,0 +1,305 @@
+# Оптические элементы
+
+import { Callout, Tabs } from 'nextra/components'
+
+Все оптические элементы наследуют `torch.nn.Module` и базовый класс `Element`.
+
+## Базовый интерфейс
+
+```python
+from svetlanna.elements import ThinLens
+
+# Создание элемента
+lens = ThinLens(simulation_parameters=params, focal_length=100*ureg.mm)
+
+# Forward propagation
+wf_out = lens(wf_in)
+
+# Reverse propagation (если поддерживается)
+wf_back = lens.reverse(wf_out)
+
+# Функция пропускания
+transmission = lens.get_transmission_function()
+```
+
+---
+
+## FreeSpace
+
+Распространение в свободном пространстве методами Angular Spectrum или Fresnel.
+
+```python
+from svetlanna.elements import FreeSpace
+
+propagate = FreeSpace(
+    simulation_parameters=params,
+    distance=50*ureg.mm,
+    method='AS'  # или 'fresnel'
+)
+
+wf_out = propagate(wf_in)
+wf_back = propagate.reverse(wf_out)  # Обратное распространение
+```
+
+<Callout type="warning">
+Параметр `method` **обязателен**. Используйте `'AS'` для точных расчётов или `'fresnel'` для приближённых.
+</Callout>
+
+### Методы распространения
+
+<Tabs items={['Angular Spectrum', 'Fresnel']}>
+  <Tabs.Tab>
+**Angular Spectrum (AS)** — точный метод для любых расстояний:
+
+$$E_{out} = \mathcal{F}^{-1}\left[\mathcal{F}[E_{in}] \cdot H(f_x, f_y, z)\right]$$
+
+```python
+# Импульсный отклик
+ir = propagate.impulse_response_angular_spectrum()
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+**Fresnel** — приближение для параксиальных пучков:
+
+$$E_{out} = \frac{e^{ikz}}{i\lambda z} \iint E_{in} \exp\left[i\frac{k}{2z}(x-\xi)^2 + (y-\eta)^2\right] d\xi d\eta$$
+
+```python
+# Импульсный отклик
+ir = propagate.impulse_response_fresnel()
+```
+  </Tabs.Tab>
+</Tabs>
+
+---
+
+## ThinLens
+
+Тонкая линза с квадратичной фазовой функцией пропускания.
+
+```python
+from svetlanna.elements import ThinLens
+
+lens = ThinLens(
+    simulation_parameters=params,
+    focal_length=100*ureg.mm,
+    radius=10*ureg.mm  # Опционально: апертура линзы
+)
+
+wf_out = lens(wf_in)
+transmission = lens.get_transmission_function()
+```
+
+### Физика
+
+$$T(x, y) = \exp\left(-i\frac{k}{2f}(x^2 + y^2)\right) \cdot M(r)$$
+
+где $M(r)$ — маска апертуры (если задан `radius`).
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `focal_length` | `OptimizableFloat` | Фокусное расстояние |
+| `radius` | `float` | Радиус апертуры (опционально) |
+
+---
+
+## Aperture, RoundAperture, RectangularAperture
+
+Апертуры с бинарной маской пропускания.
+
+<Tabs items={['RoundAperture', 'RectangularAperture', 'Aperture']}>
+  <Tabs.Tab>
+```python
+from svetlanna.elements import RoundAperture
+
+aperture = RoundAperture(
+    simulation_parameters=params,
+    radius=5*ureg.mm
+)
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+from svetlanna.elements import RectangularAperture
+
+aperture = RectangularAperture(
+    simulation_parameters=params,
+    width=10*ureg.mm,
+    height=8*ureg.mm
+)
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+from svetlanna.elements import Aperture
+import torch
+
+# Произвольная маска
+mask = torch.zeros(512, 512)
+mask[100:400, 100:400] = 1.0
+
+aperture = Aperture(
+    simulation_parameters=params,
+    mask=mask
+)
+```
+  </Tabs.Tab>
+</Tabs>
+
+---
+
+## DiffractiveLayer
+
+Пассивный фазовый элемент (DOE — Diffractive Optical Element).
+
+```python
+from svetlanna.elements import DiffractiveLayer
+import torch
+
+# Фазовая маска
+phase_mask = torch.rand(512, 512) * 2 * torch.pi
+
+layer = DiffractiveLayer(
+    simulation_parameters=params,
+    mask=phase_mask,
+    mask_norm=2*torch.pi  # Нормализация
+)
+
+wf_out = layer(wf_in)
+wf_back = layer.reverse(wf_out)  # Использует сопряжённую передачу
+```
+
+### Функция пропускания
+
+$$T(x, y) = \exp\left(i \cdot 2\pi \cdot \frac{\text{mask}}{\text{mask\_norm}}\right)$$
+
+---
+
+## SpatialLightModulator (SLM)
+
+Программируемый модулятор света с поддержкой изменения размера и квантования.
+
+```python
+from svetlanna.elements import SpatialLightModulator
+from torch.nn.functional import relu
+
+slm = SpatialLightModulator(
+    simulation_parameters=params,
+    mask=torch.rand(256, 256),
+    height=8*ureg.mm,
+    width=10*ureg.mm,
+    location=(0.0, 0.0),      # Центр SLM
+    number_of_levels=256,      # Уровни квантования
+    step_function=relu,        # Функция квантования
+    mode='nearest'             # Интерполяция
+)
+
+wf_out = slm(wf_in)
+```
+
+| Параметр | Описание |
+|----------|----------|
+| `mask` | Фазовая маска (может быть меньше сетки) |
+| `height`, `width` | Физический размер SLM |
+| `location` | Положение центра (dx, dy) |
+| `number_of_levels` | Количество уровней квантования |
+| `mode` | Режим интерполяции при масштабировании |
+
+---
+
+## NonlinearElement
+
+Нелинейный элемент с амплитудной модуляцией (сохраняет фазу).
+
+```python
+from svetlanna.elements import NonlinearElement
+
+def saturation_response(intensity, alpha=0.5):
+    """Нелинейный отклик насыщения."""
+    return torch.sqrt(intensity / (1 + alpha * intensity))
+
+nl_element = NonlinearElement(
+    simulation_parameters=params,
+    response_function=saturation_response,
+    response_parameters={'alpha': torch.tensor(0.5)}
+)
+
+wf_out = nl_element(wf_in)
+# |wf_out| = response_function(|wf_in|²)
+# phase(wf_out) = phase(wf_in)
+```
+
+<Callout type="info">
+`NonlinearElement` модифицирует только амплитуду поля, сохраняя фазу.
+</Callout>
+
+---
+
+## Таблица всех элементов
+
+| Элемент | Описание | Ключевые параметры | `reverse()` |
+|---------|----------|-------------------|-------------|
+| `FreeSpace` | Распространение | `distance`, `method` | ✅ |
+| `ThinLens` | Тонкая линза | `focal_length`, `radius` | ✅ |
+| `RoundAperture` | Круглая апертура | `radius` | ❌ |
+| `RectangularAperture` | Прямоугольная апертура | `width`, `height` | ❌ |
+| `Aperture` | Произвольная маска | `mask` | ❌ |
+| `DiffractiveLayer` | DOE / фазовая маска | `mask`, `mask_norm` | ✅ |
+| `SpatialLightModulator` | SLM | `mask`, `height`, `width` | ✅ |
+| `NonlinearElement` | Нелинейность | `response_function` | ❌ |
+
+---
+
+## Оптимизируемые параметры
+
+Параметры типа `OptimizableFloat` могут быть обучаемыми:
+
+```python
+from svetlanna.parameters import Parameter, ConstrainedParameter
+
+# Обучаемое фокусное расстояние
+focal = Parameter(data=100.0, requires_grad=True)
+lens = ThinLens(params, focal_length=focal)
+
+# С ограничениями [50, 200] мм
+focal_bounded = ConstrainedParameter(
+    data=100.0,
+    min_value=50.0,
+    max_value=200.0,
+    requires_grad=True
+)
+lens = ThinLens(params, focal_length=focal_bounded)
+```
+
+---
+
+## Создание своего элемента
+
+```python
+from svetlanna.elements import Element
+
+class CustomElement(Element):
+    def __init__(self, simulation_parameters, my_param):
+        super().__init__(simulation_parameters)
+        self.my_param = my_param
+
+    def forward(self, incident_wavefront):
+        # Ваша логика преобразования
+        transmission = self._compute_transmission()
+        return incident_wavefront * transmission
+
+    def reverse(self, transmission_wavefront):
+        # Опционально: обратное распространение
+        return transmission_wavefront * self._compute_transmission().conj()
+
+    def _compute_transmission(self):
+        # Вычисление функции пропускания
+        pass
+```
+
+---
+
+## См. также
+
+- [LinearOpticalSetup](/docs/guides/optical-systems) — сборка систем
+- [Оптимизация](/docs/guides/optimization) — обучение элементов
+- [Detector](/docs/guides/detector) — измерение результата

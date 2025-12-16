@@ -1,0 +1,48 @@
+# Руководства
+
+import { Cards } from 'nextra/components'
+
+Подробные руководства по всем компонентам библиотеки SVETlANNa.
+
+## Основные компоненты
+
+<Cards>
+  <Cards.Card title="SimulationParameters" href="/docs/guides/simulation-parameters" />
+  <Cards.Card title="Волновые фронты" href="/docs/guides/wavefronts" />
+  <Cards.Card title="Оптические элементы" href="/docs/guides/elements" />
+  <Cards.Card title="Оптические системы" href="/docs/guides/optical-systems" />
+</Cards>
+
+## Детекторы и обработка
+
+<Cards>
+  <Cards.Card title="Детекторы" href="/docs/guides/detector" />
+  <Cards.Card title="Transforms" href="/docs/guides/transforms" />
+</Cards>
+
+## Оптимизация и обучение
+
+<Cards>
+  <Cards.Card title="Оптимизация" href="/docs/guides/optimization" />
+</Cards>
+
+## Обзор компонентов
+
+| Компонент | Описание |
+|-----------|----------|
+| `SimulationParameters` | Координатная система, длина волны, устройство |
+| `Wavefront` | Комплексная амплитуда поля |
+| `Element` | Базовый класс оптических элементов |
+| `LinearOpticalSetup` | Последовательная оптическая система |
+| `Detector` | Преобразование поля в интенсивность |
+| `DetectorProcessorClf` | Классификация по областям детектора |
+| `Clerk` | Логирование экспериментов |
+
+## Рекомендуемый порядок изучения
+
+1. **SimulationParameters** — основа всех расчётов
+2. **Wavefront** — создание входных полей
+3. **Elements** — оптические элементы
+4. **Optical Systems** — сборка систем
+5. **Detector** — измерение результата
+6. **Optimization** — обучение систем

@@ -1,0 +1,86 @@
+# Туториалы
+
+import { Cards, Callout, Steps } from 'nextra/components'
+
+Пошаговые примеры решения практических задач с SVETlANNa.
+
+<Callout type="info">
+Все туториалы содержат полный исполняемый код. Рекомендуем запускать примеры в Jupyter Notebook или Python скрипте.
+</Callout>
+
+## Содержание
+
+<Cards>
+  <Cards.Card title="Фокусировка пучка" href="/docs/tutorials/focusing" />
+  <Cards.Card title="4f-система" href="/docs/tutorials/4f-system" />
+  <Cards.Card title="Восстановление фазы" href="/docs/tutorials/phase-retrieval" />
+  <Cards.Card title="Дифракционная нейросеть" href="/docs/tutorials/diffractive-nn" />
+</Cards>
+
+---
+
+## Уровни сложности
+
+| Туториал | Уровень | Ключевые концепции |
+|----------|---------|-------------------|
+| Фокусировка пучка | Начальный | ThinLens, FreeSpace, Wavefront |
+| 4f-система | Средний | Фурье-оптика, пространственная фильтрация |
+| Восстановление фазы | Средний | Итеративные алгоритмы, Gerchberg-Saxton |
+| Дифракционная нейросеть | Продвинутый | DiffractiveLayer, обучение, классификация |
+
+---
+
+## Рекомендуемый порядок изучения
+
+<Steps>
+### Фокусировка пучка
+
+Базовый пример: фокусировка гауссова пучка линзой. Изучите основы работы с `Wavefront`, `ThinLens` и `FreeSpace`.
+
+### 4f-система
+
+Построение классической 4f-системы для оптической фильтрации. Практическое применение Фурье-оптики.
+
+### Восстановление фазы
+
+Алгоритм Gerchberg-Saxton для восстановления фазы из измерений интенсивности. Итеративная оптимизация.
+
+### Дифракционная нейросеть
+
+Обучение многослойной D²NN для классификации изображений. Полный цикл: данные → обучение → оценка.
+</Steps>
+
+---
+
+## Предварительные требования
+
+Перед началом рекомендуем ознакомиться с:
+
+- [Основные концепции](/docs/getting-started/concepts) — архитектура библиотеки
+- [SimulationParameters](/docs/guides/simulation-parameters) — настройка параметров
+- [Оптические элементы](/docs/guides/elements) — доступные элементы
+- [Волновые фронты](/docs/guides/wavefronts) — работа с полями
+
+---
+
+## Запуск примеров
+
+```python
+# Минимальный шаблон для туториалов
+import torch
+from svetlanna import SimulationParameters, Wavefront
+from svetlanna.units import ureg
+
+params = SimulationParameters.from_ranges(
+    w_range=(-2*ureg.mm, 2*ureg.mm), w_points=512,
+    h_range=(-2*ureg.mm, 2*ureg.mm), h_points=512,
+    wavelength=632.8*ureg.nm
+)
+
+wf = Wavefront.gaussian_beam(params, waist_radius=0.5*ureg.mm)
+print(f"Готово! Форма поля: {wf.shape}")
+```
+
+<Callout type="warning">
+Для работы с GPU убедитесь, что установлена CUDA-версия PyTorch и выполните `params.to('cuda')` перед созданием элементов.
+</Callout>

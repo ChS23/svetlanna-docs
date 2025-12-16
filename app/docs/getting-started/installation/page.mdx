@@ -1,0 +1,109 @@
+# Установка
+
+import { Steps, Callout, Tabs } from 'nextra/components'
+
+## Требования
+
+- **Python** 3.11+
+- **PyTorch** 2.0+
+- **CUDA** (опционально, для GPU-ускорения)
+
+## Установка
+
+<Tabs items={['pip', 'из исходников']}>
+  <Tabs.Tab>
+```bash
+pip install svetlanna
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```bash
+git clone https://github.com/CompPhysLab/SVETlANNa.git
+cd SVETlANNa
+pip install -e .
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Проверка установки
+
+<Steps>
+### Импорт библиотеки
+
+```python
+import svetlanna
+print(f"SVETlANNa version: {svetlanna.__version__}")
+```
+
+### Проверка GPU
+
+```python
+import torch
+print(f"CUDA доступна: {torch.cuda.is_available()}")
+if torch.cuda.is_available():
+    print(f"GPU: {torch.cuda.get_device_name(0)}")
+```
+
+### Тестовый запуск
+
+```python
+from svetlanna import SimulationParameters, Wavefront
+from svetlanna.units import ureg
+
+params = SimulationParameters.from_ranges(
+    w_range=(-1*ureg.mm, 1*ureg.mm), w_points=128,
+    h_range=(-1*ureg.mm, 1*ureg.mm), h_points=128,
+    wavelength=632.8*ureg.nm
+)
+
+wf = Wavefront.plane_wave(params)
+print(f"Тест пройден! Форма: {wf.shape}")
+```
+</Steps>
+
+## GPU поддержка
+
+<Callout type="info">
+SVETlANNa автоматически использует CUDA, если PyTorch установлен с поддержкой GPU.
+</Callout>
+
+Для переноса вычислений на GPU:
+
+```python
+from svetlanna import SimulationParameters
+from svetlanna.units import ureg
+
+# Создание параметров
+params = SimulationParameters.from_ranges(
+    w_range=(-1*ureg.mm, 1*ureg.mm), w_points=512,
+    h_range=(-1*ureg.mm, 1*ureg.mm), h_points=512,
+    wavelength=632.8*ureg.nm
+)
+
+# Перенос на GPU (in-place)
+params.to("cuda")
+
+# Все созданные с этими параметрами объекты будут на GPU
+wf = Wavefront.gaussian_beam(params, waist_radius=0.3*ureg.mm)
+print(f"Устройство: {wf.device}")  # cuda:0
+```
+
+## Зависимости
+
+| Пакет | Назначение |
+|-------|------------|
+| `torch` | Тензорные вычисления, autograd, CUDA |
+| `numpy` | Вспомогательные операции |
+| `matplotlib` | Визуализация (опционально) |
+| `jinja2` | Шаблоны для Clerk |
+| `anywidget` | Jupyter виджеты |
+
+## Возможные проблемы
+
+<Callout type="warning">
+**CUDA out of memory**: При работе с большими сетками (>1024×1024) убедитесь, что у вас достаточно GPU памяти. Используйте `torch.cuda.empty_cache()` для очистки.
+</Callout>
+
+<Callout type="error">
+**Import error**: Если `import svetlanna` не работает, проверьте версию Python (`python --version`) и переустановите библиотеку.
+</Callout>

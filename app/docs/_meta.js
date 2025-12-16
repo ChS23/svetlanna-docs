@@ -1,6 +1,7 @@
 export default {
-  index: "Документация",
+  "getting-started": "Начало работы",
+  guides: "Руководства",
+  tutorials: "Туториалы",
   api: "API Reference",
-  examples: "Примеры LaTeX",
   course: "Материалы курса",
 };

@@ -1,0 +1,258 @@
+# SimulationParameters
+
+import { Callout, Tabs } from 'nextra/components'
+
+`SimulationParameters` — контейнер, определяющий координатную систему для всех вычислений. Хранит оси координат (W, H), длину волны и дополнительные параметры.
+
+## Создание
+
+<Tabs items={['from_ranges', 'конструктор', 'from_dict']}>
+  <Tabs.Tab>
+```python
+from svetlanna import SimulationParameters
+from svetlanna.units import ureg
+
+params = SimulationParameters.from_ranges(
+    w_range=(-1*ureg.mm, 1*ureg.mm),  # Диапазон по X
+    w_points=512,                       # Количество точек
+    h_range=(-1*ureg.mm, 1*ureg.mm),  # Диапазон по Y
+    h_points=512,
+    wavelength=632.8*ureg.nm
+)
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+import torch
+from svetlanna import SimulationParameters
+
+params = SimulationParameters(
+    W=torch.linspace(-1e-3, 1e-3, 512),
+    H=torch.linspace(-1e-3, 1e-3, 512),
+    wavelength=torch.tensor(632.8e-9)
+)
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```python
+from svetlanna import SimulationParameters
+
+axes_dict = {
+    'W': torch.linspace(-1e-3, 1e-3, 512),
+    'H': torch.linspace(-1e-3, 1e-3, 512),
+    'wavelength': torch.tensor(632.8e-9)
+}
+params = SimulationParameters.from_dict(axes_dict)
+```
+  </Tabs.Tab>
+</Tabs>
+
+---
+
+## Обязательные оси
+
+| Ось | Описание | Тип |
+|-----|----------|-----|
+| `W` | Координаты по X (ширина) | 1D Tensor |
+| `H` | Координаты по Y (высота) | 1D Tensor |
+| `wavelength` | Длина волны | Scalar или 1D Tensor |
+
+---
+
+## Доступ к осям
+
+```python
+# Через атрибут axes
+x = params.axes.W           # 1D тензор
+y = params.axes.H
+wl = params.axes.wavelength
+
+# Или напрямую
+x = params.W
+y = params['W']
+
+# Имена всех осей
+print(params.axis_names)        # frozenset({'W', 'H', 'wavelength'})
+print(params.additional_axes)   # frozenset() — дополнительные оси
+```
+
+---
+
+## Методы
+
+### meshgrid
+
+Создание 2D сетки координат:
+
+```python
+X, Y = params.meshgrid(x_axis='W', y_axis='H')
+# X.shape = Y.shape = (512, 512)
+
+# Для расчёта радиуса
+R = torch.sqrt(X**2 + Y**2)
+```
+
+### axes_size
+
+Получение размеров осей (кэшируется):
+
+```python
+size = params.axes_size(('H', 'W'))
+# torch.Size([512, 512])
+```
+
+### cast
+
+Приведение тензора для broadcasting:
+
+```python
+tensor = torch.rand(512, 512)
+casted = params.cast(tensor, 'H', 'W')
+# Добавляет размерности для совместимости с другими осями
+```
+
+### copy
+
+Создание копии:
+
+```python
+params_copy = params.copy()
+```
+
+---
+
+## Управление состоянием
+
+<Callout type="warning">
+`SimulationParameters` по умолчанию **заморожен**. Изменение осей требует разморозки.
+</Callout>
+
+```python
+# Проверка состояния
+print(params.frozen)  # True
+
+# Разморозка для изменений
+params.unfreeze()
+params.add_axis('pol', torch.tensor([1., 0.]))
+params.freeze()
+
+# Удаление оси (нельзя удалять W, H, wavelength)
+params.unfreeze()
+params.remove_axis('pol')
+params.freeze()
+```
+
+---
+
+## Дополнительные оси
+
+### Поляризация
+
+```python
+params.unfreeze()
+params.add_axis('pol', torch.tensor([1., 0.]))  # Jones vector: горизонтальная
+params.freeze()
+
+# Доступ
+print(params.axes.pol)  # tensor([1., 0.])
+```
+
+### Несколько длин волн
+
+```python
+# RGB источник
+params = SimulationParameters(
+    W=torch.linspace(-1e-3, 1e-3, 256),
+    H=torch.linspace(-1e-3, 1e-3, 256),
+    wavelength=torch.tensor([630, 532, 465]) * 1e-9  # R, G, B
+)
+
+# Волновой фронт автоматически становится 3D
+wf = Wavefront.gaussian_beam(params, waist_radius=0.3e-3)
+print(wf.shape)  # torch.Size([3, 256, 256])
+```
+
+---
+
+## Устройство (CPU/GPU)
+
+### Перенос на GPU
+
+```python
+# После создания:
+params.to('cuda')  # In-place!
+
+# Проверка
+print(params.device)  # cuda:0
+
+# Все оси перенесены
+print(params.axes.W.device)  # cuda:0
+```
+
+<Callout type="info">
+Метод `to()` работает **in-place** и идемпотентен — повторный вызов безопасен.
+</Callout>
+
+### Автоматический перенос
+
+Элементы, созданные с `params`, автоматически используют то же устройство:
+
+```python
+params.to('cuda')
+
+lens = ThinLens(params, focal_length=100*ureg.mm)
+wf = Wavefront.gaussian_beam(params, waist_radius=0.3*ureg.mm)
+print(wf.device)  # cuda:0
+```
+
+---
+
+## Свойства
+
+| Свойство | Описание |
+|----------|----------|
+| `params.axes` | Объект Axes для доступа к осям |
+| `params.axis_names` | `frozenset` имён всех осей |
+| `params.additional_axes` | `frozenset` имён дополнительных осей |
+| `params.device` | `torch.device` текущего устройства |
+| `params.frozen` | `bool` — заморожен ли объект |
+
+---
+
+## Пример: хроматическая дисперсия
+
+```python
+import torch
+import matplotlib.pyplot as plt
+from svetlanna import SimulationParameters, Wavefront, LinearOpticalSetup
+from svetlanna.elements import ThinLens, FreeSpace
+from svetlanna.units import ureg
+
+# Три длины волны
+wavelengths = torch.tensor([630, 532, 465]) * 1e-9
+
+params = SimulationParameters(
+    W=torch.linspace(-2e-3, 2e-3, 512),
+    H=torch.linspace(-2e-3, 2e-3, 512),
+    wavelength=wavelengths
+)
+
+# Гауссов пучок для трёх длин волн
+wf = Wavefront.gaussian_beam(params, waist_radius=0.5e-3)
+
+# Оптическая система
+setup = LinearOpticalSetup([
+    ThinLens(params, focal_length=50*ureg.mm),
+    FreeSpace(params, distance=50*ureg.mm, method='AS'),
+])
+
+wf_focus = setup(wf)
+# wf_focus.shape = (3, 512, 512)
+```
+
+---
+
+## См. также
+
+- [Wavefront](/docs/guides/wavefronts) — создание волновых фронтов
+- [Elements](/docs/guides/elements) — оптические элементы

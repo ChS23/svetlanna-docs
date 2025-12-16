@@ -1,0 +1,163 @@
+# Быстрый старт
+
+import { Steps, Callout } from 'nextra/components'
+
+Этот туториал покажет основы работы с SVETlANNa за 5 минут.
+
+<Steps>
+## Импорты
+
+```python
+import torch
+from svetlanna import SimulationParameters, Wavefront, LinearOpticalSetup
+from svetlanna.elements import FreeSpace, ThinLens, RoundAperture
+from svetlanna.units import ureg
+```
+
+## Параметры симуляции
+
+Всё начинается с `SimulationParameters` — это описание вашей координатной сетки:
+
+```python
+params = SimulationParameters.from_ranges(
+    w_range=(-2*ureg.mm, 2*ureg.mm), w_points=512,  # X: от -2 до 2 мм
+    h_range=(-2*ureg.mm, 2*ureg.mm), h_points=512,  # Y: от -2 до 2 мм
+    wavelength=632.8*ureg.nm                         # HeNe лазер
+)
+```
+
+<Callout type="info">
+`ureg` — это система единиц SVETlANNa. Поддерживаются: `mm`, `um`, `nm`, `cm`, `m` и другие.
+</Callout>
+
+## Создание волнового фронта
+
+```python
+# Гауссов пучок с радиусом перетяжки 0.5 мм
+wf = Wavefront.gaussian_beam(params, waist_radius=0.5*ureg.mm)
+
+print(f"Форма: {wf.shape}")           # torch.Size([512, 512])
+print(f"Тип: {wf.dtype}")             # torch.complex64
+print(f"Max I: {wf.max_intensity}")   # ~1.0
+```
+
+## Оптические элементы
+
+```python
+# Круглая апертура
+aperture = RoundAperture(params, radius=1*ureg.mm)
+
+# Тонкая линза
+lens = ThinLens(params, focal_length=100*ureg.mm)
+
+# Свободное пространство (метод Angular Spectrum)
+propagate = FreeSpace(params, distance=100*ureg.mm, method='AS')
+```
+
+<Callout type="warning">
+Параметр `method` в `FreeSpace` обязателен. Используйте `'AS'` для точных расчётов или `'fresnel'` для быстрых приближений.
+</Callout>
+
+## Прохождение через систему
+
+Оптические элементы — это `nn.Module`, их можно вызывать как функции:
+
+```python
+# Способ 1: последовательно
+wf = aperture(wf)
+wf = lens(wf)
+wf = propagate(wf)
+
+# Способ 2: через LinearOpticalSetup
+setup = LinearOpticalSetup([
+    RoundAperture(params, radius=1*ureg.mm),
+    ThinLens(params, focal_length=100*ureg.mm),
+    FreeSpace(params, distance=100*ureg.mm, method='AS'),
+])
+wf_focus = setup(wf)
+```
+
+## Анализ результата
+
+```python
+# Интенсивность
+intensity = wf.intensity  # |E|²
+
+# Фаза
+phase = wf.phase  # arg(E)
+
+# FWHM (полуширина на полувысоте)
+fwhm_x, fwhm_y = wf.fwhm(params)
+print(f"FWHM: {fwhm_x*1e6:.1f} × {fwhm_y*1e6:.1f} мкм")
+```
+
+## Визуализация
+
+```python
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+# Координаты для осей
+extent = [
+    params.axes.W[0].item()*1e3, params.axes.W[-1].item()*1e3,
+    params.axes.H[0].item()*1e3, params.axes.H[-1].item()*1e3
+]
+
+# Интенсивность
+im0 = axes[0].imshow(intensity.cpu(), cmap='hot', extent=extent)
+axes[0].set_title('Интенсивность')
+axes[0].set_xlabel('x, мм')
+axes[0].set_ylabel('y, мм')
+plt.colorbar(im0, ax=axes[0])
+
+# Фаза
+im1 = axes[1].imshow(phase.cpu(), cmap='twilight', extent=extent)
+axes[1].set_title('Фаза')
+axes[1].set_xlabel('x, мм')
+plt.colorbar(im1, ax=axes[1])
+
+plt.tight_layout()
+plt.show()
+```
+</Steps>
+
+## Полный код
+
+```python
+import torch
+import matplotlib.pyplot as plt
+from svetlanna import SimulationParameters, Wavefront, LinearOpticalSetup
+from svetlanna.elements import FreeSpace, ThinLens, RoundAperture
+from svetlanna.units import ureg
+
+# 1. Параметры
+params = SimulationParameters.from_ranges(
+    w_range=(-2*ureg.mm, 2*ureg.mm), w_points=512,
+    h_range=(-2*ureg.mm, 2*ureg.mm), h_points=512,
+    wavelength=632.8*ureg.nm
+)
+
+# 2. Волновой фронт
+wf = Wavefront.gaussian_beam(params, waist_radius=0.5*ureg.mm)
+
+# 3. Оптическая система
+setup = LinearOpticalSetup([
+    RoundAperture(params, radius=1*ureg.mm),
+    ThinLens(params, focal_length=100*ureg.mm),
+    FreeSpace(params, distance=100*ureg.mm, method='AS'),
+])
+
+# 4. Фокусировка
+wf_focus = setup(wf)
+
+# 5. Результат
+print(f"FWHM: {wf_focus.fwhm(params)[0]*1e6:.1f} мкм")
+print(f"Max I: {wf_focus.max_intensity:.2e}")
+```
+
+## Что дальше?
+
+- [Основные концепции](/docs/getting-started/concepts) — разберитесь в архитектуре
+- [SimulationParameters](/docs/guides/simulation-parameters) — подробнее о параметрах
+- [Туториал: Фокусировка](/docs/tutorials/focusing) — полный пример с теорией

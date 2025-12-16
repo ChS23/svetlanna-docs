@@ -1,0 +1,50 @@
+# Начало работы
+
+import { Cards, Callout } from 'nextra/components'
+
+Добро пожаловать в документацию SVETlANNa! Этот раздел поможет вам быстро начать работу с библиотекой.
+
+## Что такое SVETlANNa?
+
+SVETlANNa — это Python-библиотека для моделирования распространения света в оптических системах и построения дифракционных нейронных сетей (DONN). Она построена на PyTorch, что обеспечивает:
+
+- **Автоматическое дифференцирование** для оптимизации оптических систем
+- **GPU-ускорение** через CUDA
+- **Интеграцию с PyTorch** (nn.Module, DataLoader, autograd)
+
+<Callout type="info">
+SVETlANNa поддерживает два метода распространения света: **Angular Spectrum (AS)** для точных расчётов и **Fresnel** для быстрых приближений.
+</Callout>
+
+## Содержание раздела
+
+<Cards>
+  <Cards.Card title="Установка" href="/docs/getting-started/installation" />
+  <Cards.Card title="Быстрый старт" href="/docs/getting-started/quickstart" />
+  <Cards.Card title="Основные концепции" href="/docs/getting-started/concepts" />
+</Cards>
+
+## Минимальный пример
+
+```python
+from svetlanna import SimulationParameters, Wavefront
+from svetlanna.units import ureg
+
+# Создаём параметры симуляции
+params = SimulationParameters.from_ranges(
+    w_range=(-1*ureg.mm, 1*ureg.mm), w_points=256,
+    h_range=(-1*ureg.mm, 1*ureg.mm), h_points=256,
+    wavelength=632.8*ureg.nm
+)
+
+# Создаём гауссов пучок
+wf = Wavefront.gaussian_beam(params, waist_radius=0.3*ureg.mm)
+
+# Анализируем результат
+print(f"Форма поля: {wf.shape}")
+print(f"Максимальная интенсивность: {wf.max_intensity:.3f}")
+```
+
+## Следующие шаги
+
+После установки рекомендуем пройти [Быстрый старт](/docs/getting-started/quickstart) — там вы создадите полную оптическую систему за 5 минут.
