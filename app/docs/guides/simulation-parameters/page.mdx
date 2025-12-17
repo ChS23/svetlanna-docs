@@ -119,6 +119,19 @@ casted = params.cast(tensor, 'H', 'W')
 params_copy = params.copy()
 ```
 
+### reorder
+
+Перестановка осей тензора:
+
+```python
+# axes: (wavelength, H, W), tensor shape: (batch, wavelength, H, W)
+t = params.reorder(tensor, "H", "W")      # без изменений
+t = params.reorder(tensor, "W", "H")      # -> (batch, wavelength, W, H)
+t = params.reorder(tensor, "wavelength")  # -> (batch, H, W, wavelength)
+```
+
+Полезно для совместимости с библиотеками, ожидающими определённый порядок осей.
+
 ---
 
 ## Управление состоянием
