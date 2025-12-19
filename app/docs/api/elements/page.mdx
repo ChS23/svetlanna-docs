@@ -8,6 +8,913 @@ from svetlanna.elements import ...
 
 ## Классы
 
+### SimpleReservoir
+
+<small>Наследует: `Element`</small>
+
+Reservoir element.
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, nonlinear_element: Union[Element, 'LinearOpticalSetup'], delay_element: Union[Element, 'LinearOpticalSetup'], feedback_gain: OptimizableFloat, input_gain: OptimizableFloat, delay: int) -> None
+```
+
+Reservoir element.
+The main idea is explained in https://doi.org/10.1364/OE.20.022783.
+The governing formula is:
+$$
+x_&#123;out&#125;[i] = F_&#123;NL&#125;(eta x_&#123;in&#125;[i] + lpha F_&#123;D&#125;(x_&#123;out&#125;[i-	au]))
+$$
+where $F_&#123;NL&#125;$ is the nonlinear element, $F_&#123;D&#125;$ is the delay element,
+$lpha$ is the feedback_gain, $eta$ is the input_gain,
+$	au$ is the delay in samples.
+The user should match the delay in samples with the actual
+light propagation time in $F_&#123;D&#125;$.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | An instance describing the optical system's simulation parameters. |
+| `nonlinear_element` | `Element | LinearOpticalSetup` | The nonlinear element the light passes through. |
+| `delay_element` | `Element | LinearOpticalSetup` | The delay line element. |
+| `feedback_gain` | `OptimizableFloat` | The feedback (delay line) gain ($lpha$). |
+| `input_gain` | `OptimizableFloat` | The input gain $eta$ |
+| `delay` | `int` | The delay time, measured in samples, that the light spends in the delay line. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`append_feedback_queue`**
+
+```python
+append_feedback_queue(self, field: Wavefront)
+```
+
+Append a new wavefront to the feedback queue.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `field` | `Wavefront` | The new wavefront to be added to the end of the queue. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`pop_feedback_queue`**
+
+```python
+pop_feedback_queue(self) -> None | Wavefront
+```
+
+Retrieve and remove the first element from the feedback queue
+if available.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `field` | `Wavefront` | The first wavefront in the queue, or None if the queue is empty or not full yet. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`drop_feedback_queue`**
+
+```python
+drop_feedback_queue(self) -> None
+```
+
+Clear all elements from the feedback queue.
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
+```
+
+</div>
+
+
+### FreeSpace
+
+<small>Наследует: `Element`</small>
+
+A class that describes a propagation of the field in free space
+between two optical elements
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, distance: OptimizableFloat, method: Literal['fresnel', 'AS'])
+```
+
+Free space element.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | An instance describing the optical system's simulation parameters. |
+| `distance` | `float` | The distance of the free space propagation. |
+| `method` | `Literal['fresnel', 'AS']` | Method describing propagation in free space (1) 'AS' - angular spectrum method, (2) 'fresnel' - fresnel approximation, |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`impulse_response_angular_spectrum`**
+
+```python
+impulse_response_angular_spectrum(self) -> torch.Tensor
+```
+
+Creates the impulse response function for angular spectrum method
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`torch.Tensor`**
+
+2d impulse response function for angular spectrum method
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`impulse_response_fresnel`**
+
+```python
+impulse_response_fresnel(self) -> torch.Tensor
+```
+
+Creates the impulse response function for fresnel approximation
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`torch.Tensor`**
+
+2d impulse response function for fresnel approximation
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+Calculates the field after propagating in the free space
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `input_field` | `Wavefront` | Field before propagation in free space |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+Field after propagation in free space
+
+
+</details>
+
+
+<details>
+<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Исключения</summary>
+
+- **`ValueError`** — Occurs when a non-existent direct distribution method is chosen
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`reverse`**
+
+```python
+reverse(self, transmission_wavefront: Wavefront) -> Wavefront
+```
+
+Calculate the field after it propagates in the free space
+in the backward direction.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `transmission_field` | `Wavefront` | Field to be propagated in the backward direction |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+Propagated in the backward direction field
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs]
+```
+
+</div>
+
+
+### SpatialLightModulator
+
+<small>Наследует: `Element`</small>
+
+A class that described the field after propagating through the
+Spatial Light Modulator with a given phase mask
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `Element` | `_type_` | _description_ |
+
+</details>
+
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">get_aperture</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">resized_mask</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, mask: torch.Tensor, height: OptimizableFloat, width: OptimizableFloat, location: Tuple = (0.0, 0.0), number_of_levels: int = 256, step_function: Callable[[torch.Tensor], torch.Tensor] = relu, mode: Literal['nearest', 'bilinear', 'bicubic', 'area', 'nearest-exact'] = 'nearest')
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`reverse`**
+
+```python
+reverse(self, transmission_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+
+### DiffractiveLayer
+
+<small>Наследует: `Element`</small>
+
+A class that described the field after propagating through the
+passive diffractive layer with a given phase mask
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor, mask_norm: float = 2 * torch.pi)
+```
+
+Constructor method
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters |
+| `mask` | `OptimizableTensor` | Phase mask |
+| `mask_norm` | `float, optional` | This value will be used as following: the phase addition is equal to `2*torch.pi * mask / mask_norm`. By default, `2*torch.pi` |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+Method that calculates the field after propagating through the SLM
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `input_field` | `Wavefront` | Field incident on the SLM |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+The field after propagating through the SLM
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`reverse`**
+
+```python
+reverse(self, transmission_wavefront: Wavefront) -> Wavefront
+```
+
+Method that calculates the field after passing the SLM in back
+propagation
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `transmitted_field` | `Wavefront` | Field incident on the SLM in back propagation (transmitted field in forward propagation) |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+Field transmitted on the SLM in back propagation (incident field in forward propagation)
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs]
+```
+
+</div>
+
+
+### ThinLens
+
+<small>Наследует: `Element`</small>
+
+A class that described the field after propagating through the
+thin lens.
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, focal_length: OptimizableFloat, radius: float = torch.inf)
+```
+
+Thin lens element.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | An instance describing the optical system's simulation parameters. |
+| `focal_length` | `OptimizableFloat` | The focal length of the lens. Must be greater than 0 for a converging lens. |
+| `radius` | `float` | The radius of the thin lens. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`get_transmission_function`**
+
+```python
+get_transmission_function(self) -> torch.Tensor
+```
+
+Returns the transmission function of the thin lens.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`torch.Tensor`**
+
+The transmission function of the thin lens.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+Calculates the field after propagation through the thin lens.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `input_field` | `Wavefront` | The field incident on the thin lens. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+The field after propagation through the thin lens.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`reverse`**
+
+```python
+reverse(self, transmission_wavefront: Wavefront) -> Wavefront
+```
+
+Calculates the field after passing through the lens during
+back propagation.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `transmission_field` | `Wavefront` | The field incident on the lens during back propagation. This corresponds to the transmitted field in forward propagation. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+The field transmitted through the lens during back propagation. This corresponds to the incident field in forward propagation.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs]
+```
+
+</div>
+
+
+### _BufferedValueContainer
+
+<small>Наследует: `tuple`</small>
+
+Internal class that marks buffered values.
+
+It is used to prevent double __setattr__ calls with the same value in
+patterns like `self.x = self.make_buffer('x', x_value)`.
+Inheriting from tuple is used for performance reasons, so the `__slots__`.
+This approach was identified by GPT as the fastest one.
+
+### Element
+
+<small>Наследует: `nn.Module`</small>
+
+A class that describes each element of the system
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters) -> None
+```
+
+A class that describes each element of the system
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Class exemplar that describes the optical system |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+Forward propagation through the optical element
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
+```
+
+Create specs
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`make_buffer`**
+
+```python
+make_buffer(self, name: str, value: _T, persistent: bool = False) -> _T
+```
+
+Make buffer for internal use.
+
+Use case:
+```
+self.mask = make_buffer('mask', some_tensor)
+```
+This allow torch to properly process `.to` method on Element
+by marking that `mask` should be transferred to required device.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `name` | `str` | name of the new buffer (it is more convenient to use name of new attribute) |
+| `value` | `_T` | tensor to be buffered |
+| `persistent` | `bool, optional` | see torch docs on buffers, by default False |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`_T`**
+
+the value passed to the method
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`process_parameter`**
+
+```python
+process_parameter(self, name: str, value: _V) -> _V
+```
+
+Process element parameter passed by user.
+Automatically registers buffer for non-parametric tensors.
+
+Use case:
+```
+self.mask = process_parameter('mask', some_tensor)
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `name` | `str` | name of the new buffer (it is more convenient to use name of new attribute) |
+| `value` | `_V` | the value of the element parameter |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`_V`**
+
+the value passed to the method
+
+
+</details>
+
+</div>
+
+
+### FunctionModule
+
+<small>Наследует: `torch.nn.Module`</small>
+
+A class for transforming an arbitrary function with multiple parameters.
+Allows training function parameters
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, function: Callable[[torch.Tensor], torch.Tensor], function_parameters: Dict | None) -> None
+```
+
+Constructor method
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `function` | `Callable[[torch.Tensor], torch.Tensor]` | Arbitrary function with several parameters |
+| `function_parameters` | `Dict | None` | Parameters of the function |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, function_argument: torch.Tensor) -> torch.Tensor
+```
+
+forward method for a class inherited from torch.nn.Module
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `function_argument` | `torch.Tensor` | Argument of the function |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`torch.Tensor`**
+
+Function with trainable parameters
+
+
+</details>
+
+</div>
+
+
+### NonlinearElement
+
+<small>Наследует: `Element`</small>
+
+A class representing a nonlinear optical element with a given amplitude
+response function. Preserves the phase distribution of the incident
+wavefront
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, response_function: Callable[[torch.Tensor], torch.Tensor], response_parameters: Dict | None = None)
+```
+
+Constructor method
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Class exemplar, that describes optical system |
+| `response_function` | `Callable[[torch.Tensor], torch.Tensor]` | Intensity response function |
+| `response_parameters` | `Dict, optional` | Parameters of the response_function. Parameters converted to svetlanna.Parameter(value) will be trained, by default None |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+Method calculating the wavefront after passing a nonlinear optical
+element
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `incident_wavefront` | `Wavefront` | Wavefront before the nonlinear optical element |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+Wavefront passing through a nonlinear optical element
+
+
+</details>
+
+</div>
+
+
 ### MulElement
 
 <small>Наследует: `Element` `ABC`</small>
@@ -275,913 +1182,6 @@ get_transmission_function(self) -> torch.Tensor
 
 ```python
 to_specs(self) -> Iterable[ParameterSpecs]
-```
-
-</div>
-
-
-### DiffractiveLayer
-
-<small>Наследует: `Element`</small>
-
-A class that described the field after propagating through the
-passive diffractive layer with a given phase mask
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor, mask_norm: float = 2 * torch.pi)
-```
-
-Constructor method
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Simulation parameters |
-| `mask` | `OptimizableTensor` | Phase mask |
-| `mask_norm` | `float, optional` | This value will be used as following: the phase addition is equal to `2*torch.pi * mask / mask_norm`. By default, `2*torch.pi` |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-Method that calculates the field after propagating through the SLM
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `input_field` | `Wavefront` | Field incident on the SLM |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Wavefront`**
-
-The field after propagating through the SLM
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`reverse`**
-
-```python
-reverse(self, transmission_wavefront: Wavefront) -> Wavefront
-```
-
-Method that calculates the field after passing the SLM in back
-propagation
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `transmitted_field` | `Wavefront` | Field incident on the SLM in back propagation (transmitted field in forward propagation) |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Wavefront`**
-
-Field transmitted on the SLM in back propagation (incident field in forward propagation)
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs]
-```
-
-</div>
-
-
-### _BufferedValueContainer
-
-<small>Наследует: `tuple`</small>
-
-Internal class that marks buffered values.
-
-It is used to prevent double __setattr__ calls with the same value in
-patterns like `self.x = self.make_buffer('x', x_value)`.
-Inheriting from tuple is used for performance reasons, so the `__slots__`.
-This approach was identified by GPT as the fastest one.
-
-### Element
-
-<small>Наследует: `nn.Module`</small>
-
-A class that describes each element of the system
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters) -> None
-```
-
-A class that describes each element of the system
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Class exemplar that describes the optical system |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-Forward propagation through the optical element
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
-```
-
-Create specs
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`make_buffer`**
-
-```python
-make_buffer(self, name: str, value: _T, persistent: bool = False) -> _T
-```
-
-Make buffer for internal use.
-
-Use case:
-```
-self.mask = make_buffer('mask', some_tensor)
-```
-This allow torch to properly process `.to` method on Element
-by marking that `mask` should be transferred to required device.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `name` | `str` | name of the new buffer (it is more convenient to use name of new attribute) |
-| `value` | `_T` | tensor to be buffered |
-| `persistent` | `bool, optional` | see torch docs on buffers, by default False |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`_T`**
-
-the value passed to the method
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`process_parameter`**
-
-```python
-process_parameter(self, name: str, value: _V) -> _V
-```
-
-Process element parameter passed by user.
-Automatically registers buffer for non-parametric tensors.
-
-Use case:
-```
-self.mask = process_parameter('mask', some_tensor)
-```
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `name` | `str` | name of the new buffer (it is more convenient to use name of new attribute) |
-| `value` | `_V` | the value of the element parameter |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`_V`**
-
-the value passed to the method
-
-
-</details>
-
-</div>
-
-
-### FreeSpace
-
-<small>Наследует: `Element`</small>
-
-A class that describes a propagation of the field in free space
-between two optical elements
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, distance: OptimizableFloat, method: Literal['fresnel', 'AS'])
-```
-
-Free space element.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | An instance describing the optical system's simulation parameters. |
-| `distance` | `float` | The distance of the free space propagation. |
-| `method` | `Literal['fresnel', 'AS']` | Method describing propagation in free space (1) 'AS' - angular spectrum method, (2) 'fresnel' - fresnel approximation, |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`impulse_response_angular_spectrum`**
-
-```python
-impulse_response_angular_spectrum(self) -> torch.Tensor
-```
-
-Creates the impulse response function for angular spectrum method
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`torch.Tensor`**
-
-2d impulse response function for angular spectrum method
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`impulse_response_fresnel`**
-
-```python
-impulse_response_fresnel(self) -> torch.Tensor
-```
-
-Creates the impulse response function for fresnel approximation
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`torch.Tensor`**
-
-2d impulse response function for fresnel approximation
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-Calculates the field after propagating in the free space
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `input_field` | `Wavefront` | Field before propagation in free space |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Wavefront`**
-
-Field after propagation in free space
-
-
-</details>
-
-
-<details>
-<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Исключения</summary>
-
-- **`ValueError`** — Occurs when a non-existent direct distribution method is chosen
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`reverse`**
-
-```python
-reverse(self, transmission_wavefront: Wavefront) -> Wavefront
-```
-
-Calculate the field after it propagates in the free space
-in the backward direction.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `transmission_field` | `Wavefront` | Field to be propagated in the backward direction |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Wavefront`**
-
-Propagated in the backward direction field
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs]
-```
-
-</div>
-
-
-### ThinLens
-
-<small>Наследует: `Element`</small>
-
-A class that described the field after propagating through the
-thin lens.
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, focal_length: OptimizableFloat, radius: float = torch.inf)
-```
-
-Thin lens element.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | An instance describing the optical system's simulation parameters. |
-| `focal_length` | `OptimizableFloat` | The focal length of the lens. Must be greater than 0 for a converging lens. |
-| `radius` | `float` | The radius of the thin lens. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`get_transmission_function`**
-
-```python
-get_transmission_function(self) -> torch.Tensor
-```
-
-Returns the transmission function of the thin lens.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`torch.Tensor`**
-
-The transmission function of the thin lens.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-Calculates the field after propagation through the thin lens.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `input_field` | `Wavefront` | The field incident on the thin lens. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Wavefront`**
-
-The field after propagation through the thin lens.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`reverse`**
-
-```python
-reverse(self, transmission_wavefront: Wavefront) -> Wavefront
-```
-
-Calculates the field after passing through the lens during
-back propagation.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `transmission_field` | `Wavefront` | The field incident on the lens during back propagation. This corresponds to the transmitted field in forward propagation. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Wavefront`**
-
-The field transmitted through the lens during back propagation. This corresponds to the incident field in forward propagation.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs]
-```
-
-</div>
-
-
-### FunctionModule
-
-<small>Наследует: `torch.nn.Module`</small>
-
-A class for transforming an arbitrary function with multiple parameters.
-Allows training function parameters
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, function: Callable[[torch.Tensor], torch.Tensor], function_parameters: Dict | None) -> None
-```
-
-Constructor method
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `function` | `Callable[[torch.Tensor], torch.Tensor]` | Arbitrary function with several parameters |
-| `function_parameters` | `Dict | None` | Parameters of the function |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, function_argument: torch.Tensor) -> torch.Tensor
-```
-
-forward method for a class inherited from torch.nn.Module
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `function_argument` | `torch.Tensor` | Argument of the function |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`torch.Tensor`**
-
-Function with trainable parameters
-
-
-</details>
-
-</div>
-
-
-### NonlinearElement
-
-<small>Наследует: `Element`</small>
-
-A class representing a nonlinear optical element with a given amplitude
-response function. Preserves the phase distribution of the incident
-wavefront
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, response_function: Callable[[torch.Tensor], torch.Tensor], response_parameters: Dict | None = None)
-```
-
-Constructor method
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Class exemplar, that describes optical system |
-| `response_function` | `Callable[[torch.Tensor], torch.Tensor]` | Intensity response function |
-| `response_parameters` | `Dict, optional` | Parameters of the response_function. Parameters converted to svetlanna.Parameter(value) will be trained, by default None |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-Method calculating the wavefront after passing a nonlinear optical
-element
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `incident_wavefront` | `Wavefront` | Wavefront before the nonlinear optical element |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Wavefront`**
-
-Wavefront passing through a nonlinear optical element
-
-
-</details>
-
-</div>
-
-
-### SimpleReservoir
-
-<small>Наследует: `Element`</small>
-
-Reservoir element.
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, nonlinear_element: Union[Element, 'LinearOpticalSetup'], delay_element: Union[Element, 'LinearOpticalSetup'], feedback_gain: OptimizableFloat, input_gain: OptimizableFloat, delay: int) -> None
-```
-
-Reservoir element.
-The main idea is explained in https://doi.org/10.1364/OE.20.022783.
-The governing formula is:
-$$
-x_&#123;out&#125;[i] = F_&#123;NL&#125;(eta x_&#123;in&#125;[i] + lpha F_&#123;D&#125;(x_&#123;out&#125;[i-	au]))
-$$
-where $F_&#123;NL&#125;$ is the nonlinear element, $F_&#123;D&#125;$ is the delay element,
-$lpha$ is the feedback_gain, $eta$ is the input_gain,
-$	au$ is the delay in samples.
-The user should match the delay in samples with the actual
-light propagation time in $F_&#123;D&#125;$.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | An instance describing the optical system's simulation parameters. |
-| `nonlinear_element` | `Element | LinearOpticalSetup` | The nonlinear element the light passes through. |
-| `delay_element` | `Element | LinearOpticalSetup` | The delay line element. |
-| `feedback_gain` | `OptimizableFloat` | The feedback (delay line) gain ($lpha$). |
-| `input_gain` | `OptimizableFloat` | The input gain $eta$ |
-| `delay` | `int` | The delay time, measured in samples, that the light spends in the delay line. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`append_feedback_queue`**
-
-```python
-append_feedback_queue(self, field: Wavefront)
-```
-
-Append a new wavefront to the feedback queue.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `field` | `Wavefront` | The new wavefront to be added to the end of the queue. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`pop_feedback_queue`**
-
-```python
-pop_feedback_queue(self) -> None | Wavefront
-```
-
-Retrieve and remove the first element from the feedback queue
-if available.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `field` | `Wavefront` | The first wavefront in the queue, or None if the queue is empty or not full yet. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`drop_feedback_queue`**
-
-```python
-drop_feedback_queue(self) -> None
-```
-
-Clear all elements from the feedback queue.
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
-```
-
-</div>
-
-
-### SpatialLightModulator
-
-<small>Наследует: `Element`</small>
-
-A class that described the field after propagating through the
-Spatial Light Modulator with a given phase mask
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `Element` | `_type_` | _description_ |
-
-</details>
-
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">get_aperture</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">resized_mask</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, mask: torch.Tensor, height: OptimizableFloat, width: OptimizableFloat, location: Tuple = (0.0, 0.0), number_of_levels: int = 256, step_function: Callable[[torch.Tensor], torch.Tensor] = relu, mode: Literal['nearest', 'bilinear', 'bicubic', 'area', 'nearest-exact'] = 'nearest')
-```
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`reverse`**
-
-```python
-reverse(self, transmission_wavefront: Wavefront) -> Wavefront
 ```
 
 </div>
