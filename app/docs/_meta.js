@@ -4,4 +4,5 @@ export default {
   tutorials: "Туториалы",
   api: "API Reference",
   course: "Материалы курса",
+  contributing: "Контрибьютинг",
 };
