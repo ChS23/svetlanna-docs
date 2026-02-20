@@ -8,6 +8,152 @@ from svetlanna.networks import ...
 
 ## Классы
 
+### LinearAutoencoder
+
+<small>Наследует: `nn.Module`</small>
+
+A simple autoencoder network consisting of consistent encoder and decoder
+for a simultaneous training.
+    .encode() - forward propagation through encoder elements
+    .decode() - forward propagation through decoder elements
+
+Comment: Works only for a single wavelength, input wavefront ['h', 'w']
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">device</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, sim_params: SimulationParameters, encoder_elements_list: list[Element] | Iterable[Element], decoder_elements_list: list[Element] | Iterable[Element], to_return: Literal['wf', 'amps'] = 'wf', device: str | torch.device = torch.get_default_device())
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `sim_params` | `SimulationParameters` | Simulation parameters for the task. |
+| `encoder_elements_list` | `list[Element] | Iterable[Element]` | List of elements to compose an encoder. |
+| `decoder_elements_list` | `list[Element] | Iterable[Element]` | List of elements to compose a decoder. |
+| `to_return` | `Literal['wf', 'amps']` | Specifies what to return in .encode() and .decode(). (1) 'wf' – just a wavefront as it is (2) 'amps' – a wavefront without phases |
+| `device` | `torch.device` | Device. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`encode`**
+
+```python
+encode(self, wavefront_in)
+```
+
+Propagation through the encoder part – encode an image wavefront (input).
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`wavefront_encoded`** : `Wavefront`
+
+An encoded input wavefront.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`decode`**
+
+```python
+decode(self, wavefront_encoded)
+```
+
+Propagation through the decoder part – decode an encoded image.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`wavefront_decoded`** : `Wavefront`
+
+A decoded wavefront.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, wavefront_in)
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `None` | `wavefront_in: Wavefront('bs', 'H', 'W')` |  |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`wavefront_encoded, wavefront_decoded`** : `torch.Wavefront`
+
+Encoded and decoded wavefronts.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to`**
+
+```python
+to(self, device: str | torch.device | int) -> 'LinearAutoencoder'
+```
+
+</div>
+
+
 ### ConvLayer4F
 
 <small>Наследует: `nn.Module`</small>
@@ -301,152 +447,6 @@ to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 
 ```python
 to(self, device: str | torch.device | int) -> 'DiffractiveRNN'
-```
-
-</div>
-
-
-### LinearAutoencoder
-
-<small>Наследует: `nn.Module`</small>
-
-A simple autoencoder network consisting of consistent encoder and decoder
-for a simultaneous training.
-    .encode() - forward propagation through encoder elements
-    .decode() - forward propagation through decoder elements
-
-Comment: Works only for a single wavelength, input wavefront ['h', 'w']
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">device</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, sim_params: SimulationParameters, encoder_elements_list: list[Element] | Iterable[Element], decoder_elements_list: list[Element] | Iterable[Element], to_return: Literal['wf', 'amps'] = 'wf', device: str | torch.device = torch.get_default_device())
-```
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `sim_params` | `SimulationParameters` | Simulation parameters for the task. |
-| `encoder_elements_list` | `list[Element] | Iterable[Element]` | List of elements to compose an encoder. |
-| `decoder_elements_list` | `list[Element] | Iterable[Element]` | List of elements to compose a decoder. |
-| `to_return` | `Literal['wf', 'amps']` | Specifies what to return in .encode() and .decode(). (1) 'wf' – just a wavefront as it is (2) 'amps' – a wavefront without phases |
-| `device` | `torch.device` | Device. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`encode`**
-
-```python
-encode(self, wavefront_in)
-```
-
-Propagation through the encoder part – encode an image wavefront (input).
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`wavefront_encoded`** : `Wavefront`
-
-An encoded input wavefront.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`decode`**
-
-```python
-decode(self, wavefront_encoded)
-```
-
-Propagation through the decoder part – decode an encoded image.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`wavefront_decoded`** : `Wavefront`
-
-A decoded wavefront.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, wavefront_in)
-```
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `None` | `wavefront_in: Wavefront('bs', 'H', 'W')` |  |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`wavefront_encoded, wavefront_decoded`** : `torch.Wavefront`
-
-Encoded and decoded wavefronts.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
-```
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to`**
-
-```python
-to(self, device: str | torch.device | int) -> 'LinearAutoencoder'
 ```
 
 </div>
