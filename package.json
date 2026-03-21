@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "notebooks": "node lib/convert-notebooks.js",
+    "predev": "node lib/convert-notebooks.js",
     "dev": "next dev",
+    "prebuild": "node lib/convert-notebooks.js",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
     "start": "next start",
@@ -12,7 +15,7 @@
   "dependencies": {
     "@theguild/remark-mermaid": "^0.3.0",
     "katex": "^0.16.27",
-    "next": "16.0.8",
+    "next": "16.2.1",
     "next-themes": "^0.4.6",
     "nextra": "^4.6.1",
     "nextra-theme-docs": "^4.6.1",
@@ -25,7 +28,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.0.8",
+    "eslint-config-next": "16.2.1",
     "pagefind": "^1.4.0",
     "tailwindcss": "^4",
     "typescript": "^5"
