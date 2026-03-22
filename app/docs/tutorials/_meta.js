@@ -3,4 +3,5 @@ export default {
   "4f-system": "4f-система",
   "phase-retrieval": "Восстановление фазы",
   "diffractive-nn": "Дифракционная нейросеть",
+  "example.notebook": "Пример ноутбука",
 };
