@@ -1,19 +1,12 @@
-# Метод углового спектра
+# Angular Spectrum Method
 
-import { Callout } from 'nextra/components'
+## The physical meaning of the Angular Spectrum Method
 
-## Преобразование Фурье
+In previous lecture was shown that the solution of the Helmholtz equation can be represented as a Raleygh-Sommerfeld integral, which is a convolution of the field distribution at $z=0$ with the modified spherical wave. Using the convolution theorem, we can express the solution in terms of the Fourier transform of the field distribution at $z=0$:
+$$
+u(\boldsymbol{r}) = u(\boldsymbol{r_0}) * \dfrac{e^{ikr}}{2\pi r}\dfrac{z}{r}\left(\dfrac{1}{r} - ik\right) =\mathcal{F}^{-1}\left\{\hat{u}(\boldsymbol{k_{\perp}};0) e^{iz\sqrt{k^2 - |\boldsymbol{k_{\perp}}|^2}}\right\}(\boldsymbol{r}) = \mathcal{F}^{-1}\left\{\mathcal{F}\{u(\boldsymbol{r_0})\} e^{iz\sqrt{k^2 - |\boldsymbol{k_{\perp}}|^2}}\right\}(\boldsymbol{r})
+$$
 
-TODO
+Multiplier $e^{iz\sqrt{k^2 - |\boldsymbol{k_{\perp}}|^2}}$ is called the transfer function of free space, and it describes how each spatial frequency component of the field distribution at $z=0$ propagates to the plane at distance $z$. The term $\sqrt{k^2 - |\boldsymbol{k_{\perp}}|^2}$ represents the longitudinal component of the wavevector $k_z$, which determines the phase accumulation of each spatial frequency component as it propagates through free space.
 
-## Разложение скалярного поля по плоским волнам
-
-TODO
-
-## Функция отклика однородного изотропного пространства
-
-TODO
-
-## Решение уравнения Гельмгольца через разложение по плоским волнам
-
-TODO
+The component corresponding to the spatial frequency $\boldsymbol{k_{\perp}}=(k_x,k_y)$ can be interpreted as a plane wave with amplitude $\hat{u}(\boldsymbol{k_{\perp}};0)$ and wavevector components $(k_x, k_y, k_z)$ which propagates at an angles $\cos \theta_x= \dfrac{\lambda k_x}{2\pi}$, $\cos \theta_y= \dfrac{\lambda k_y}{2\pi}$, $\cos \theta_z= \dfrac{\lambda k_z}{2\pi}$ with respect to the $x$, $y$ and $z$ axes.

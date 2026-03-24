@@ -1,27 +1,178 @@
-# Фурье-оптика
+# The solution of the Helmholtz equation
+As we have seen in the previous lecture, the Helmholtz equation describes the propagation of the electric field in a anisotropic medium. Partially this equation can describe the propagation of the field in free space between two planes of the optical system. The solution of the Helmholtz equation in free space can be found using the plane wave decomposition, which leads to the Rayleigh-Sommerfeld diffraction integral for scalar fields. This integral allows us to calculate the field at any point in space given the field distribution on a plane, which is essential for understanding how light propagates through optical systems and how it diffracts around obstacles.
+## Green's function
+The Green's function allows us to solve the differential equation with a source term:
+$$
+Lu(\boldsymbol{r}) = f(\boldsymbol{r})
+$$
+where $L$ is a linear differential operator, $u(\boldsymbol{r})$ is the unknown function we want to find, and $f(\boldsymbol{r})$ is a known source term. The Green's function, denoted as $G(\boldsymbol{r}, \boldsymbol{r}')$, is defined as the solution to the equation
+$$
+LG(\boldsymbol{r}, \boldsymbol{r}') = -\delta(\boldsymbol{r} - \boldsymbol{r}')
+$$
+where $\delta(\boldsymbol{r} - \boldsymbol{r}')$ is the Dirac delta function, which represents a point source located at $\boldsymbol{r}'$. The Green's function can be used to express the solution to the original equation as an integral:
+$$
+u(\boldsymbol{r}) = \int_{V} G(\boldsymbol{r}, \boldsymbol{r}') f(\boldsymbol{r}') d\boldsymbol{r}'
+$$
+Physically, the Green's function represents the response of the system to a point source, and the integral sums up the contributions from all sources in the volume $V$ to find the total solution at point $\boldsymbol{r}$.
+## Weyl representation of spherical waves
+The Weyl representation of spherical waves is a mathematical technique used to express spherical wave solutions of the Helmholtz equation in terms of plane waves. This representation is particularly useful for explaining the propagation of light in free space using the Raleygh-Sommerfeld diffraction integral, which will be discussed further.
 
-import { Callout } from 'nextra/components'
+The spherical wave is given by the expression:
+$$
+u(\boldsymbol{r}) = \dfrac{e^{ikr}}{4\pi r}
+$$
+where $k$ is the wavenumber and $r=\sqrt{x^2 + y^2 + z^2}$ is the distance from the source. The spherical wave is the solution of the Helmholtz equation in free space with a point source, described by the Dirac delta function. It's possible to decompose the spherical wave into the superposition of plane waves:
+$$
+u(\boldsymbol{r}) = \dfrac{1}{(2\pi)^3} \int_{\mathbb{R}^3} \hat{u}(\boldsymbol{k}) e^{i\boldsymbol{k}\cdot\boldsymbol{r}} d\boldsymbol{k}
+$$
+where
+$$
+\hat{u}(\boldsymbol{k})=\int_{\mathbb{R}^3} u(\boldsymbol{r}) e^{-i\boldsymbol{k}\cdot\boldsymbol{r}} d\boldsymbol{r}
+$$
+is the Fourier transform of the spherical wave.
 
-## Уравнение Гельмгольца
+The wave equation for the point source can be written as
+$$
+\Delta u(\boldsymbol{r}) + k^2 u(\boldsymbol{r}) = -\delta(\boldsymbol{r})
+$$
+Substituting the plane wave decomposition into this equation, we can derive the expression for the 3D-Fourier transform of the spherical wave. Implementing the Laplace operator in the Fourier domain, we get
+$$
+\Delta u(\boldsymbol{r}) =\nabla^2 u(\boldsymbol{r})= \left(\partial^2_{xx} + \partial^2_{yy} + \partial^2_{zz} \right) u(\boldsymbol{r})= \dfrac{1}{(2\pi)^3} \int_{\mathbb{R}^3} -|\boldsymbol{k}|^2 \hat{u}(\boldsymbol{k}) e^{i\boldsymbol{k}\cdot\boldsymbol{r}} d\boldsymbol{k}
+$$
+where $|\boldsymbol{k}|^2 = k_x^2 + k_y^2 + k_z^2$ is the square of the magnitude of the wavevector.
 
-TODO
+Substituting this expression into the wave equation, we obtain
+$$
+\dfrac{1}{(2\pi)^3} \int_{\mathbb{R}^3} (k^2 - |\boldsymbol{k}|^2) \hat{u}(\boldsymbol{k}) e^{i\boldsymbol{k}\cdot\boldsymbol{r}} d\boldsymbol{k} = -\delta(\boldsymbol{r})
+$$
 
-## Уравнения Максвелла
+Further, using the representation of the Dirac delta function as an integral of plane waves, we can express the right-hand side as
+$$
+\delta(\boldsymbol{r}) = \dfrac{1}{(2\pi)^3} \int_{\mathbb{R}^3} e^{i\boldsymbol{k}\cdot\boldsymbol{r}} d\boldsymbol{k}
+$$
+and substitute it into the equation to get
+$$
+\dfrac{1}{(2\pi)^3} \int_{\mathbb{R}^3} (k^2 - |\boldsymbol{k}|^2) \hat{u}(\boldsymbol{k}) e^{i\boldsymbol{k}\cdot\boldsymbol{r}} d\boldsymbol{k} = -\dfrac{1}{(2\pi)^3} \int_{\mathbb{R}^3} e^{i\boldsymbol{k}\cdot\boldsymbol{r}} d\boldsymbol{k}
+$$
 
-TODO
+Equating the integrands on both sides of the equation, we find the expression for the Fourier transform of the spherical wave:
+$$
+\hat{u}(\boldsymbol{k}) = \dfrac{1}{|\boldsymbol{k}|^2 - k^2} = \dfrac{1}{k_x^2 + k_y^2 + k_z^2 - k^2}
+$$
 
-## Вывод скалярного и векторного уравнений Гельмгольца
+In order to obtain the 2D Fourier transform of the spherical wave, we can integrate the 3D Fourier transform over the $k_z$ component:
+$$
+\hat{U}(k_x, k_y;z) = \int_{-\infty}^{\infty} \hat{u}(\boldsymbol{k}) e^{ik_zz} dk_z = \int_{-\infty}^{\infty} \dfrac{e^{ik_zz}}{k_x^2 + k_y^2 + k_z^2 - k^2} dk_z
+$$
+Assuming that $z>0$ for waves propagating in the positive $z$ direction and denoting $\alpha = \sqrt{k^2 - k_x^2 - k_y^2}$, we can rewrite the integral as:
+$$
+\hat{U}(k_x, k_y;z) = \int_{-\infty}^{\infty} \dfrac{e^{ik_zz}}{k_z^2 - \alpha^2} dk_z = \int_{-\infty}^{\infty} \dfrac{e^{ik_zz}}{(k_z - \alpha)(k_z + \alpha)} dk_z
+$$
+We can observe that the integrand has two simple poles at $k_z = \pm \alpha$. To evaluate the integral, we use the regularization technique by introducing a small imaginary part to the poles. The sign of the imaginary part is determined by the condition that the wave should decay as $z \to \infty$(Rayleigh-Sommerfeld condition). Therefore, we can write $\alpha$ as $\alpha + i\varepsilon$ with $\varepsilon > 0$. Substituting this into the integral, we get the poles
+$$
+k_z = \pm (\alpha + i\varepsilon),~\varepsilon>0
+$$
+As $z>0$ and $\varepsilon>0$, the pole at $k_z = \alpha + i\varepsilon$ is located in the upper half of the complex plane, while the pole at $k_z = -\alpha - i\varepsilon$ is located in the lower half of the complex plane. To evaluate the integral, we can close the contour in the upper half-plane and apply the Cauchy residue theorem. Thus, the integral can be evaluated as
+$$
+\hat{U}(k_x, k_y;z) = 2\pi i \cdot \text{Res}\left(\dfrac{e^{ik_zz}}{(\alpha - k_z)(\alpha + k_z)}, k_z = \alpha\right) = 2\pi i \cdot \dfrac{e^{i\alpha z}}{2\alpha} = \dfrac{\pi i}{\alpha} e^{i\alpha z}
+$$
+Substituting back $\alpha = \sqrt{k^2 - k_x^2 - k_y^2}$, we obtain the Weyl representation of the spherical wave:
+$$
+u(\boldsymbol{r}) = \dfrac{1}{(2\pi)^3} \int_{\mathbb{R}^2} \hat{U}(k_x, k_y;z) e^{i(k_xx + k_yy)} dk_x dk_y = \dfrac{i}{8\pi^2} \int_{\mathbb{R}^2} \dfrac{e^{i(k_xx + k_yy + \sqrt{k^2 - k_x^2 - k_y^2}z)}}{\sqrt{k^2 - k_x^2 - k_y^2}} dk_x dk_y
+$$
+or
+$$
+u(\boldsymbol{r}) = \dfrac{i}{8\pi^2} \int_{\mathbb{R}^2} \dfrac{e^{i(\boldsymbol{k_{\perp}}\cdot\boldsymbol{r_{\perp}} + \sqrt{k^2 - \boldsymbol{k_{\perp}}^2}z)}}{\sqrt{k^2 - \boldsymbol{k_{\perp}}^2}} d\boldsymbol{k_{\perp}}
+$$
+where $\boldsymbol{k_{\perp}} = (k_x, k_y)$ and $\boldsymbol{r_{\perp}} = (x, y)$ are the transverse components of the wavevector and position vector, respectively.
+## Raleygh-Sommerfeld diffraction integral
+Raleygh-Sommerfeld diffraction integral is a mathematical expression that describes the propagation of light in free space, particularly how it diffracts around obstacles. It is the strict solution of the Helmholtz equation in free space and can be derived using the plane wave decomposition. Thus, the general scalar equation describing the propagation of the field in free space can be written as
+$$
+\Delta u(\boldsymbol{r}) + k^2 u(\boldsymbol{r}) = 0
+$$
+where $\boldsymbol{r} = (x, y, z>0)$. The 2D-plane wave decomposition of the field is given by
+$$
+u(\boldsymbol{r}) = \dfrac{1}{(2\pi)^2} \int_{\mathbb{R}^2} \hat{u}(\boldsymbol{k_{\perp}};z) e^{i\boldsymbol{k_{\perp}}\cdot\boldsymbol{r_{\perp}}} d\boldsymbol{k_{\perp}}
+$$
+where $\boldsymbol{k_{\perp}} = (k_x, k_y)$ and $\boldsymbol{r_{\perp}} = (x, y)$ are the transverse components of the wavevector and position vector, respectively.
 
-TODO
 
-## Решение Рэлея-Соммерфельда
+Substituting this equation into the Helmholtz equation, we get
+$$
+\Delta u(\boldsymbol{r}) = \left(-|k_\perp|^2 + \partial_{zz}^2\right)u(\boldsymbol{r})=-k^2 u(\boldsymbol{r}) \Rightarrow \partial_{zz}^2 \hat{u}(k_x, k_y;z) + (k^2 - |k_\perp|^2) \hat{u}(k_x, k_y;z) = 0
+$$
 
-TODO
+Denoting $\alpha = \sqrt{k^2 - |k_\perp|^2}$, we can write the solution of this equation in spatial-frequency domain as
+$$
+\hat{u}(k_x, k_y;z) = A(\boldsymbol{k_{\perp}}) e^{i\alpha z} + B(\boldsymbol{k_{\perp}}) e^{-i\alpha z}
+$$
+The choice of functions $A(\boldsymbol{k_{\perp}})$ and $B(\boldsymbol{k_{\perp}})$ is determined by the boundary conditions of the problem.
 
-## Интеграл Рэлея-Соммерфельда для скалярного поля
+Firstly, the Fourier-transform of the field at $z=0$ gives us the relation
+$$
+\hat{u}(\boldsymbol{k_{\perp}};0) = A(\boldsymbol{k_{\perp}}) + B(\boldsymbol{k_{\perp}})
+$$
 
-TODO
+Secondly, the Rayleigh-Sommerfeld condition states that the wave should decay as $z \to \infty$, which implies that $B(\boldsymbol{k_{\perp}}) = 0$. Therefore, we can express the solution of the Helmholtz equation in spatial-frequency domain as
+$$
+\hat{u}(\boldsymbol{k_{\perp}};z) = \hat{u}(\boldsymbol{k_{\perp}};0) e^{i\alpha z}
+$$
 
-## Вывод продольной компоненты поля из интеграла Рэлея-Соммерфельда
+The important note is that the equation under the square root in the expression for $\alpha$ can be negative, which corresponds to evanescent waves that decay exponentially with distance. It is preferable to include these evanescent waves in the solution to ensure the completeness of the solution, especially when dealing with near-field effects or when the field distribution at $z=0$ contains high spatial frequencies.
 
-TODO
+Further, it's necessary to apply the inverse Fourier transform to obtain the solution in spatial domain:
+$$
+u(\boldsymbol{r}) = \dfrac{1}{(2\pi)^2} \int_{\mathbb{R}^2} \hat{u}(\boldsymbol{k_{\perp}};0) e^{i(\boldsymbol{k_{\perp}}\cdot\boldsymbol{r_{\perp}} + z\alpha)} d\boldsymbol{k_{\perp}}
+$$
+Notice that
+$$
+\partial_z\left(\dfrac{i}{8\pi^2} \int_{\mathbb{R}^2} \dfrac{e^{i(\boldsymbol{k_{\perp}}\cdot\boldsymbol{r_{\perp}} + z\alpha)}}{\alpha} d\boldsymbol{k_{\perp}}\right) = -\dfrac{1}{2\cdot(2\pi)^2} \int_{\mathbb{R}^2} e^{i(\boldsymbol{k_{\perp}}\cdot\boldsymbol{r_{\perp}} + z\alpha)} d\boldsymbol{k_{\perp}} = -\dfrac{1}{2} \mathcal{F}^{-1}\left\{e^{iz\alpha}\right\}(\boldsymbol{r_{\perp}})
+$$
+
+Thus,
+$$
+\mathcal{F}^{-1}\left\{e^{iz\alpha}\right\} = -2 \partial_z\left(\dfrac{i}{8\pi^2} \int_{\mathbb{R}^2} \dfrac{e^{i(\boldsymbol{k_{\perp}}\cdot\boldsymbol{r_{\perp}} + z\alpha)}}{\alpha} d\boldsymbol{k_{\perp}}\right) = -2 \partial_z\left( \dfrac{e^{ikr}}{4\pi r}\right) = \dfrac{e^{ikr}}{2\pi r}\dfrac{z}{r}\left(\dfrac{1}{r} - ik\right)
+$$
+
+Finally, the solution of the Helmholtz equation in the spatial-frequency domain can be expressed as the Raleygh-Sommerfeld diffraction integral by using the convolution theorem:
+$$
+u(\boldsymbol{r}) = u(\boldsymbol{r_0}) * \left(\dfrac{e^{ikr}}{2\pi r}\dfrac{z}{r}\left(\dfrac{1}{r} - ik\right)\right) = \int_{\mathbb{R}^2} u(x',y',z=0) \dfrac{e^{ikR}}{2\pi R}\dfrac{z}{R}\left(\dfrac{1}{R} - ik\right) dx' dy'
+$$
+where $u(\boldsymbol{r_0})$ is the field distribution at $z=0$ and the convolution is performed in the transverse coordinates, $R=\sqrt{(x-x')^2 + (y-y')^2 + z^2}$. This integral describes how the field propagates from the plane at $z=0$ to any point in space $z>0$, taking into account both the amplitude and phase changes due to diffraction. The physical interpretation of this integral is that the field at any point in space can be considered as a superposition of contributions from all points on the plane at $z=0$, where each contribution is weighted by the modified spherical wave
+$$
+\dfrac{e^{ikr}}{2\pi r}\dfrac{z}{r}\left(\dfrac{1}{r} - ik\right)
+$$
+
+## Longitudinal component of the field
+
+In the previous sections, we have focused on the transverse components of the field, which are typically dominant in many optical systems. However, the longitudinal component of the field can also play a significant role, especially in tightly focused beams or near-field optics. The longitudinal component arises along the optical axis of the system(usually denotes $z$) due to the vector nature of the electromagnetic field and can be derived from the transverse components using divergence-free condition of the electric field in free space:
+$$
+\nabla \cdot \boldsymbol{E} = \partial_x E_x + \partial_y E_y + \partial_z E_z = 0 \Rightarrow \partial_z E_z = -(\partial_x E_x + \partial_y E_y)
+$$
+
+The Raleygh-Sommerfeld diffraction integral can be expressed in terms of a partial derivative with respect to $z$ as follows:
+$$
+E_{\alpha}(\boldsymbol{r}) = -\partial_z \left(\int_{\mathbb{R}^2} E_{\alpha}(\boldsymbol{r'}) \dfrac{e^{ikR}}{2\pi R} \right)d\boldsymbol{r'}
+$$
+where $E_{\alpha}(\boldsymbol{r'})=E_{\alpha}(x',y',z=0)$ is the field distribution at $z=0$ and $R=\sqrt{(x-x')^2 + (y-y')^2 + z^2}$ is the distance from the source point $\boldsymbol{r'}$ to the observation point $\boldsymbol{r}$, $\alpha=x,y$.
+
+Thus,
+$$
+\partial_{z} E_z = -\left(\partial_x E_x + \partial_y E_y\right) = \partial_z \int_{\mathbb{R}^2} \left(\partial_x E_x(\boldsymbol{r'}) + \partial_y E_y(\boldsymbol{r'})\right) \dfrac{e^{ikR}}{2\pi R} d\boldsymbol{r'}
+$$
+
+Taking into account that
+$$
+\partial_{\alpha} \left(\dfrac{e^{ikR}}{2\pi R}\right) = \dfrac{e^{ikR}}{2\pi R}\left(-\dfrac{1}{R} + ik\right)\dfrac{\alpha - \alpha'}{R},~\alpha=x,y
+$$
+
+we can express the longitudinal component of the field as
+$$
+\begin{aligned}
+E_z(\boldsymbol{r}) &= \int_{\mathbb{R}^2} \left(E_x(\boldsymbol{r'})\dfrac{x-x'}{R} + E_y(\boldsymbol{r'})\dfrac{y-y'}{R}\right) \dfrac{e^{ikR}}{2\pi R}\left(-\dfrac{1}{R} + ik\right) d\boldsymbol{r'} \\
+&= E_x(\boldsymbol{r_0}) * \left(\dfrac{e^{ikr}}{2\pi r}\dfrac{x}{r}\left(-\dfrac{1}{r} + ik\right)\right) + E_y(\boldsymbol{r_0}) * \left(\dfrac{e^{ikr}}{2\pi r}\dfrac{y}{r}\left(-\dfrac{1}{r} + ik\right)\right)
+\end{aligned}
+$$
+
+$E_z$-component of the field usually ignored in many problems due to its small magnitude compared to the transverse components, i.e $\frac{x-x'}{R}$ and $\frac{y-y'}{R}$ are much smaller than $\frac{z}{R}$. This regime is called the par-axial approximation.
+
