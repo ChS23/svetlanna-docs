@@ -1,0 +1,99 @@
+# Maxwell's equations
+
+Modern optics and photonics are based on the fundamental laws of electrodynamics, formulated as Maxwell's equations. They describe the behavior of electric and magnetic fields and provide a unified explanation for a wide range of phenomena—from the propagation of light in free space to the interaction of electromagnetic waves with complex nanostructures and photonic devices.
+
+In the design and analysis of modern optical systems, analytical solutions to Maxwell's equations are generally unavailable. The geometry of real devices, the inhomogeneity of materials, the presence of interfaces between media, and the dispersion properties of substances make the problems too complex for precise analytical solutions. Therefore, numerical methods play an important role, allowing for approximate solutions to Maxwell's equations and obtaining quantitative predictions for field distributions, spectral characteristics, and other physical quantities.
+
+## Review of Maxwell Equations
+The system of Maxwell's equations in differential form includes Gauss's law for the electric field induction vector and magnetic field strength, Faraday's law of electromagnetic induction, and the magnetic field circulation theorem, respectively. In the International System of Units (SI), equations are presented in the following form:
+$$
+\begin{align*}
+    \nabla\boldsymbol{B} &= 0 \\
+    \nabla\boldsymbol{D} &= \rho_{e} \\
+    \nabla\times\boldsymbol{E} &= -\dfrac{\partial}{\partial t}\boldsymbol{B} \\
+    \nabla\times\boldsymbol{H} &= \dfrac{\partial}{\partial t}\boldsymbol{D}+\boldsymbol{J}_e \\
+\end{align*}
+$$
+where $\boldsymbol{E}$ and $\boldsymbol{H}$ are the electric and magnetic field strengths, $\boldsymbol{D}$ and $\boldsymbol{B}$ are the electric and magnetic field inductions, $\rho_e$ is the volume density of free electric charge, and $\boldsymbol{J}_e$ is the volume density of free electric current. In general case fields and sources depend on spatial coordinates and time, i.e., $\boldsymbol{E}=\boldsymbol{E}(\boldsymbol{r},t)$, $\boldsymbol{H}=\boldsymbol{H}(\boldsymbol{r},t)$, $\boldsymbol{D}=\boldsymbol{D}(\boldsymbol{r},t)$, $\boldsymbol{B}=\boldsymbol{B}(\boldsymbol{r},t)$, $\rho_e=\rho_e(\boldsymbol{r},t)$, and $\boldsymbol{J}_e=\boldsymbol{J}_e(\boldsymbol{r},t)$.
+
+
+Equations in differential form are usually supplemented by boundary conditions at the interface of different media (conjugation conditions), denoted by the subscripts 1 and 2, respectively:
+$$
+\begin{align*}
+    \hat{\boldsymbol{n}}\times\boldsymbol{H}_{1} - \hat{\boldsymbol{n}}\times\boldsymbol{H}_{2} &= \boldsymbol{J}_{e,s} \\
+    \hat{\boldsymbol{n}}\times\boldsymbol{E}_{1} - \hat{\boldsymbol{n}}\times\boldsymbol{E}_{2} &= \boldsymbol{0} \\
+    \hat{\boldsymbol{n}}\cdot\boldsymbol{B}_{1} - \hat{\boldsymbol{n}}\cdot\boldsymbol{B}_{2} &= 0 \\
+    \hat{\boldsymbol{n}}\cdot\boldsymbol{D}_{1}-\hat{\boldsymbol{n}}\cdot\boldsymbol{D}_{2} &= \rho_{e,s} \\
+\end{align*}
+$$
+where $\hat{\boldsymbol{n}}$ is the unit normal vector to the interface, $\boldsymbol{J}_{e,s}$ is the surface electric current density, and $\rho_{e,s}$ is the surface electric charge density.
+
+## Harmonic waves
+This course will cover so-called **harmonic waves**, for which the time dependence is determined by the factor $\exp(-i\omega t)$ that is, any field $\boldsymbol{F}(\boldsymbol{r},t)$ can be represented in the form
+$$
+\boldsymbol{F}(\boldsymbol{r},t) = \boldsymbol{F}(\boldsymbol{r})\exp(-i\omega t)
+$$
+Substituting this expression into Maxwell's equations, we can rewrite them in the form
+$$
+\begin{align*}
+    \nabla\boldsymbol{B} &= 0 \\
+    \nabla\boldsymbol{D} &= \rho_{e} \\
+    \nabla\times\boldsymbol{E} &= i\omega\boldsymbol{B} \\
+    \nabla\times\boldsymbol{H} &= -i\omega\boldsymbol{D}+\boldsymbol{J}_e \\
+\end{align*}
+$$
+
+## Electromagnetic medium
+Maxwell's equations themselves are general laws and contain the fields $\boldsymbol{E}$, $\boldsymbol{H}$, $\boldsymbol{D}$, and $\boldsymbol{B}$ as well as charge and current densities. However, without additional relations between these quantities, the system is not closed, because there are more unknowns than equations.
+
+Maxwell's constitutive equations (or constitutive relations) are relationships between electromagnetic fields and the properties of the medium through which these fields propagate. They complement Maxwell's equations and allow one to account for how a specific material responds to electric and magnetic fields. For harmonic waves, the constitutive relations can be written in the form
+$$
+\begin{align*}
+    \boldsymbol{D} &= \hat{\varepsilon}\boldsymbol{E}+\hat{\xi}\boldsymbol{H} \\
+    \boldsymbol{B} &= \hat{\mu}\boldsymbol{H}+\hat{\zeta}\boldsymbol{E}
+\end{align*}
+$$
+where $\hat{\varepsilon}$ is the permittivity tensor, $\hat{\mu}$ is the permeability tensor, $\hat{\xi}$ and $\hat{\zeta}$ are the magnetoelectric coupling tensors. The specific form of these tensors depends on the properties of the medium:
+- For **isotropic** media, the tensors reduce to scalar quantities: $\hat{\varepsilon} = \varepsilon\hat{I}$, $\hat{\mu} = \mu\hat{I}$, $\hat{\xi} = \hat{\zeta} = 0$, where $\hat{I}$ is the identity tensor.
+- For **anisotropic** media, the tensors have a more complex structure and can have non-diagonal components, reflecting the directional dependence of the material's response to electromagnetic fields.
+- For **chiral** media, the magnetoelectric coupling tensors $\hat{\xi}$ and $\hat{\zeta}$ are non-zero, indicating that the electric field can induce a magnetic response and vice versa.
+
+We will consider only isotropic media in this course, so the constitutive relations will be simplified to
+$$
+\begin{align*}
+    \boldsymbol{D} &= \varepsilon\boldsymbol{E} \\
+    \boldsymbol{B} &= \mu\boldsymbol{H}
+\end{align*}
+$$
+where $\varepsilon$ is the permittivity and $\mu$ is the permeability of the medium. In free space, these parameters are denoted as $\varepsilon_0$ and $\mu_0$, respectively, and their values are approximately $\varepsilon_0 \approx 8.854 \times 10^{-12} \text{ F/m}$ and $\mu_0 = 4\pi \times 10^{-7} \text{ H/m}$.
+
+## Wave equation
+
+Substituting the relation for magnetic induction $\boldsymbol{B} = \hat{\mu}\boldsymbol{H}$ into the third Maxwell's equation(Faraday's law), for harmonic waves, we obtain
+$$
+\nabla\times\boldsymbol{E} = i\omega\hat{\mu}\boldsymbol{H} \implies \boldsymbol{H} = -\dfrac{i}{\omega}\hat{\mu}^{-1}\nabla\times\boldsymbol{E}
+$$
+Adding this expression for $\boldsymbol{H}$ into the fourth Maxwell's equation (Ampère's law), we get
+$$
+\nabla\times\left(-\dfrac{i}{\omega}\hat{\mu}^{-1}\nabla\times\boldsymbol{E}\right) = -i\omega\hat{\varepsilon}\boldsymbol{E}+\boldsymbol{J}_e \implies \nabla\times\hat{\mu}^{-1}\nabla\times\boldsymbol{E} - \omega^2\hat{\varepsilon}\boldsymbol{E} = i\omega\boldsymbol{J}_e
+$$
+The equation obtained is called the **vector wave equation** for the electric field or **Helmholtz vector equation** for anisotropic medium.
+
+In the case of isotropic medium, where $\hat{\mu} = \mu\hat{I}$ and $\hat{\varepsilon} = \varepsilon\hat{I}$, the wave equation for the electric field can be simplified to
+$$
+\nabla\times\nabla\times\boldsymbol{E} - k^2\boldsymbol{E} = i\omega\mu\boldsymbol{J}_e
+$$
+where $k = \omega\sqrt{\varepsilon\mu}$ is the **wavenumber** of the medium($\varepsilon$ and $\mu$ are scalars). Using the vector identity $\nabla\times\nabla\times\boldsymbol{E} = \nabla(\nabla\cdot\boldsymbol{E}) - \nabla^2\boldsymbol{E}$ and the second Maxwell's equation $\nabla\cdot\boldsymbol{D} = \nabla\cdot(\varepsilon\boldsymbol{E}) = \rho_e$, we can rewrite the wave equation in the form
+$$
+\nabla^2\boldsymbol{E} + k^2\boldsymbol{E} = -\dfrac{1}{\varepsilon}\nabla\rho_e + i\omega\mu\boldsymbol{J}_e
+$$
+Finally, in the absence of free charges and currents ($\rho_e = 0$ and $\boldsymbol{J}_e = \boldsymbol{0}$), the wave equation for the electric field takes the form
+$$
+\nabla^2\boldsymbol{E} + k^2\boldsymbol{E} = \boldsymbol{0}
+$$
+The obtained equation describes the propagation of electromagnetic waves in an isotropic medium without free charges and currents.
+
+In the case of scalar field, when the electric field has only one non-zero component $\boldsymbol{\psi}(\boldsymbol{r})$, the wave equation reduces to the **scalar wave equation**:
+$$
+\nabla^2\psi + k^2\psi = 0
+$$
