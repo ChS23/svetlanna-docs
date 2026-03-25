@@ -143,4 +143,20 @@ Consequently, the wavefront at distance $z$ is proportional to the Fourier trans
 
 ## Diffractive layer
 
+Diffractive layer is a type of DOE that consists of a thin layer structure. The transmission function of a diffractive layer can be expressed as:
+$$
+t(\boldsymbol{r}) = e^{i\phi(\boldsymbol{r})}
+$$
+where $\phi(\boldsymbol{r})$ is the phase modulation function introduced by the diffractive layer. The phase modulation function defined by set of micro- or nano-scale structures(pixels) on the surface of the layer. Every pixel provides a specific phase shift to the transmitted light, which allows for the manipulation of the wavefront and the control of the diffraction pattern.
+Unfortunately, the design of diffractive layers can be computationally intensive, especially for large and complex structures. Furthermore, the fabrication of diffractive layers with high precision can be challenging, which may limit their practical applications. Th other problem of diffractive layers is that it isn't possible to change the transmission function of the layer after its fabrication, which means that the same layer can be used only for one specific application. With aim to solve this problem, spatial light modulators (SLMs) can be used.
+
+![Diffractive Layer Example](diffractive_layer_example.png)
+
+Example of usage of diffractive layers. Picture taken from [[1]](https://www.researchgate.net/figure/Example-setup-with-two-diffractive-layers-Delta-Phi-1-and-Delta-Phi-2-and_fig1_360987786)
+
 ## Spatial Light Modulator (SLM)
+Spatial Light Modulator (SLM) is a device that can modulate the amplitude, phase, or polarization of light in a spatially resolved manner. SLMs are commonly used in various applications, such as beam shaping, holography, and optical signal processing. The transmission function of an SLM can be expressed as:
+$$t(\boldsymbol{r}) = e^{i\phi(\boldsymbol{r})}$$
+where $\phi(\boldsymbol{r})$ is the phase modulation function introduced by the SLM. The phase modulation function can be dynamically controlled, allowing for real-time manipulation of the wavefront and the control of the diffraction pattern. SLMs can be used to implement reconfigurable diffractive layers, which can be adapted for different applications without the need for physical fabrication.
+
+However, SLMs have some limitations, such as limited resolution and refresh rate, which may affect their performance in certain applications. Furthermore, the phase shift provided by an every pixel of can accept only a finite number of discrete values, which can lead to quantization errors and affect the quality of the modulated wavefront. Thus, it's important to take into account these limitations when training phase masks for Diffractive Neural Networks that use spatial light modulators.
