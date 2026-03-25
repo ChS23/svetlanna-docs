@@ -49,7 +49,7 @@ As the error energy is a function of the weights, the average error energy is a 
 Induced local field of neuron $j$ is defined as the weighted sum of the inputs to neuron $j$ and bias
 $$
 v_j(n)=\sum_{i=0}^{m}w_{ji}y_i(n)
-$$:
+$$
 where $m$ is the number of input nodes to neuron $j$.
 
 The functional signal of neuron $j$ is defined as the output of neuron $j$:
@@ -101,11 +101,11 @@ where $e_j(n)=d_j(n)-y_j(n)$ is the error signal for neuron $j$ for the $n$-th t
 ## The case of hidden layer
 For the hidden layer, denoted by index $j$, the local gradient can be calculated by using the local gradients of the neurons in the next layer and the weights of the connections from neuron $j$ to the neurons in the next layer.
 
-<!-- Let's denote the output neuron by using index $k$, then the energy error can be calculated as follows:
+{/* Let's denote the output neuron by using index $k$, then the energy error can be calculated as follows:
 $$
 \boldsymbol{E}(n)=\frac{1}{2}\sum_{k=1}^{m_L}e_k^2(n)
 $$
-where $e_k(n)=d_k(n)-y_k(n)$ is the error signal for output neuron $k$ for the $n$-th training example, and $y_k(n)$ is the output of output neuron $k$ for the $n$-th training example. -->
+where $e_k(n)=d_k(n)-y_k(n)$ is the error signal for output neuron $k$ for the $n$-th training example, and $y_k(n)$ is the output of output neuron $k$ for the $n$-th training example. */}
 
 Firstly, local gradient of neuron $j$ can be calculated by using the chain rule as follows:
 $$
