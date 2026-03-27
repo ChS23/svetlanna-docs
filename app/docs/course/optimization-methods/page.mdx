@@ -1,4 +1,9 @@
+import { TrackBadges } from '../TrackBadges'
+import { Comments } from '../Comments'
+
 # Optimization methods
+
+<TrackBadges slug="optimization-methods" />
 
 In this lecture, we discuss the optimization methods used to correct weights in neural networks. There are several classes of optimization methods, but the most common ones use to be based on gradient descent. The most popular methods, i.e., Adam, RMSProp, and SGD with momentum, are all based on calculating the gradient of the loss function with respect to the weights and then updating the weights in the opposite direction of the gradient. However, thera are also other methods, which use the second order derivatives of the loss function, such as Newton's method and quasi-Newton methods. These methods can converge faster than gradient descent, but they are also more computationally expensive, cause they require calculating the Hessian matrix. In practice, these methods are not commonly used for training neural networks, because they can be very slow and require a lot of memory. Instead, most practitioners use gradient-based optimization methods, which are more efficient and can still achieve good results.
 
@@ -87,3 +92,5 @@ $$
 \boldsymbol{w}_{n+1} = \boldsymbol{w}_n - \alpha \boldsymbol{g}_n
 $$
 Thirdly, it's necessary to go to the next mini-batch and repeat the process until we have gone through the entire dataset. This process is called an epoch. The advantage of SGD is that it can be more efficient for training large neural networks with a lot of data, but it can also be more sensitive to the choice of hyperparameters and may require more careful tuning to achieve good performance.
+
+<Comments />

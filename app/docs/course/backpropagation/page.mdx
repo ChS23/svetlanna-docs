@@ -1,4 +1,9 @@
+import { TrackBadges } from '../TrackBadges'
+import { Comments } from '../Comments'
+
 # Back-propagation algorithm
+
+<TrackBadges slug="backpropagation" />
 
 This lecture will cover the back-propagation algorithm, which is a method for training fully connected neural networks. This class of neural networks usually consists of multiple sensor elements, which are called layers. The first layer is called the input layer, and the last layer is called the output layer. The layers in between are called hidden layers. Each layer consists of multiple neurons, which are connected to the neurons in the previous and next layers. The connections between the neurons are called weights, and they determine how much influence a neuron has on the next layer. These neural networks are called multiple layer perceptrons (MLP) or feedforward neural networks.
 
@@ -161,3 +166,5 @@ The ratio $\Delta w_{ji}$ is then used to calculate the changes in the weights a
 
 However, the back-propagation algorithm itself does not specify how to update the weights, and it can be used with different optimization algorithms to find the optimal weights that minimize the error energy.
 Several optimization algorithms will be covered in the next lecture.
+
+<Comments />
