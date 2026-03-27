@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { lectures, TRACK_LABELS, TRACK_STYLES, type Track } from "./tracks";
 
@@ -8,11 +8,17 @@ const trackKeys: Track[] = ["everyone", "physicists", "programmers"];
 
 export function TrackSwitcher() {
   const [selected, setSelected] = useState<Track | null>(null);
+  const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
-  const dark = resolvedTheme === "dark";
+
+  useEffect(() => setMounted(true), []);
+
+  const dark = mounted && resolvedTheme === "dark";
+
+  if (!mounted) return null;
 
   return (
-    <div>
+    <div style={{ marginTop: "1.5rem" }}>
       {/* Filter buttons */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1.5rem" }}>
         <button

@@ -1,13 +1,19 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { lectures, TRACK_LABELS, TRACK_STYLES } from "./tracks";
 
 export function TrackBadges({ slug }: { slug: string }) {
+  const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
-  const dark = resolvedTheme === "dark";
+
+  useEffect(() => setMounted(true), []);
+
+  const dark = mounted && resolvedTheme === "dark";
   const lecture = lectures.find((l) => l.slug === slug);
   if (!lecture) return null;
+  if (!mounted) return null;
 
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem", marginBottom: "1.5rem" }}>
