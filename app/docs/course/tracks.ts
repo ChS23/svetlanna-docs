@@ -14,10 +14,10 @@ export const TRACK_LABELS: Record<Track, string> = {
   programmers: "Для программистов",
 };
 
-export const TRACK_COLORS: Record<Track, { bg: string; text: string }> = {
-  everyone:    { bg: "bg-green-100 dark:bg-green-900/30",   text: "text-green-700 dark:text-green-300" },
-  physicists:  { bg: "bg-blue-100 dark:bg-blue-900/30",    text: "text-blue-700 dark:text-blue-300" },
-  programmers: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300" },
+export const TRACK_STYLES: Record<Track, { bg: string; text: string; darkBg: string; darkText: string }> = {
+  everyone:    { bg: "#dcfce7", text: "#15803d", darkBg: "rgba(22,101,52,0.3)",  darkText: "#86efac" },
+  physicists:  { bg: "#dbeafe", text: "#1d4ed8", darkBg: "rgba(30,64,175,0.3)",  darkText: "#93c5fd" },
+  programmers: { bg: "#f3e8ff", text: "#7e22ce", darkBg: "rgba(107,33,168,0.3)", darkText: "#d8b4fe" },
 };
 
 export const lectures: LectureInfo[] = [
