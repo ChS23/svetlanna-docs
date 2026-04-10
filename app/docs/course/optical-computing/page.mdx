@@ -1,4 +1,9 @@
+import { TrackBadges } from '../TrackBadges'
+import { Comments } from '../Comments'
+
 # Linear Diffractive Neural Network
+
+<TrackBadges slug="optical-computing" />
 
 One of the most influential papers on diffractive deep neural networks (D2NNs) is
 "All-optical machine learning using diffractive deep neural networks" [[1]](https://www.science.org/doi/10.1126/science.aat8084).
@@ -44,7 +49,7 @@ where:
 
 Therefore, the trainable parameters are the phase values $\phi^l$ of each diffractive layer.
 
-![Connection between conventional neural network and D2NN](4.jpeg)
+![Connection between conventional neural network and D2NN](./4.jpeg)
 
 # Implementation Plan
 
@@ -140,7 +145,7 @@ $$
 y = f_3(h_2).
 $$
 
-![Architecture of the D-RNN](5.jpeg)
+![Architecture of the D-RNN](./5.jpeg)
 
 # Implementation Plan
 
@@ -207,7 +212,7 @@ In this lecture, the Fourier-plane diffractive mask that defines the convolution
 The output of the 4f convolutional stage is then propagated through a trainable diffractive
 deep neural network (D2NN), which learns the final classification mapping.
 
-![Architecture of the Convolutional Diffractive Network](6.jpeg)
+![Architecture of the Convolutional Diffractive Network](./6.jpeg)
 
 # Implementation Plan
 
@@ -233,3 +238,5 @@ as in previous lectures.
 
 One important preprocessing detail is:
 - the input image of size $28 \times 28$ is zero-padded to $200 \times 200$.
+
+<Comments />

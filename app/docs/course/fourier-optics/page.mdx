@@ -1,4 +1,9 @@
+import { TrackBadges } from '../TrackBadges'
+import { Comments } from '../Comments'
+
 # The solution of the Helmholtz equation
+
+<TrackBadges slug="fourier-optics" />
 As we have seen in the previous lecture, the Helmholtz equation describes the propagation of the electric field in a anisotropic medium. Partially this equation can describe the propagation of the field in free space between two planes of the optical system. The solution of the Helmholtz equation in free space can be found using the plane wave decomposition, which leads to the Rayleigh-Sommerfeld diffraction integral for scalar fields. This integral allows us to calculate the field at any point in space given the field distribution on a plane, which is essential for understanding how light propagates through optical systems and how it diffracts around obstacles.
 ## Green's function
 The Green's function allows us to solve the differential equation with a source term:
@@ -175,4 +180,6 @@ E_z(\boldsymbol{r}) &= \int_{\mathbb{R}^2} \left(E_x(\boldsymbol{r'})\dfrac{x-x'
 $$
 
 $E_z$-component of the field usually ignored in many problems due to its small magnitude compared to the transverse components, i.e $\frac{x-x'}{R}$ and $\frac{y-y'}{R}$ are much smaller than $\frac{z}{R}$. This regime is called the par-axial approximation.
+
+<Comments />
 
