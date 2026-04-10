@@ -20,41 +20,22 @@ from svetlanna.visualization import ...
 
 Representation of an element in HTML format.
 
+### WidngetHTMLMethod
+
+<small>Наследует: `Protocol`</small>
+
 
 ## Функции
 
 ### `default_widget_html_method(index: int, name: str, element_type: str | None, subelements: list[ElementHTML]) -> str`
 
-Default `_widget_html_` method used for rendering `Specsable` elements.
+Render a `Specsable` element with the default widget template.
 
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `index` | `int` | The unique index of the element. Should be used as an id of HTML element containing the element. |
-| `name` | `str` | Human readable name of the element |
-| `element_type` | `str | None` | Human readable type of the element as a subelement, if any |
-| `subelements` | `list[ElementHTML]` | Subelements of the element. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`str`**
-
-rendered HTML
-
-
-</details>
-
+See `WidngetHTMLMethod` for parameter details.
 
 ### `generate_structure_html(subelements: list[_ElementInTree]) -> str`
 
-Generate HTML for a setup structure.
+Generate HTML for the setup structure tree.
 
 
 <details open>
@@ -80,29 +61,10 @@ Rendered HTML
 
 ### `show_structure(*specsable: Specsable)`
 
-Display a setup structure using IPython's HTML display.
-Useful for previewing specs hierarchies in notebooks.
+Display setup structure in an IPython environment.
 
-### `show_specs(*specsable: Specsable) -> SpecsWidget`
-
-Display a setup structure with interactive specs preview
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`SpecsWidget`**
-
-The widget
-
-
-</details>
-
-
-### `draw_wavefront(wavefront: torch.Tensor, simulation_parameters: SimulationParameters, types_to_plot: tuple[StepwisePlotTypes, ...] = ('I', 'phase')) -> bytes`
-
-Show field propagation in the setup via widget.
-Currently only wavefronts of shape `(W, H)` are supported.
+This helper renders only the hierarchy of elements (without parameter specs)
+and is useful for quick notebook previews.
 
 
 <details open>
@@ -110,9 +72,81 @@ Currently only wavefronts of shape `(W, H)` are supported.
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `wavefront` | `Tensor` | The Input wavefront |
-| `simulation_parameters` | `SimulationParameters` | Simulation parameters |
-| `types_to_plot` | `tuple[StepwisePlotTypes, ...], optional` | Field properties to plot, by default ('I', 'phase') |
+| `*specsable` | `Specsable` | One or more `Specsable` objects to display. |
+
+</details>
+
+
+**Examples**
+
+- *```python* — 
+- *import svetlanna as sv* — 
+- *import torch* — 
+- *from svetlanna.visualization import show_structure* — 
+- *Nx = Ny = 128* — 
+- *sim_params = sv.SimulationParameters(* — x=torch.linspace(-1, 1, Nx), y=torch.linspace(-1, 1, Ny), wavelength=0.1,
+- *)* — 
+- *setup = sv.LinearOpticalSetup(* — [ sv.elements.RectangularAperture(sim_params, width=0.5, height=0.5), sv.elements.FreeSpace(sim_params, distance=0.2, method="AS"), sv.elements.DiffractiveLayer(sim_params, mask=torch.rand(Ny, Nx), mask_norm=1), sv.elements.FreeSpace(sim_params, distance=0.2, method="AS"), ]
+- *)* — 
+- *show_structure(setup)* — 
+- *```* — 
+- *Output (in IPython environment):* — 
+- *<iframe* — 
+- *src="show_structure.html"* — 
+- *style="width:100%; height:150px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+
+### `show_specs(*specsable: Specsable) -> SpecsWidget`
+
+Display setup structure with interactive specs preview.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`SpecsWidget`**
+
+Widget with element tree and per-element specs HTML.
+
+
+</details>
+
+
+**Examples**
+
+- *```python* — 
+- *import svetlanna as sv* — 
+- *import torch* — 
+- *from svetlanna.visualization import show_specs* — 
+- *Nx = Ny = 128* — 
+- *sim_params = sv.SimulationParameters(* — x=torch.linspace(-1, 1, Nx), y=torch.linspace(-1, 1, Ny), wavelength=0.1,
+- *)* — 
+- *setup = sv.LinearOpticalSetup(* — [ sv.elements.RectangularAperture(sim_params, width=0.5, height=0.5), sv.elements.FreeSpace(sim_params, distance=0.2, method="AS"), sv.elements.DiffractiveLayer(sim_params, mask=torch.rand(Ny, Nx), mask_norm=1), sv.elements.FreeSpace(sim_params, distance=0.2, method="AS"), ]
+- *)* — 
+- *show_specs(setup)* — 
+- *```* — 
+- *Output (in IPython environment):* — 
+- *<iframe* — 
+- *src="show_specs.html"* — 
+- *style="width:100%; height:500px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+
+### `draw_wavefront(wavefront: torch.Tensor, simulation_parameters: SimulationParameters, types_to_plot: tuple[StepwisePlotTypes, ...] = ('I', 'phase'), slices_to_plot: Mapping[str, Index | tuple[Index, ...]] | None = None) -> bytes`
+
+Render wavefront slices into a JPEG image.
+
+The function applies optional axis slicing and draws one or more field
+representations (`"A"`, `"I"`, `"phase"`, `"Re"`, `"Im"`).
+Only a 2D result (`x`, `y`) can be plotted after slicing.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `wavefront` | `Tensor` | Input wavefront tensor. |
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `types_to_plot` | `tuple[StepwisePlotTypes, ...], optional` | Field properties to plot. Options: `"A"` (amplitude), `"I"` (intensity), `"phase"`, `"Re"` (real part), `"Im"` (imaginary part). Default is (`"I"`, `"phase"`). |
+| `slices_to_plot` | `Mapping[str, Index | tuple[Index, ...]] | None, optional` | Axis slices to apply before plotting. Use `"_"` for unnamed axes. Default is `None` (plot the full wavefront). |
 
 </details>
 
@@ -122,7 +156,7 @@ Currently only wavefronts of shape `(W, H)` are supported.
 
 **`bytes`**
 
-byte-coded image
+JPEG bytes of the rendered figure.
 
 
 </details>
@@ -130,9 +164,11 @@ byte-coded image
 
 ### `show_stepwise_forward(*specsable: Specsable) -> StepwiseForwardWidget`
 
-Display the wavefront propagation through a setup structure
-using a widget interface. Currently only wavefronts
-of shape `(W, H)` are supported.
+Display stepwise wavefront propagation for setup elements.
+
+The function registers forward hooks on `torch.nn.Module` elements,
+runs a forward pass for each provided root element, captures intermediate
+outputs, renders them as images, and returns an interactive widget.
 
 
 <details open>
@@ -140,9 +176,10 @@ of shape `(W, H)` are supported.
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `input` | `torch.Tensor` | The Input wavefront |
+| `input` | `torch.Tensor` | Input wavefront. |
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters |
-| `types_to_plot` | `tuple[StepwisePlotTypes, ...], optional` | Field properties to plot, by default ('I', 'phase') |
+| `types_to_plot` | `tuple[StepwisePlotTypes, ...], optional` | Field properties to plot, by default (`"I"`, `"phase"`). |
+| `slices_to_plot` | `Mapping[str, Index | tuple[Index, ...]] | None, optional` | Axis slices to apply before plotting each captured output. Default is `None`. |
 
 </details>
 
@@ -152,8 +189,63 @@ of shape `(W, H)` are supported.
 
 **`StepwiseForwardWidget`**
 
-The widget
+Widget containing setup structure and captured per-element outputs.
 
 
 </details>
 
+
+**Examples**
+
+- ***Basic usage:*** — 
+- *```python* — 
+- *import svetlanna as sv* — 
+- *import torch* — 
+- *from svetlanna.visualization import show_stepwise_forward* — 
+- *Nx = Ny = 128* — 
+- *sim_params = sv.SimulationParameters(* — x=torch.linspace(-1, 1, Nx), y=torch.linspace(-1, 1, Ny), wavelength=0.1,
+- *)* — 
+- *setup = sv.LinearOpticalSetup(* — [ sv.elements.RectangularAperture(sim_params, width=0.5, height=0.5), sv.elements.FreeSpace(sim_params, distance=0.2, method="AS"), sv.elements.DiffractiveLayer(sim_params, mask=torch.rand(Ny, Nx), mask_norm=1), sv.elements.FreeSpace(sim_params, distance=0.2, method="AS"), ]
+- *)* — 
+- *input_wavefront = sv.Wavefront.plane_wave(sim_params)* — 
+- *show_stepwise_forward(* — setup, input=input_wavefront, simulation_parameters=sim_params, types_to_plot=("I", "phase", "Re"),
+- *)* — 
+- *```* — 
+- *Output (in IPython environment):* — 
+- *<iframe* — 
+- *src="show_stepwise_forward.html"* — 
+- *style="width:100%; height:500px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+- ***Spatial slicing with boolean masks:*** — 
+- *Use named axis slicing to focus on a region of interest.* — 
+- *Plot only the central area:* — 
+- *```python* — 
+- *show_stepwise_forward(* — setup, input=input_wavefront, simulation_parameters=sim_params, slices_to_plot=&#123; "x": (sim_params.x > -0.5) & (sim_params.x < 0.5),  # x_mask "y": (sim_params.y > -0.5) & (sim_params.y < 0.5),  # y_mask &#125;,
+- *)* — 
+- *# Equivalent to: wavefront[y_mask, x_mask] (axis order depends on sim_params)* — 
+- *```* — 
+- ***Integer indexing for named axes:*** — 
+- *Select a specific value from a named axis (e.g., wavelength channel).* — 
+- *```python* — 
+- *# Suppose sim_params has multiple wavelengths,* — 
+- *# so input has shape (wavelength, y, x)* — 
+- *show_stepwise_forward(* — setup, input=input_wavefront, simulation_parameters=sim_params, slices_to_plot=&#123; "wavelength": 0, &#125;,
+- *)* — 
+- *# Equivalent to: wavefront[0, :, :]* — 
+- *```* — 
+- ***Slicing unnamed axes (batch dimensions):*** — 
+- *Use the special key `"_"` with a **tuple** of slices for unnamed leading axes.* — 
+- *```python* — 
+- *# If input has shape (batch, channel, y, x)* — 
+- *show_stepwise_forward(* — setup, input=batched_wavefront, simulation_parameters=sim_params, slices_to_plot=&#123; "_": (0, 2),  # First batch, third channel &#125;,
+- *)* — 
+- *# Equivalent to: wavefront[0, 2, :, :]* — 
+- *```* — 
+- ***Combining named and unnamed slicing:*** — 
+- *You can mix both approaches.* — 
+- *Named axes override positional slices from `"_"`.* — 
+- *```python* — 
+- *# If input has shape (batch, wavelength, y, x) where wavelength is named axes in sim_params* — 
+- *show_stepwise_forward(* — setup, input=batched_wavefront, simulation_parameters=sim_params, slices_to_plot=&#123; "_": (0, 0),        # First batch, first wavelength (from position) "wavelength": 1,    # Override wavelength to second &#125;,
+- *)* — 
+- *# Result: wavefront[0, 1, :, :]* — 
+- *```* — 

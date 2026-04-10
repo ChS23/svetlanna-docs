@@ -12,7 +12,8 @@ from svetlanna import Wavefront, SimulationParameters, Parameter
 
 <small>Наследует: `torch.Tensor`</small>
 
-Class that represents wavefront
+Class that represents wavefront.
+It is a subclass of `torch.Tensor` with additional properties and methods for wavefront analysis and generation.
 
 #### Свойства
 
@@ -20,17 +21,17 @@ Class that represents wavefront
 
 <div className="border rounded-lg p-4 dark:border-neutral-700">
   <code className="text-sm font-semibold">intensity</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Calculates intensity of the wavefront</p>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Intensity of the wavefront.</p>
 </div>
 
 <div className="border rounded-lg p-4 dark:border-neutral-700">
   <code className="text-sm font-semibold">max_intensity</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Calculates maximum intensity of the wavefront</p>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Maximum intensity of the wavefront.</p>
 </div>
 
 <div className="border rounded-lg p-4 dark:border-neutral-700">
   <code className="text-sm font-semibold">phase</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Calculates phase of the wavefront</p>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Phase of the wavefront.</p>
 </div>
 </div>
 
@@ -45,7 +46,10 @@ Class that represents wavefront
 plane_wave(cls, simulation_parameters: SimulationParameters, distance: float = 0.0, wave_direction: Any = None, initial_phase: float = 0.0) -> Self
 ```
 
-Generate wavefront of the plane wave
+Create a plane wave wavefront defind by the formula
+$$
+E(x, y) = \exp\left( i \left( k_x x + k_y y + k_z z + \phi_0 \right) \right)
+$$
 
 
 <details open>
@@ -53,10 +57,10 @@ Generate wavefront of the plane wave
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | simulation parameters |
-| `distance` | `float, optional` | free wave propagation distance, by default 0. |
-| `wave_direction` | `Any, optional` | three component tensor-like vector with x,y,z coordinates. The resulting field propagates along the vector, by default the wave propagates along z direction. |
-| `initial_phase` | `float, optional` | additional phase to the resulting field, by default 0. |
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `distance` | `float, optional` | Free wave propagation distance $z$, by default 0. |
+| `wave_direction` | `Any, optional` | Three component tensor-like vector with ($d_x$, $d_y$, $d_z$) coordinates, so $\vec&#123;k&#125; = k \frac&#123;\vec&#123;d&#125;&#125;&#123;\|\|\vec&#123;d&#125;\|\|&#125;$ The resulting field propagates along the vector, by default the wave propagates along z direction. |
+| `initial_phase` | `float, optional` | Additional phase offset ($\phi_0$), by default 0. |
 
 </details>
 
@@ -66,7 +70,7 @@ Generate wavefront of the plane wave
 
 **`Wavefront`**
 
-plane wave field.
+Plane wave field.
 
 
 </details>
@@ -81,7 +85,14 @@ plane wave field.
 gaussian_beam(cls, simulation_parameters: SimulationParameters, waist_radius: float, distance: float = 0.0, dx: float = 0.0, dy: float = 0.0) -> Self
 ```
 
-Generates the Gaussian beam.
+Generates the Gaussian beam wavefront defined by the formula
+$$
+E(x, y) = \frac&#123;w_0&#125;&#123;w(z)&#125; \exp\left( -\frac&#123;(x - d_x)^2 + (y - d_y)^2&#125;&#123;w(z)^2&#125; \right) \newline \cdot \exp\left( i \left( k z + k\frac&#123;(x - d_x)^2 + (y - d_y)^2&#125;&#123;2 R(z)&#125; - \zeta(z) \right) \right)
+$$
+where $w(z) = w_0 \sqrt&#123;1 + \left( \frac&#123;z&#125;&#123;z_R&#125; \right)^2&#125;$,
+$R(z) = z \left( 1 + \left( \frac&#123;z_R&#125;&#123;z&#125; \right)^2 \right)$,
+$\zeta(z) = \arctan\left( \frac&#123;z&#125;&#123;z_R&#125; \right)$,
+and $z_R = \frac&#123;\pi w_0^2&#125;&#123;\lambda&#125;$ is the Rayleigh range.
 
 
 <details open>
@@ -89,11 +100,11 @@ Generates the Gaussian beam.
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | simulation parameters |
-| `waist_radius` | `float` | Waist radius of the beam |
-| `distance` | `float, optional` | free wave propagation distance, by default 0. |
-| `dx` | `float, optional` | Horizontal position of the beam center, by default 0. |
-| `dy` | `float, optional` | Horizontal position of the beam center, by default 0. |
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `waist_radius` | `float` | Beam waist radius ($w_0$). |
+| `distance` | `float, optional` | Free wave propagation distance $z$, by default 0. |
+| `dx` | `float, optional` | Horizontal offset of the beam center ($d_x$), by default 0. |
+| `dy` | `float, optional` | Vertical offset of the beam center ($d_y$), by default 0. |
 
 </details>
 
@@ -103,7 +114,7 @@ Generates the Gaussian beam.
 
 **`Wavefront`**
 
-Beam field in the plane oXY propagated over the distance
+Gaussian beam field in the oXY plane.
 
 
 </details>
@@ -119,6 +130,10 @@ spherical_wave(cls, simulation_parameters: SimulationParameters, distance: float
 ```
 
 Generate wavefront of the spherical wave
+$$
+E(x, y) = \frac&#123;1&#125;&#123;r&#125; \exp\left( i \left( k r + \phi_0 \right) \right)
+$$
+where $r = \sqrt&#123;(x - d_x)^2 + (y - d_y)^2 + z^2&#125;$ is the distance from the point source to the point $(x, y)$ in the oXY plane.
 
 
 <details open>
@@ -126,11 +141,11 @@ Generate wavefront of the spherical wave
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | simulation parameters |
-| `distance` | `float` | distance between the source and the oXY plane. |
-| `initial_phase` | `float, optional` | additional phase to the resulting field, by default 0. |
-| `dx` | `float, optional` | Horizontal position of the spherical wave center, by default 0. |
-| `dy` | `float, optional` | Horizontal position of the spherical wave center, by default 0. |
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `distance` | `float` | Distance from the point source to the oXY plane ($z$). |
+| `initial_phase` | `float, optional` | Phase offset at the source ($\phi_0$), by default 0. |
+| `dx` | `float, optional` | Horizontal position of the point source ($d_x$), by default 0. |
+| `dy` | `float, optional` | Vertical position of the point source ($d_y$), by default 0. |
 
 </details>
 
@@ -140,7 +155,53 @@ Generate wavefront of the spherical wave
 
 **`Wavefront`**
 
-Beam field
+Spherical wave field in the oXY plane.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`hermite_gauss`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">classmethod</small>
+
+```python
+hermite_gauss(cls, simulation_parameters: SimulationParameters, waist_radius: float, distance: float = 0.0, dx: float = 0.0, dy: float = 0.0, m: int = 0, n: int = 0) -> Self
+```
+
+Generates the Hermite-Gaussian mode wavefront defined by the formula
+$$
+E(x, y) = \frac&#123;w_0&#125;&#123;w(z)&#125; H_m\left(\frac&#123;\sqrt&#123;2&#125;(x-d_x)&#125;&#123;w_0&#125;\right) H_n\left(\frac&#123;\sqrt&#123;2&#125;(y-d_y)&#125;&#123;w_0&#125;\right) \exp\left( -\frac&#123;(x - d_x)^2 + (y - d_y)^2&#125;&#123;w(z)^2&#125; \right) \newline \cdot \exp\left( i \left( k z + k\frac&#123;(x - d_x)^2 + (y - d_y)^2&#125;&#123;2 R(z)&#125; - \zeta(z) \right) \right)
+$$
+where $w(z) = w_0 \sqrt&#123;1 + \left( \frac&#123;z&#125;&#123;z_R&#125; \right)^2&#125;$,
+$R(z) = z \left( 1 + \left( \frac&#123;z_R&#125;&#123;z&#125; \right)^2 \right)$,
+$\zeta(z) = (m+n+1)\arctan\left( \frac&#123;z&#125;&#123;z_R&#125; \right)$,
+and $z_R = \frac&#123;\pi w_0^2&#125;&#123;\lambda&#125;$ is the Rayleigh range.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `waist_radius` | `float` | Beam waist radius ($w_0$). |
+| `distance` | `float, optional` | Free wave propagation distance $z$, by default 0. |
+| `dx` | `float, optional` | Horizontal offset of the mode center ($d_x$), by default 0. |
+| `dy` | `float, optional` | Vertical offset of the mode center ($d_y$), by default 0. |
+| `m` | `int, optional` | Mode index in the x direction, by default 0 (fundamental mode). |
+| `n` | `int, optional` | Mode index in the y direction, by default 0 (fundamental mode). |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Wavefront`**
+
+Hermite-Gaussian field.
 
 
 </details>
@@ -158,7 +219,17 @@ Beam field
 fwhm(self, simulation_parameters: SimulationParameters) -> tuple[float, float]
 ```
 
-Calculates full width at half maximum of the wavefront
+Full width at half maximum (FWHM) of the wavefront intensity.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+
+</details>
 
 
 <details open>
@@ -166,7 +237,7 @@ Calculates full width at half maximum of the wavefront
 
 **`tuple[float, float]`**
 
-full width at half maximum along x and y axes
+FWHM along x and y axes.
 
 
 </details>
@@ -174,18 +245,94 @@ full width at half maximum along x and y axes
 </div>
 
 
-### Axes
+### SimulationParameters
 
-Axes storage
+<small>Наследует: `nn.Module`</small>
 
 #### Свойства
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
 <div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">names</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Non-scalar axes' names</p>
+  <code className="text-sm font-semibold">axis_names</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Get names of non-scalar axes (those with length > 1).</p>
 </div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">device</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Get the device where all axes are stored.</p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">axes</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">names</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Фабричные методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`from_ranges`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">classmethod</small>
+
+```python
+from_ranges(cls, **additional_axes: torch.Tensor | float) -> Self
+```
+
+Create SimulationParameters from coordinate ranges.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `x_range` | `tuple[float, float]` | (min, max) range for x-axis. Use `ureg` for units. |
+| `x_points` | `int` | Number of points along x-axis. |
+| `y_range` | `tuple[float, float]` | (min, max) range for y-axis. Use `ureg` for units. |
+| `y_points` | `int` | Number of points along y-axis. |
+| `wavelength` | `torch.Tensor | float` | Optical wavelength. Use `ureg` for units. |
+| `**additional_axes` | `torch.Tensor | float` | Additional axes. |
+
+</details>
+
+
+**Examples**
+
+- *>>> from svetlanna.units import ureg* — 
+- *>>> params = SimulationParameters.from_ranges(* — 
+- *...     x_range=(-1*ureg.mm, 1*ureg.mm), x_points=256,* — 
+- *...     y_range=(-1*ureg.mm, 1*ureg.mm), y_points=256,* — 
+- *...     wavelength=632.8*ureg.nm* — 
+- *... )* — 
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`from_dict`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">classmethod</small>
+
+```python
+from_dict(cls, axes_dict: Mapping[str, torch.Tensor | float]) -> Self
+```
+
+Create SimulationParameters from a dictionary.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `axes_dict` | `Mapping[str, torch.Tensor | float]` | Dictionary with axis names as keys and tensor/scalar values. |
+
+</details>
+
 </div>
 
 
@@ -196,9 +343,225 @@ Axes storage
 **`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
 
 ```python
-__init__(self, axes: dict[str, torch.Tensor]) -> None
+__init__() -> None
 ```
 
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(**additional_axes: torch.Tensor | float) -> None
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(**kwaxes: torch.Tensor | float) -> None
+```
+
+Simulation parameters.
+Manages coordinate systems and physical parameters for optical simulations.
+Required axes: `x`, `y`, `wavelength`.
+Additional axes can be added.
+
+Inherits from ``nn.Module`` so that axes are registered as buffers and
+participate in automatic device management when used as submodules of
+Elements.
+
+Note
+----
+Axes are registered as **non-persistent** buffers (``persistent=False``).
+This means they are **not included** in ``state_dict()`` and will not
+be saved during checkpointing. The simulation grid must be provided
+when constructing the model; it does not need to be restored from
+a checkpoint.
+
+
+**Examples**
+
+- *Let's define simalation grid of width and height of 1 mm with 512 points for both axes (`Nx=Ny=512`) and wavelength of 632.8 nm:* — 
+- *```python* — 
+- *import svetlanna as sv* — 
+- *from svetlanna.units import ureg* — 
+- *import torch* — 
+- *sim_params = sv.SimulationParameters(* — x=torch.linspace(-0.5, 0.5, 512) * ureg.mm, y=torch.linspace(-0.5, 0.5, 512) * ureg.mm, wavelength=632.8 * ureg.nm,
+- *)* — 
+- *```* — 
+- *You can make `wavelength` an array for polychromatic simulations:* — 
+- *```python hl_lines="4"* — 
+- *sim_params = sv.SimulationParameters(* — x=torch.linspace(-0.5, 0.5, 512) * ureg.mm, y=torch.linspace(-0.5, 0.5, 512) * ureg.mm, wavelength=torch.linspace(600, 800, 10) * ureg.nm,
+- *)* — 
+- *```* — 
+- ***The order of axes matters!** It defines the order of dimensions in wavefront tensors.* — 
+- *In first case above, all optical elements will expect wavefront tensors with shape `(..., Ny, Nx)`,* — 
+- *while in the second case, the expected shape will be `(..., Nwavelength, Ny, Nx)`.* — 
+- *`...` means any number of leading dimensions (e.g., for batch).* — 
+- *If you change the order:* — 
+- *```python hl_lines="3 4"* — 
+- *sim_params = sv.SimulationParameters(* — x=torch.linspace(-0.5, 0.5, 512) * ureg.mm, wavelength=torch.linspace(600, 800, 10) * ureg.nm, y=torch.linspace(-0.5, 0.5, 512) * ureg.mm,
+- *)* — 
+- *```* — 
+- *the expected order of axes is `('y', 'wavelength', 'x')`, so all optical elements will expect wavefront tensors with shape `(..., Ny, Nwavelength, Nx)`.* — 
+- *You can add custom axes as needed:* — 
+- *```python hl_lines="2 4"* — 
+- *sim_params = sv.SimulationParameters(* — t=torch.linspace(0, 1, 5) * ureg.s,  # time axis x=torch.linspace(-0.5, 0.5, 512) * ureg.mm, wavelength=632.8 * ureg.nm, y=torch.linspace(-0.5, 0.5, 512) * ureg.mm,
+- *)* — 
+- *```* — 
+- *In this case, the expected order of axes is `('y', 'x', 't')` as wavelength is scalar, so all optical elements will expect wavefront tensors with shape `(..., Ny, Nx, Nt)`.* — 
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`clone`**
+
+```python
+clone(self) -> 'SimulationParameters'
+```
+
+Create a deep copy of the SimulationParameters instance.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`SimulationParameters`**
+
+A new instance with cloned axes.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`equal`**
+
+```python
+equal(self, value: SimulationParameters) -> bool
+```
+
+Check equality with another SimulationParameters instance.
+The comparison between tensor axes is based on `torch.equal`,
+see [documentation](https://docs.pytorch.org/docs/2.10/generated/torch.equal.html) for more details.
+Comparing instances on diffrent devices will raise `RuntimeError` because `torch.equal` requires tensors to be on the same device.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `value` | `SimulationParameters` | SimulationParameters instance to compare with. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`bool`**
+
+`True` if all axes are equal, `False` otherwise.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`meshgrid`**
+
+```python
+meshgrid(self, x_axis: str, y_axis: str) -> tuple[torch.Tensor, torch.Tensor]
+```
+
+Create a coordinate meshgrid from two axes.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `x_axis` | `str` | Name of the axis for x-coordinates (typically 'x'). |
+| `y_axis` | `str` | Name of the axis for y-coordinates (typically 'y'). |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`tuple[torch.Tensor, torch.Tensor]`**
+
+2D coordinate grids with 'xy' indexing convention.
+
+
+</details>
+
+
+**Examples**
+
+- *```python* — 
+- *import svetlanna as sv* — 
+- *import torch* — 
+- *sim_params = sv.SimulationParameters(* — x=torch.linspace(-0.5, 0.5, 10), y=torch.linspace(-0.5, 0.5, 12), wavelength=1,
+- *)* — 
+- *X, Y = sim_params.meshgrid("x", "y")* — 
+- *print(X.shape)  # torch.Size([12, 10])* — 
+- *```* — 
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`axis_sizes`**
+
+```python
+axis_sizes(self, axs: tuple[str, ...] | None = None) -> torch.Size
+```
+
+Get the size of specified axes in order (cached for performance).
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `axs` | `tuple[str, ...] | None` | Tuple of axis names in the desired order. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`torch.Size`**
+
+Size object with lengths of specified axes.
+
+
+</details>
+
+
+**Examples**
+
+- *```python* — 
+- *import svetlanna as sv* — 
+- *import torch* — 
+- *sim_params = sv.SimulationParameters(* — x=torch.linspace(-0.5, 0.5, 10), y=torch.linspace(-0.5, 0.5, 12), wavelength=1,
+- *)* — 
+- *print(sim_params.axis_sizes(('y', 'x')))  # torch.Size([12, 10])* — 
+- *```* — 
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -209,8 +572,7 @@ __init__(self, axes: dict[str, torch.Tensor]) -> None
 index(self, name: str) -> int
 ```
 
-Index of specific axis in the tensor.
-The index is negative.
+Get the negative index of an axis in tensors.
 
 
 <details open>
@@ -218,7 +580,7 @@ The index is negative.
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `name` | `str` | name of the axis |
+| `name` | `str` | Name of the axis. |
 
 </details>
 
@@ -228,51 +590,33 @@ The index is negative.
 
 **`int`**
 
-index of the axis
+Negative index for use in tensor operations.
 
+
+</details>
+
+
+<details>
+<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Исключения</summary>
+
+- **`AxisNotFound`** — If the axis doesn't exist or is scalar.
 
 </details>
 
 </div>
 
-
-### SimulationParameters
-
-A class which describes characteristic parameters of the system
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">device</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+**`cast`**
 
 ```python
-__init__(self, axes: dict[str, torch.Tensor | float]) -> None
+cast(self, tensor: torch.Tensor, *axes: str) -> torch.Tensor
 ```
 
-</div>
+Cast tensor to match simulation parameters axes for broadcasting.
 
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`meshgrid`**
-
-```python
-meshgrid(self, x_axis: str, y_axis: str)
-```
-
-Returns a meshgrid for a selected pair of axes.
-...
+Reshapes tensor so it can be broadcast with wavefront tensors.
+Scalar axes are skipped (they don't affect tensor shape).
 
 
 <details open>
@@ -280,7 +624,8 @@ Returns a meshgrid for a selected pair of axes.
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `x_axis, y_axis` | `str` | Axis names to compose a meshgrid. |
+| `tensor` | `torch.Tensor` | Input tensor whose trailing dimensions correspond to `axes`. |
+| `*axes` | `str` | Axes names corresponding to tensor's trailing dimensions. |
 
 </details>
 
@@ -288,13 +633,28 @@ Returns a meshgrid for a selected pair of axes.
 <details open>
 <summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
 
-**`x_grid, y_grid: torch.Tensor`**
+**`torch.Tensor`**
 
-A torch.meshgrid of selected axis. Comment: indexing='xy' the first dimension corresponds to the cardinality of the second axis (`y_axis`) and the second dimension corresponds to the cardinality of the first axis (`x_axis`).
+Tensor reshaped for broadcasting with wavefront.
 
 
 </details>
 
+
+**Examples**
+
+- *```python* — 
+- *import svetlanna as sv* — 
+- *import torch* — 
+- *sim_params = sv.SimulationParameters(* — x=torch.linspace(-0.5, 0.5, 3), y=torch.linspace(-0.5, 0.5, 2), wavelength=torch.linspace(1, 2, 5),
+- *)* — 
+- *# axes: (wavelength, y, x)* — 
+- *print(sim_params.axis_sizes(("wavelength", "y", "x")))  # torch.Size([5, 2, 3])* — 
+- *a = torch.rand(2, 3)  # y, x* — 
+- *a = sim_params.cast(a, "y", "x")* — 
+- *print(a.shape)  # torch.Size([1, 2, 3])* — 
+- *# a is now ready to broadcast with tensor of shape (5, 2, 3)* — 
+- *```* — 
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -302,40 +662,7 @@ A torch.meshgrid of selected axis. Comment: indexing='xy' the first dimension co
 **`axes_size`**
 
 ```python
-axes_size(self, axs: Iterable[str]) -> torch.Size
-```
-
-Returns a size of axes in specified order.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `axs` | `Iterable[str]` | An order of axis. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`torch.Size()`**
-
-Size of axes in a specified order.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to`**
-
-```python
-to(self, device: str | torch.device | int) -> 'SimulationParameters'
+axes_size(self, *args, **kwargs)
 ```
 
 </div>
@@ -345,8 +672,21 @@ to(self, device: str | torch.device | int) -> 'SimulationParameters'
 
 <small>Наследует: `torch.Tensor`</small>
 
-`torch.Parameter` replacement.
-Added for further feature enrichment.
+`torch.Parameter`-like tensor with an internal storage module.
+
+This class is used to keep a trainable `torch.nn.Parameter` inside a
+`torch.nn.Module` while presenting a `torch.Tensor`-like interface.
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">inner_parameter</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
 
 #### Методы
 
@@ -364,11 +704,25 @@ __init__(self, data: Any, requires_grad: bool = True)
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `data` | `Any` | parameter tensor |
-| `requires_grad` | `bool, optional` | if the parameter requires gradient, by default True |
+| `data` | `Any` | Initial value, should be a tensor or convertible to a tensor. |
+| `requires_grad` | `bool, optional` | Whether the parameter requires gradients, by default True. |
 
 </details>
 
+
+**Examples**
+
+- *You can use `Parameter` as a trainable parameter in any SVETlANNa* — 
+- *element when it is typed as* — 
+- *[OptimizableFloat][svetlanna.parameters.OptimizableFloat] or* — 
+- *[OptimizableTensor][svetlanna.parameters.OptimizableTensor]:* — 
+- *```python* — 
+- *import svetlanna as sv* — 
+- *import torch* — 
+- *sim_params = sv.SimulationParameters(...)* — 
+- *diffractive_layer = sv.elements.DiffractiveLayer(* — simulation_parameters=sim_params, mask=sv.Parameter(2 * torch.pi * torch.rand(Ny, Nx)),
+- *)* — 
+- *```* — 
 </div>
 
 
@@ -376,15 +730,39 @@ __init__(self, data: Any, requires_grad: bool = True)
 
 <small>Наследует: `Parameter`</small>
 
-Constrained parameter
+Parameter constrained to a bounded range.
+
+The constraint is implemented by applying `bound_func` to the inner
+parameter, mapping it to $[0, 1]$, and then scaling and shifting it to
+`(min_value, max_value)`.
 
 #### Свойства
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
 <div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">min_value</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">max_value</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">bound_func</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">inv_bound_func</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
   <code className="text-sm font-semibold">value</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Parameter value</p>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Constrained parameter value.</p>
 </div>
 </div>
 
@@ -396,7 +774,7 @@ Constrained parameter
 **`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
 
 ```python
-__init__(self, data: Any, min_value: Any, max_value: Any, bound_func: Callable[[torch.Tensor], torch.Tensor] = torch.sigmoid, inv_bound_func: Callable[[torch.Tensor], torch.Tensor] = sigmoid_inv, requires_grad: bool = True)
+__init__(self, data: Any, min_value: Any, max_value: Any, bound_func: Callable[[torch.Tensor], torch.Tensor] = torch.sigmoid, inv_bound_func: Callable[[torch.Tensor], torch.Tensor] = torch.logit, requires_grad: bool = True)
 ```
 
 
@@ -405,15 +783,29 @@ __init__(self, data: Any, min_value: Any, max_value: Any, bound_func: Callable[[
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `data` | `Any` | parameter tensor |
-| `min_value` | `Any` | minimum value tensor |
-| `max_value` | `Any` | maximum value tensor |
-| `bound_func` | `Callable[[torch.Tensor], torch.Tensor], optional` | function that map $\\mathbb&#123;R&#125;\to[0,1]$, by default torch.sigmoid |
-| `inv_bound_func` | `Callable[[torch.Tensor], torch.Tensor], optional` | inverse function of `bound_func` |
-| `requires_grad` | `bool, optional` | if the parameter requires gradient, by default True |
+| `data` | `Any` | Initial parameter value. |
+| `min_value` | `Any` | Minimum allowed value. |
+| `max_value` | `Any` | Maximum allowed value. |
+| `bound_func` | `Callable[[torch.Tensor], torch.Tensor], optional` | Function that maps $\mathbb&#123;R&#125;\to[0,1]$, by default `torch.sigmoid`. |
+| `inv_bound_func` | `Callable[[torch.Tensor], torch.Tensor], optional` | Inverse of `bound_func`, by default `torch.logit`. It is used once to compute the initial inner parameter value from `data`. |
+| `requires_grad` | `bool, optional` | Whether the parameter requires gradients, by default True. |
 
 </details>
 
+
+**Examples**
+
+- *You can use `ConstrainedParameter` as a trainable parameter in any* — 
+- *SVETlANNa element when it is typed as* — 
+- *[OptimizableFloat][svetlanna.parameters.OptimizableFloat] or* — 
+- *[OptimizableTensor][svetlanna.parameters.OptimizableTensor]:* — 
+- *```python* — 
+- *import svetlanna as sv* — 
+- *import torch* — 
+- *sim_params = sv.SimulationParameters(...)* — 
+- *diffractive_layer = sv.elements.DiffractiveLayer(* — simulation_parameters=sim_params, mask=sv.ConstrainedParameter( 2 * torch.pi * torch.rand(Ny, Nx), min_value=0, max_value=2 * torch.pi, )
+- *)* — 
+- *```* — 
 </div>
 
 
@@ -421,7 +813,8 @@ __init__(self, data: Any, min_value: Any, max_value: Any, bound_func: Callable[[
 
 <small>Наследует: `nn.Module`</small>
 
-A linear optical network composed of Element's
+Linear optical network composed of [`Element`][svetlanna.elements.Element] instances.
+It works the same way as a `torch.nn.Sequential` module, but with some additional features.
 
 #### Методы
 
@@ -439,10 +832,19 @@ __init__(self, elements: Iterable[Element]) -> None
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `elements` | `Iterable[Element]` | A set of optical elements which make up a setup. |
+| `elements` | `Iterable[Element]` | Optical elements that make up the setup. Elements are evaluated in the provided order. |
 
 </details>
 
+
+**Examples**
+
+- *```python* — 
+- *import svetlanna as sv* — 
+- *setup = sv.LinearOpticalSetup(* — elements=[ element1, element2, element3, ]
+- *)* — 
+- *output_wavefront = setup(input_wavefront)* — 
+- *```* — 
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -450,31 +852,8 @@ __init__(self, elements: Iterable[Element]) -> None
 **`forward`**
 
 ```python
-forward(self, input_wavefront: Tensor) -> Tensor
+forward(self, input_wavefront: Wavefront) -> Wavefront
 ```
-
-A forward function for a network assembled from elements.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `input_wavefront` | `torch.Tensor` | A wavefront that enters the optical network. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`torch.Tensor`**
-
-A wavefront after the last element of the network (output of the network).
-
-
-</details>
 
 </div>
 
@@ -483,11 +862,10 @@ A wavefront after the last element of the network (output of the network).
 **`stepwise_forward`**
 
 ```python
-stepwise_forward(self, input_wavefront: Tensor)
+stepwise_forward(self, input_wavefront: Wavefront) -> tuple[Wavefront, ...]
 ```
 
-Function that consistently applies forward method of each element
-to an input wavefront.
+Apply elements step-by-step and collect intermediate wavefronts.
 
 
 <details open>
@@ -495,7 +873,7 @@ to an input wavefront.
 
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
-| `input_wavefront` | `torch.Tensor` | A wavefront that enters the optical network. |
+| `input_wavefront` | `Wavefront` | A wavefront that enters the optical network. |
 
 </details>
 
@@ -503,13 +881,9 @@ to an input wavefront.
 <details open>
 <summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
 
-**`str`**
+**`tuple[Wavefront, ...]`**
 
-A string that represents a scheme of a propagation through a setup.
-
-**`list(torch.Tensor)`**
-
-A list of an input wavefront evolution during a propagation through a setup.
+A tuple of wavefronts showing the propagation through the setup. The first wavefront is the input wavefront, and the last one is the output wavefront after propagation through all elements.
 
 
 </details>
@@ -524,6 +898,39 @@ A list of an input wavefront evolution during a propagation through a setup.
 reverse(self, Ein: Tensor) -> Tensor
 ```
 
+Reverse propagation through the setup.
+All elements in the setup must have a `reverse` method. If any element
+lacks this method, a `TypeError` is raised.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `Ein` | `Tensor` | Input wavefront to reverse propagate. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`Tensor`**
+
+Output wavefront after reverse propagation.
+
+
+</details>
+
+
+<details>
+<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Исключения</summary>
+
+- **`TypeError`** — If reverse propagation is not supported by all elements in the setup.
+
+</details>
+
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -534,317 +941,6 @@ reverse(self, Ein: Tensor) -> Tensor
 to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 ```
 
-</div>
-
-
-### Clerk
-
-<small>Наследует: `Generic[ConditionsType]`</small>
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, experiment_directory: str) -> None
-```
-
-A lightweight alternative to TensorBoard and other logging frameworks
-for tracking the training process, storing experiment metadata,
-and handling checkpoints.
-
-
-The Clerk is not a new concept but a minimal implementation included
-in the framework to start training models without any dependencies.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `experiment_directory` | `str` | The directory where experiment data will be stored. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`save_conditions`**
-
-```python
-save_conditions(self, conditions: ConditionsType)
-```
-
-Save the experiment conditions. The conditions are stored
-in the experiment directory in the file `conditions.json`.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `None` | `conditions : Any` | Any data that can be serialized into JSON. For example, a `dict` with string keys. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`load_conditions`**
-
-```python
-load_conditions(self) -> ConditionsType
-```
-
-Read and return the experiment conditions.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Any`**
-
-The experiment conditions.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`set_checkpoint_targets`**
-
-```python
-set_checkpoint_targets(self, targets: dict[str, StatefulTorchClass])
-```
-
-Set the targets with state dict to be saved in the checkpoint.
-The same targets will be automatically used when loading from the checkpoint.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `targets` | `dict[str, StatefulTorchClass]` | Targets with unique keys. The same keys should be used when loading the checkpoint. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`begin`**
-
-```python
-begin(self, resume: bool = False, resume_load_last_checkpoint: bool = True, autosave_checkpoint: bool = False) -> Self
-```
-
-Configure the clerk for a new context.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `resume` | `bool, optional` | If True, logs will continue to append to the files if they already exist, and the number of checkpoints will continue to grow. By default, False. |
-| `resume_load_last_checkpoint` | `bool, optional` | If True, the very last checkpoint (if available) will be used to load checkpoint targets' states before entering the context. By default, True. This mechanism works only if `resume=True`. The last checkpoint is identified in `checkpoints.txt` and has the largest index. |
-| `autosave_checkpoint` | `bool, optional` | If True, a backup checkpoint will be saved in case the clerk context exits unexpectedly. By default, False. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Self`**
-
-The clerk.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`write_log`**
-
-```python
-write_log(self, tag: str, data: dict, flush: bool = False)
-```
-
-Write new data to a log file with a specific tag.
-The data should be a dictionary that can be serialized into JSON.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `tag` | `str` | The tag for the data. The name of the log file will be based on this tag: `<tag>.jsonl`. |
-| `data` | `dict` | The data to be logged. It should be serializable into JSON. |
-| `None` | `flush: bool` | If flush is true, the underlying stream is forcibly flushed. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`write_checkpoint`**
-
-```python
-write_checkpoint(self, metadata: object | None = None)
-```
-
-Write the states of selected targets into a new checkpoint file.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `metadata` | `object | None, optional` | The metadata for the new checkpoint, by default None. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`load_checkpoint`**
-
-```python
-load_checkpoint(self, index: str | int, targets: dict[str, StatefulTorchClass] | None = None, weights_only: bool = True) -> object | None
-```
-
-Load the checkpoint with a specific index and apply state dicts to
-checkpoint targets. If the targets are not provided, the checkpoint
-targets are obtained from the clerk settings.
-
-If the index is integer, that the checkpoint `<index>.pt` is used.
-Otherwise, index is used as a filename.
-
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `index` | `str | int` | The checkpoint index. |
-| `targets` | `dict[str, StatefulTorchClass] | None, optional` | Targets with unique keys, by default None. See the `set_checkpoint_targets` method. |
-| `weights_only` | `bool` | See `torch.load` function docs, by default True. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`object | None`**
-
-The checkpoint metadata, if it exists.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`load_logs`**
-
-```python
-load_logs(self, tag: str) -> Generator[dict, None, None]
-```
-
-Load logs from the file specified by the tag.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `tag` | `str` | The tag for the data. The name of the log file will be read is `<tag>.jsonl`. |
-
-</details>
-
-
-**Yields**
-
-- *Generator[dict, None, None]* — Log data with the specific tag.
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`load_logs_to_pandas`**
-
-```python
-load_logs_to_pandas(self, tag: str) -> 'pandas.DataFrame'
-```
-
-Load logs from the file specified by the tag and return them as a pandas
-DataFrame.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `tag` | `str` | The tag for the data. The name of the log file will be read is `<tag>.jsonl`. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`pd.DataFrame`**
-
-Log data with the specific tag.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`clean_checkpoints`**
-
-```python
-clean_checkpoints(self)
-```
-
-Remove checkpoints that are not listed in `checkpoints.txt`.
-If `checkpoints.txt` does not exist, then remove all `<n>.pt` files,
-where `<n>` is an integer.
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`clean_backup_checkpoints`**
-
-```python
-clean_backup_checkpoints(self)
-```
-
-Remove checkpoints that are matches backup checkpoints name pattern.
 </div>
 
 
@@ -915,36 +1011,4 @@ The image on a detector (according to self.func).
 </details>
 
 </div>
-
-
-
-## Функции
-
-### `mul(wf: Wavefront, b: Any, b_axis: str | Iterable[str], sim_params: SimulationParameters | None = None) -> Wavefront`
-
-Multiplication of the wavefront and tensor.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `wf` | `Wavefront` | wavefront |
-| `b` | `Any` | tensor |
-| `b_axis` | `str | Iterable[str]` | tensor's axis name |
-| `sim_params` | `SimulationParameters | None, optional` | simulation parameters, by default None |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`Wavefront`**
-
-product result
-
-
-</details>
 
