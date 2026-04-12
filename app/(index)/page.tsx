@@ -24,8 +24,7 @@ export default function Home() {
         </div>
 
         <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-8 max-w-2xl">
-          Открытая Python-библиотека для моделирования оптических систем
-          и нейроморфных вычислителей, таких как дифракционные нейронные сети.
+          Open-source Python library for simulating free-space optical setups and neuromorphic systems such as Diffractive Neural Networks
         </p>
 
         <div className="flex flex-wrap gap-3 mb-12">
@@ -33,7 +32,7 @@ export default function Home() {
             href="/docs"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-lg hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors"
           >
-            Документация
+            Documentation
           </a>
           <a
             href="https://github.com/CompPhysLab/SVETlANNa"
@@ -50,7 +49,7 @@ export default function Home() {
             href="/course"
             className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-300 dark:border-neutral-700 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-900 transition-colors"
           >
-            Курс OCAC
+            Optical Computing Academic Course
           </a>
         </div>
 
@@ -63,30 +62,30 @@ export default function Home() {
 
       {/* Features */}
       <section className="max-w-4xl mx-auto px-6 pb-16">
-        <h2 className="text-2xl font-semibold mb-6">Возможности</h2>
+        <h2 className="text-2xl font-semibold mb-6">Features</h2>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
-            <h3 className="font-semibold mb-2">Моделирование оптики</h3>
+            <h3 className="font-semibold mb-2">Optical Simulation</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Угловой спектр, приближение Френеля, принципы Фурье-оптики
+              Angular spectrum, Fourier optics
             </p>
           </div>
           <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
-            <h3 className="font-semibold mb-2">Нейронные сети</h3>
+            <h3 className="font-semibold mb-2">Neural Networks</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Дифракционные нейросети, feed-forward, автоэнкодеры, рекуррентные архитектуры
+              Diffractive Neural Networks, feed-forward, convolutional and recurrent architectures
             </p>
           </div>
           <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
-            <h3 className="font-semibold mb-2">Оптимизация DOE/SLM</h3>
+            <h3 className="font-semibold mb-2">Optimization of DOE/SLM</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Алгоритмы Герчберга-Сакстона и гибридного ввода-вывода
+              Gerchberg-Saxton and HIO algorithms, gradient-based optimization with PyTorch autograd
             </p>
           </div>
           <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
-            <h3 className="font-semibold mb-2">GPU-ускорение</h3>
+            <h3 className="font-semibold mb-2">GPU Acceleration</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Построен на PyTorch с полной поддержкой GPU
+              Built on PyTorch with full GPU support
             </p>
           </div>
         </div>
@@ -94,17 +93,15 @@ export default function Home() {
 
       {/* About */}
       <section className="max-w-4xl mx-auto px-6 pb-16">
-        <h2 className="text-2xl font-semibold mb-4">О библиотеке</h2>
+        <h2 className="text-2xl font-semibold mb-4">About the Library</h2>
         <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
-          Название <strong>SVETlANNa</strong> объединяет русское слово «свет» и ANN (искусственная нейронная сеть),
-          а также напоминает русское имя Светлана.
+          The library name <strong>SVETlANNa</strong> combines the Russian word "svet" ("light" in English) and the abbreviation ANN (artificial neural network). At the same time, the full word sounds like the Slavic female name Svetlana.
         </p>
         <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-          Библиотека разработана командой CompPhysLab физического факультета Университета ИТМО
-          при поддержке Фонда содействия инновациям.
+          The library is developed by the CompPhysLab team at the Physics Faculty of ITMO University with support from the Foundation for Assistance to Small Innovative Enterprises.
         </p>
         <p className="text-sm text-gray-500 dark:text-gray-500">
-          Лицензия: Mozilla Public License 2.0
+          License: Mozilla Public License 2.0
         </p>
       </section>
     </div>

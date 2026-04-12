@@ -1,8 +1,8 @@
 export default {
-  "getting-started": "Начало работы",
-  guides: "Руководства",
-  tutorials: "Туториалы",
+  "getting-started": "Starting",
+  guides: "Guides",
+  tutorials: "Tutorials",
   api: "API Reference",
-  course: "Материалы курса",
-  contributing: "Контрибьютинг",
+  course: "Course Materials",
+  contributing: "Contributing",
 };

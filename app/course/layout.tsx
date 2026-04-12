@@ -4,7 +4,7 @@ import "../globals.css";
 
 export const metadata: Metadata = {
   title: "OCAC: Optical Computing Academic Course",
-  description: "Первый открытый академический курс по оптическим вычислениям от ИТМО",
+  description: "The first comprehensive course on optical computing, covering fundamental principles, key technologies, and practical applications. Designed for students, researchers, and professionals interested in the field of optical computing by the CompPhysLab team at ITMO University.",
 };
 
 export default function CourseLayout({

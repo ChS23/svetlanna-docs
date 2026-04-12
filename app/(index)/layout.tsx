@@ -4,7 +4,7 @@ import "../globals.css";
 
 export const metadata: Metadata = {
   title: "SVETlANNa - Simulation of free-space optical set-ups",
-  description: "Открытая Python-библиотека для моделирования оптических систем и нейроморфных вычислителей",
+  description: "Open-source Python library for simulating free-space optical setups and neuromorphic systems such as Diffractive Neural Networks",
 };
 
 export default function IndexLayout({

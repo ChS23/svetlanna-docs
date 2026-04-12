@@ -23,9 +23,9 @@ export default function CoursePage() {
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-6 pt-16 pb-12">
         <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 font-medium mb-6">
-          <span>ИТМО</span>
+          <span>ITMO University</span>
           <span className="text-gray-300 dark:text-gray-600">·</span>
-          <span>Физический факультет</span>
+          <span>The Department of Physics</span>
           <span className="text-gray-300 dark:text-gray-600">·</span>
           <span>CompPhysLab</span>
         </div>
@@ -33,7 +33,7 @@ export default function CoursePage() {
           Optical Computing Academic Course
         </h1>
         <p className="text-lg text-gray-500 dark:text-gray-400 mb-8 max-w-2xl">
-          Первый открытый академический курс по оптическим вычислениям
+          The first comprehensive course on optical computing, covering fundamental principles, key technologies, and practical applications. Designed for students, researchers, and professionals interested in the field of optical computing by the CompPhysLab team at ITMO University.
         </p>
       </section>
 
@@ -41,15 +41,14 @@ export default function CoursePage() {
       <main className="max-w-4xl mx-auto px-6 pb-20">
         {/* About */}
         <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-4">О курсе</h2>
+          <h2 className="text-xl font-semibold mb-4">About the Course</h2>
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
-            Курс раскрывает концепцию оптических вычислений — технологии, использующей свет
-            для передачи и обработки информации. В отличие от классической архитектуры
-            фон Неймана, оптические системы обеспечивают параллельную обработку данных
-            со скоростью света при низком энергопотреблении.
+            The course explores the concept of optical computing — a technology that uses light
+            for transmitting and processing information. Unlike the classical von Neumann architecture,
+            optical systems enable parallel data processing at the speed of light with low power consumption.
           </p>
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-            Курс создан на базе библиотеки{" "}
+            The course is built upon the{" "}
             <a
               href="https://github.com/CompPhysLab/SVETlANNa"
               className="text-blue-600 dark:text-blue-400 hover:underline"
@@ -58,13 +57,13 @@ export default function CoursePage() {
             >
               SVETlANNa
             </a>
-            {" "}для проектирования дифракционных нейронных сетей.
+            {" "}library for designing diffractive neural networks.
           </p>
         </section>
 
         {/* Программа курса */}
         <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-6">Программа курса</h2>
+          <h2 className="text-xl font-semibold mb-6">Syllabus</h2>
 
           <div className="space-y-4">
             {/* Модуль 1 */}
@@ -72,11 +71,12 @@ export default function CoursePage() {
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">01</span>
                 <div>
-                  <h3 className="font-semibold mb-2">Математические основы</h3>
+                  <h3 className="font-semibold mb-2">The basics of electrodynamics</h3>
                   <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                    <li>Преобразование Фурье и его свойства</li>
-                    <li>Комплексные амплитуды и фазы</li>
-                    <li>Линейные системы и свёртка</li>
+                    <li>Maxwell's equations</li>
+                    <li>Harmonic waves</li>
+                    <li>Electromagnetic medium</li>
+                    <li>Wave equation</li>
                   </ul>
                 </div>
               </div>
@@ -87,11 +87,11 @@ export default function CoursePage() {
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">02</span>
                 <div>
-                  <h3 className="font-semibold mb-2">Физика дифракции</h3>
+                  <h3 className="font-semibold mb-2">Fourier-optics</h3>
                   <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                    <li>Скалярная теория дифракции</li>
-                    <li>Дифракция Френеля и Фраунгофера</li>
-                    <li>Угловой спектр плоских волн</li>
+                    <li>Green’s function</li>
+                    <li>Weyl representation of spherical waves</li>
+                    <li>Longitudinal component of the field</li>
                   </ul>
                 </div>
               </div>
@@ -102,11 +102,9 @@ export default function CoursePage() {
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">03</span>
                 <div>
-                  <h3 className="font-semibold mb-2">Оптические нейронные сети</h3>
+                  <h3 className="font-semibold mb-2">Angular Spectrum Method</h3>
                   <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                    <li>Архитектура дифракционных нейросетей (D²NN)</li>
-                    <li>Обучение оптических систем</li>
-                    <li>Пространственные модуляторы света</li>
+                    <li>Plane wave decomposition</li>
                   </ul>
                 </div>
               </div>
@@ -117,11 +115,58 @@ export default function CoursePage() {
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">04</span>
                 <div>
-                  <h3 className="font-semibold mb-2">Практика с SVETlANNa</h3>
+                  <h3 className="font-semibold mb-2">Diffractive Optical Elements</h3>
                   <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                    <li>Моделирование распространения света</li>
-                    <li>Проектирование оптических слоёв</li>
-                    <li>Обучение и оптимизация сетей</li>
+                    <li>Thin transparency approach</li>
+                    <li>Thin lens</li>
+                    <li>Diffractive layer</li>
+                    <li>Spatial Light Modulator (SLM)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Модуль 5 */}
+            <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
+              <div className="flex items-start gap-4">
+                <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">05</span>
+                <div>
+                  <h3 className="font-semibold mb-2">Backpropagation algorithm</h3>
+                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    <li>Common schema</li>
+                    <li>Forward pass</li>
+                    <li>Backward pass</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Модуль 6 */}
+            <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
+              <div className="flex items-start gap-4">
+                <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">06</span>
+                <div>
+                  <h3 className="font-semibold mb-2">Optimization methods</h3>
+                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    <li>Problem formulation</li>
+                    <li>Gradient descent</li>
+                    <li>Adam</li>
+                    <li>SGD</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Модуль 7 */}
+            <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
+              <div className="flex items-start gap-4">
+                <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">07</span>
+                <div>
+                  <h3 className="font-semibold mb-2">Optical computers</h3>
+                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    <li>Linear Diffractive Neural Network</li>
+                    <li>Diffractive Recurrent Neural Network</li>
+                    <li>Convolutional Diffractive Network</li>
                   </ul>
                 </div>
               </div>
@@ -131,35 +176,35 @@ export default function CoursePage() {
 
         {/* Для кого */}
         <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-4">Для кого</h2>
+          <h2 className="text-xl font-semibold mb-4">For Whom</h2>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg">
-              <p className="font-medium mb-1">Студенты</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Физика, оптика, машинное обучение</p>
+              <p className="font-medium mb-1">Students</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">who are interested in neural networks, computational physics and machine learning</p>
             </div>
             <div className="p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg">
-              <p className="font-medium mb-1">Исследователи</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Фотоника, нейроморфные вычисления</p>
+              <p className="font-medium mb-1">Researchers</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">who are interested in optical computing, diffractive neural networks and modern photonic technologies</p>
             </div>
             <div className="p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg">
-              <p className="font-medium mb-1">Инженеры</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Оптические системы, AI-ускорители</p>
+              <p className="font-medium mb-1">Engineers</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">who are working on optical systems and AI accelerators</p>
             </div>
           </div>
         </section>
 
         {/* CTA */}
         <section className="p-6 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">Начать обучение</h2>
+          <h2 className="text-lg font-semibold mb-2">Start training</h2>
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-            Перейдите к материалам курса или изучите документацию библиотеки.
+            Access course materials or explore library documentation to start your journey into optical computing
           </p>
           <div className="flex flex-wrap gap-3">
             <a
               href="/docs/course"
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors"
             >
-              Материалы курса →
+              Course Materials →
             </a>
             <a
               href="https://github.com/CompPhysLab/SVETlANNa"

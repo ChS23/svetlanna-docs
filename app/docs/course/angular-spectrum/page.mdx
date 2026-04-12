@@ -16,4 +16,48 @@ Multiplier $e^{iz\sqrt{k^2 - |\boldsymbol{k_{\perp}}|^2}}$ is called the transfe
 
 The component corresponding to the spatial frequency $\boldsymbol{k_{\perp}}=(k_x,k_y)$ can be interpreted as a plane wave with amplitude $\hat{u}(\boldsymbol{k_{\perp}};0)$ and wavevector components $(k_x, k_y, k_z)$ which propagates at an angles $\cos \theta_x= \dfrac{\lambda k_x}{2\pi}$, $\cos \theta_y= \dfrac{\lambda k_y}{2\pi}$, $\cos \theta_z= \dfrac{\lambda k_z}{2\pi}$ with respect to the $x$, $y$ and $z$ axes.
 
+## Numerical computation of diffraction field using RSCM and ASM
+Rayleigh-Sommerfeld Convolution Method uses convolution integrals to compute the electric field. For 2D discrete signals complexity of the convolution operation asymptotically grows as $O(N_x^2 N_y^2)$, where $N_x$ is number of computational nodes in the $x$ direction and $N_y$ is number of computational nodes in the $y$ direction. As a consequence for more efficient computation is better to use Fast Fourier Transform algorithm(FFT), because it's complexity grows as $O(N_x N_y \log(N_x) \log(N_y))$. However, due to discreteness of the signal, linear convolution, which uses in convolution theorem for effective computation, becomes circular, which is not the same thing. Hence for RSCM(and for the ASM, since it also uses the transformation) it is necessary to use zero-padding to avoid edge effects and obtain accurate results.
+
+Let's regard the $\psi(x;z)$ - component of the electric field. Suppose this component is sampled by $N_x$ points on the observation screen of length $L_x$. We can define the sampling interval in the spatial coordinate domain as $\Delta_x=\dfrac{L_x}{N_x}$. In according to the properties of the FFT the sampling interval in the spatial frequency domain in the $k_x$ direction is $\Delta_{k_x}=\dfrac{2\pi}{L_x}$. As per Nyquist–Shannon sampling theorem the sampling interval in coordinate domain must satisfy the condition
+$$
+\Delta_{x} \leq \frac{\pi}{k_x^{max}}.
+$$
+
+Multiplying both sides by $k_x^{max}$ gives
+$$
+\Delta \phi_x \leq \pi,
+$$
+where $\Delta \phi_x^{max}$ is a phase shift in the $x$ direction within one computation node. Expression of phase shift in the form $|\Delta \phi_x^{max}|=|\frac{\partial \phi}{\partial k_x} \Delta_{k_x} |$ allows to rewrite the inequality as
+$$
+\left| \frac{\partial \phi}{\partial k_x} \Delta_{k_x} \right| \leq \pi.
+$$
+Impulse response function for ASM in spatial frequency domain was previously defined. Substituting the phase function into the condition for Nyquist–Shannon sampling theorem gives
+$$
+z\leq \dfrac{\pi \sqrt{k^2 - (k_x^{max})^2}}{k_x^{max} \Delta_{k_x}}.
+$$
+Taking into account the fact that $k_x^{max}=\dfrac{\pi}{\Delta_x}$ gives
+$$
+z\leq \frac{N_x (\Delta_x)^2}{\lambda}\sqrt{1-(\frac{\lambda}{2\Delta_x})^2}
+$$
+With aim to avoid convolution errors it is necessary to add $M_x$($\frac{M_x}{2}$ zeros on each side) zeros along the edges of the original computational grid. In this way condition for Nyquist–Shannon sampling theorem can be rewritten as
+$$
+z\leq \frac{(N_x + M_x) (\Delta_x)^2}{\lambda}\sqrt{1-(\frac{\lambda}{2\Delta_x})^2}.
+$$
+If the spatial frequency of the input field located at the edge point is $\frac{1}{2\Delta_x}$, its diffracted light would exceed the received range. The range on the each side could be calculated as $z \tan \theta$, where $\arcsin \theta = \frac{\lambda}{2\Delta_x}$. To avoid the convolution error in this range it is necessary to add
+$$
+M_x=\dfrac{2z\tan\theta}{2\Delta_x}=\dfrac{z\lambda}{2(\Delta_x)^2\sqrt{1-(\frac{\lambda}{2\Delta_x})^2}}
+$$
+zeros($\frac{M_x}{2}$ zeros on each side). Number of additional zeros in the $y$ direction can be calculated similarly substituting $\Delta_y$ and $M_y$.
+
+It is important to note that if the number of added zeros $M_x\geq N_x$, preferable to use RSCM with increased grid size. Reasons determines this statement will be discussed further.
+
+Finally, to accurate calculation of the diffraction field using ASM it is necessary to:
+1. Define the $x$ and $y$ components of the electric field $\boldsymbol{E}(x,y,0)$ on the numerical grid determined by the sampling intervals $\Delta_x=\dfrac{L_x}{N_x}$ and $\Delta_y=\dfrac{L_y}{N_y}$ on each direction.
+2. Add $M_x$ and $M_y$ zeros on $x$ and $y$ directions accordingly and ensure that $M_x \leq N_x$ and $M_y \leq N_y$.
+3. Apply 2D FFT to the $x$ and $y$ components of the electric field with aim to get Fourier images of each component.
+4. Calculate the impulse response function on numerical grid with size $L_x~X~L_y$ and number of computational nodes $(N_x+M_x)~X~(N_y+M_y)$ respectively.
+5. Multiply Fourier image of each component by the corresponding impulse function.
+6. Apply inverse 2D FFT to obtain the representation of the diffracted electric field in coordinate domain.
+7. Clip the calculated components of the electric field to the original grid size $L_x~X~L_y$ and number of computational nodes $N_x~X~N_y$.
 <Comments />

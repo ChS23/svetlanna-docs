@@ -1,0 +1,35 @@
+{
+    // Use markdown mode for .mdx so VS Code preview renders math (including \partial)
+    "files.associations": {
+        "*.mdx": "markdown"
+    },
+    // Formatter
+    "[mdx]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": false
+        }
+    },
+    // Markdown settings (applied to MDX too by the extension)
+    "[markdown]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.wordWrap": "on"
+    },
+    // TypeScript/JS IntelliSense inside MDX (via unifiedjs.vscode-mdx)
+    "mdx.experimentalLanguageServer": true,
+    // Enable LaTeX rendering in VS Code markdown preview
+    "markdown.math.enabled": true,
+    // Prettier config
+    "prettier.proseWrap": "always",
+    "prettier.embeddedLanguageFormatting": "auto",
+    // Editor comfort
+    "editor.rulers": [
+        100
+    ],
+    "editor.renderWhitespace": "boundary"
+}

@@ -9,14 +9,14 @@ export interface LectureInfo {
 }
 
 export const TRACK_LABELS: Record<Track, string> = {
-  everyone: "Для всех",
-  physicists: "Для физиков",
-  programmers: "Для программистов",
+  everyone: "For everyone",
+  physicists: "For physicists",
+  programmers: "For programmers",
 };
 
 export const TRACK_STYLES: Record<Track, { bg: string; text: string; darkBg: string; darkText: string }> = {
-  everyone:    { bg: "#dcfce7", text: "#15803d", darkBg: "rgba(22,101,52,0.3)",  darkText: "#86efac" },
-  physicists:  { bg: "#dbeafe", text: "#1d4ed8", darkBg: "rgba(30,64,175,0.3)",  darkText: "#93c5fd" },
+  everyone: { bg: "#dcfce7", text: "#15803d", darkBg: "rgba(22,101,52,0.3)", darkText: "#86efac" },
+  physicists: { bg: "#dbeafe", text: "#1d4ed8", darkBg: "rgba(30,64,175,0.3)", darkText: "#93c5fd" },
   programmers: { bg: "#f3e8ff", text: "#7e22ce", darkBg: "rgba(107,33,168,0.3)", darkText: "#d8b4fe" },
 };
 
@@ -24,50 +24,50 @@ export const lectures: LectureInfo[] = [
   {
     slug: "electromagnetic-waves",
     number: "00",
-    title: "Уравнения Максвелла",
+    title: "Maxwell's equations",
     tracks: ["programmers"],
-    description: "Основы электродинамики и распространение электромагнитных волн",
+    description: "Foundations of electrodynamics and propagation of electromagnetic waves",
   },
   {
     slug: "fourier-optics",
     number: "01",
-    title: "Фурье-оптика",
+    title: "Fourier Optics",
     tracks: ["programmers"],
-    description: "Уравнение Гельмгольца, интеграл дифракции Рэлея-Соммерфельда",
+    description: "Helmholtz equation, Rayleigh-Sommerfeld diffraction integral",
   },
   {
     slug: "angular-spectrum",
     number: "02",
-    title: "Метод углового спектра",
+    title: "Angular Spectrum Method",
     tracks: ["programmers"],
-    description: "Разложение по плоским волнам, функция отклика свободного пространства",
+    description: "Plane wave decomposition, free-space response function",
   },
   {
     slug: "diffractive-elements",
     number: "03",
-    title: "Дифракционные оптические элементы",
+    title: "Diffractive Optical Elements",
     tracks: ["everyone"],
-    description: "Амплитудная и фазовая модуляция, тонкая линза, дифракционный слой, SLM",
+    description: "Amplitude and phase modulation, thin lens, diffractive layer, SLM",
   },
   {
     slug: "backpropagation",
     number: "04",
-    title: "Алгоритм обратного распространения",
+    title: "Backpropagation",
     tracks: ["physicists"],
-    description: "Forward и backward pass, вычисление градиентов, дельта-правило",
+    description: "Forward and backward pass, common schema",
   },
   {
     slug: "optimization-methods",
     number: "05",
-    title: "Методы оптимизации",
+    title: "Optimization Methods",
     tracks: ["physicists"],
-    description: "Градиентный спуск, Adam, SGD, RMSProp",
+    description: "Gradient descent, Adam, SGD",
   },
   {
     slug: "optical-computing",
     number: "06",
-    title: "Оптические вычислители",
+    title: "Optical Computers",
     tracks: ["everyone"],
-    description: "D2NN, рекуррентные и свёрточные дифракционные сети",
+    description: "D2NN, Diffractive Recurrent Neural Networks, Diffractive Convolutional Neural Networks",
   },
 ];
