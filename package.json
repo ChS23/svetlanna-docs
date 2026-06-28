@@ -2,6 +2,7 @@
   "name": "svetlanna-docs",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@latest",
   "scripts": {
     "notebooks": "node lib/convert-notebooks.js",
     "predev": "node lib/convert-notebooks.js",
