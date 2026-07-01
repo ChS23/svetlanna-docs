@@ -32,5 +32,6 @@
     "pagefind": "^1.4.0",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "pnpm@9.15.0"
 }
