@@ -251,7 +251,7 @@ Image generation is based on the `pillow` package.
 **`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
 
 ```python
-__init__(self, value: Any, mode: Literal['1', 'L', 'LA', 'I', 'P', 'RGB', 'RGBA'] = 'L', format: str = 'png', show_image: bool = True)
+__init__(self, value: Any, mode: Literal['1', 'L', 'LA', 'P', 'RGB', 'RGBA'] = 'L', format: str = 'png', show_image: bool = True)
 ```
 
 
@@ -261,7 +261,7 @@ __init__(self, value: Any, mode: Literal['1', 'L', 'LA', 'I', 'P', 'RGB', 'RGBA'
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
 | `value` | `Any` | The image data. See `matplotlib.pyplot.imshow` docs. |
-| `mode` | `Literal['1', 'L', 'LA', 'I', 'P', 'RGB', 'RGBA'], optional` | the mode of the image, see https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes. By default `L` |
+| `mode` | `Literal['1', 'L', 'LA', 'P', 'RGB', 'RGBA'], optional` | the mode of the image, see https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes. By default `L` |
 | `format` | `str, optional` | the image format, by default 'png' |
 
 </details>
