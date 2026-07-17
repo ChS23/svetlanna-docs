@@ -80,344 +80,6 @@ to_specs(self) -> Iterable[ParameterSpecs]
 </div>
 
 
-### DiffractiveLayer
-
-<small>Наследует: `Element`</small>
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">The tensor representing the transmission function of the element</p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor, mask_norm: float = 2 * torch.pi)
-```
-
-Diffractive layer defined by a phase mask.
-The field after propagating through the layer is calculated as:
-
-$$
-E^\text&#123;out&#125;_&#123;xyw...&#125; = E^\text&#123;in&#125;_&#123;xyw...&#125; \cdot \exp\left(2\pi i \frac&#123;\text&#123;mask&#125;_&#123;xy&#125;&#125;&#123;\text&#123;mask\_norm&#125;&#125;\right)
-$$
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
-| `mask` | `OptimizableTensor` | Two-dimensional tensor representing the aperture mask of shape `(H, W)`. |
-| `mask_norm` | `float, optional` | Mask normalization factor. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`reverse`**
-
-```python
-reverse(self, transmission_wavefront: Wavefront) -> Wavefront
-```
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs]
-```
-
-</div>
-
-
-### AbstractMulElement
-
-<small>Наследует: `Element` `ABC`</small>
-
-Class that generalize all apertures with $E^\text&#123;out&#125; = \hat&#123;T&#125;E^\text&#123;in&#125;$ like forward function,
-where $\hat&#123;T&#125;$ is transmission function.
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">The tensor representing transmission function of the element, $\hat&#123;T&#125;$.</p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-</div>
-
-
-### Aperture
-
-<small>Наследует: `AbstractMulElement`</small>
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor)
-```
-
-Aperture defined by mask tensor.
-Commonly, the mask is a tensor with values of either 0 or 1,
-where 0 represents blocked light and 1 represents allowed light.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
-| `mask` | `torch.Tensor` | Two-dimensional tensor representing the aperture mask of shape `(Ny, Nx)`. The mask works as following: |
-| `None` | `$$E^\text&#123;out&#125;_&#123;xyw...&#125; = \text&#123;mask&#125;_&#123;xy&#125; E^\text&#123;in&#125;_&#123;xyw...&#125;$$` |  |
-| `None` | `In this case 0 blocks light and 1 allows light go through.` |  |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs]
-```
-
-</div>
-
-
-### RectangularAperture
-
-<small>Наследует: `AbstractMulElement`</small>
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, height: float, width: float)
-```
-
-Rectangular aperture.
-Through the rectangular area of defined height and width located in the
-center the light is allowed to pass, otherwise blocked.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
-| `height` | `float` | Aperture height. |
-| `width` | `float` | Aperture width. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs]
-```
-
-</div>
-
-
-### RoundAperture
-
-<small>Наследует: `AbstractMulElement`</small>
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, radius: float)
-```
-
-Round-shaped aperture.
-Through the round area of defined radius located in the center
-the light is allowed to pass, otherwise blocked.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
-| `radius` | `float` | Radius of the round-shaped aperture. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs]
-```
-
-</div>
-
-
-### SpatialLightModulator
-
-<small>Наследует: `Element` `Generic[_F]`</small>
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor, height: float, width: float, lut_function: _F = identity, center: Tuple[float, float] = (0.0, 0.0), mode: Literal['nearest', 'bilinear', 'bicubic', 'area', 'nearest-exact'] = 'nearest')
-```
-
-Spatial Light Modulator (SLM) element implementation.
-SLM supports pixel size that differs from the simulation grid size.
-The lookup table function (`lut_function`) allows applying a non-linear transformation to the mask values, for example, to implement quantization.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
-| `mask` | `OptimizableTensor` | Mask tensor of the shape `(Ny_mask, Nx_mask)`, where `Ny_mask` and `Nx_mask` are the height and width of the mask in pixels. It can be different from the simulation grid shape `(Ny, Nx)`; interpolation is applied to fit the mask to the SLM area. |
-| `height` | `float` | Height of the SLM. |
-| `width` | `float` | Width of the SLM. |
-| `lut_function` | `_F, optional` | Lookup table function applied to the mask values, by default `identity`. |
-| `center` | `Tuple[float, float], optional` | Center coordinate `(x, y)` of the SLM in the simulation grid coordinates, by default `(0.0, 0.0)`. |
-| `mode` | `Literal[ 'nearest', 'bilinear', 'bicubic', 'area', 'nearest-exact' ], optional` | Interpolation mode for resizing the mask, by default `'nearest'`. See [`torch.nn.functional.interpolate` documentation](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.interpolate.html) for more details. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`reverse`**
-
-```python
-reverse(self, transmission_wavefront: Wavefront) -> Wavefront
-```
-
-</div>
-
-
 ### _BufferedValueContainer
 
 <small>Наследует: `tuple`</small>
@@ -638,6 +300,199 @@ forward(self, incident_wavefront: Wavefront) -> Wavefront
 </div>
 
 
+### AbstractMulElement
+
+<small>Наследует: `Element` `ABC`</small>
+
+Class that generalize all apertures with $E^\text&#123;out&#125; = \hat&#123;T&#125;E^\text&#123;in&#125;$ like forward function,
+where $\hat&#123;T&#125;$ is transmission function.
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">The tensor representing transmission function of the element, $\hat&#123;T&#125;$.</p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+
+### Aperture
+
+<small>Наследует: `AbstractMulElement`</small>
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor)
+```
+
+Aperture defined by mask tensor.
+Commonly, the mask is a tensor with values of either 0 or 1,
+where 0 represents blocked light and 1 represents allowed light.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `mask` | `torch.Tensor` | Two-dimensional tensor representing the aperture mask of shape `(Ny, Nx)`. The mask works as following: |
+| `None` | `$$E^\text&#123;out&#125;_&#123;xyw...&#125; = \text&#123;mask&#125;_&#123;xy&#125; E^\text&#123;in&#125;_&#123;xyw...&#125;$$` |  |
+| `None` | `In this case 0 blocks light and 1 allows light go through.` |  |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs]
+```
+
+</div>
+
+
+### RectangularAperture
+
+<small>Наследует: `AbstractMulElement`</small>
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, height: float, width: float)
+```
+
+Rectangular aperture.
+Through the rectangular area of defined height and width located in the
+center the light is allowed to pass, otherwise blocked.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `height` | `float` | Aperture height. |
+| `width` | `float` | Aperture width. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs]
+```
+
+</div>
+
+
+### RoundAperture
+
+<small>Наследует: `AbstractMulElement`</small>
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, radius: float)
+```
+
+Round-shaped aperture.
+Through the round area of defined radius located in the center
+the light is allowed to pass, otherwise blocked.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `radius` | `float` | Radius of the round-shaped aperture. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs]
+```
+
+</div>
+
+
 ### FreeSpace
 
 <small>Наследует: `Element`</small>
@@ -736,6 +591,151 @@ Sequence of ParameterSpecs objects containing the parameters of the element
 
 
 </details>
+
+</div>
+
+
+### SpatialLightModulator
+
+<small>Наследует: `Element` `Generic[_F]`</small>
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor, height: float, width: float, lut_function: _F = identity, center: Tuple[float, float] = (0.0, 0.0), mode: Literal['nearest', 'bilinear', 'bicubic', 'area', 'nearest-exact'] = 'nearest')
+```
+
+Spatial Light Modulator (SLM) element implementation.
+SLM supports pixel size that differs from the simulation grid size.
+The lookup table function (`lut_function`) allows applying a non-linear transformation to the mask values, for example, to implement quantization.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `mask` | `OptimizableTensor` | Mask tensor of the shape `(Ny_mask, Nx_mask)`, where `Ny_mask` and `Nx_mask` are the height and width of the mask in pixels. It can be different from the simulation grid shape `(Ny, Nx)`; interpolation is applied to fit the mask to the SLM area. |
+| `height` | `float` | Height of the SLM. |
+| `width` | `float` | Width of the SLM. |
+| `lut_function` | `_F, optional` | Lookup table function applied to the mask values, by default `identity`. |
+| `center` | `Tuple[float, float], optional` | Center coordinate `(x, y)` of the SLM in the simulation grid coordinates, by default `(0.0, 0.0)`. |
+| `mode` | `Literal[ 'nearest', 'bilinear', 'bicubic', 'area', 'nearest-exact' ], optional` | Interpolation mode for resizing the mask, by default `'nearest'`. See [`torch.nn.functional.interpolate` documentation](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.interpolate.html) for more details. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`reverse`**
+
+```python
+reverse(self, transmission_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+
+### DiffractiveLayer
+
+<small>Наследует: `Element`</small>
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">The tensor representing the transmission function of the element</p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor, mask_norm: float = 2 * torch.pi)
+```
+
+Diffractive layer defined by a phase mask.
+The field after propagating through the layer is calculated as:
+
+$$
+E^\text&#123;out&#125;_&#123;xyw...&#125; = E^\text&#123;in&#125;_&#123;xyw...&#125; \cdot \exp\left(2\pi i \frac&#123;\text&#123;mask&#125;_&#123;xy&#125;&#125;&#123;\text&#123;mask\_norm&#125;&#125;\right)
+$$
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `mask` | `OptimizableTensor` | Two-dimensional tensor representing the aperture mask of shape `(H, W)`. |
+| `mask_norm` | `float, optional` | Mask normalization factor. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`reverse`**
+
+```python
+reverse(self, transmission_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs]
+```
 
 </div>
 
