@@ -8,21 +8,23 @@ from svetlanna.networks import ...
 
 ## Классы
 
-### LinearOpticalSetupLike
+### DiffractiveRNN
 
-<small>Наследует: `Protocol`</small>
+<small>Наследует: `nn.Module`</small>
 
-Protocol for objects that behave like linear optical setups.
+A simple recurrent diffractive network of an architecture proposed in the article:
+https://www.nature.com/articles/s41566-021-00796-w
 
-This protocol provides flexibility when defining optical setups: any callable
-object (or composition of callables) is valid as long as it accepts a
-[Wavefront][svetlanna.Wavefront] and returns a [Wavefront][svetlanna.Wavefront].
+#### Свойства
 
-It generalizes [`LinearOpticalSetup`][svetlanna.LinearOpticalSetup].
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
-### SimpleReservoir
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">device</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+</div>
+</div>
 
-<small>Наследует: `torch.nn.Module`</small>
 
 #### Методы
 
@@ -31,110 +33,26 @@ It generalizes [`LinearOpticalSetup`][svetlanna.LinearOpticalSetup].
 **`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
 
 ```python
-__init__(self, nonlinear_element: LinearOpticalSetupLike, delay_element: LinearOpticalSetupLike, feedback_gain: float, input_gain: float, delay: int) -> None
+__init__(self, sim_params: SimulationParameters, sequence_len: int, fusing_coeff: float, read_in_layer: nn.Sequential, memory_layer: nn.Sequential, hidden_forward_layer: nn.Sequential, read_out_layer: nn.Sequential, detector_layer: nn.Sequential, device: str | torch.device = torch.get_default_device())
 ```
 
-Reservoir network.
-The main idea is explained in [the work](https://doi.org/10.1364/OE.20.022783).
-The governing formula is:
-$$
-x_\text&#123;out&#125;[i] = F_\text&#123;NL&#125;(\beta x_\text&#123;in&#125;[i] + \alpha F_\text&#123;D&#125;(x_\text&#123;out&#125;[i-\tau]))
-$$
-where $F_\text&#123;NL&#125;$ is the nonlinear element, $F_\text&#123;D&#125;$ is the delay element,
-$\alpha$ is the feedback_gain, $\beta$ is the input_gain,
-$\tau$ is the delay in samples.
-The user should match the delay in samples with the actual
-light propagation time in $F_\text&#123;D&#125;$.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `nonlinear_element` | `LinearOpticalSetupLike` | The nonlinear element the light passes through. |
-| `delay_element` | `LinearOpticalSetupLike` | The delay line element. |
-| `feedback_gain` | `float` | The feedback (delay line) gain $\alpha$. |
-| `input_gain` | `float` | The input gain $\beta$ |
-| `delay` | `int` | The delay time, measured in samples, that the light spends in the delay line. |
-
-</details>
-
-
-**Examples**
-
-- *```python* — 
-- *import svetlanna as sv* — 
-- *from svetlanna.visualization import show_structure* — 
-- *sim_params = ...* — 
-- *reservoir = SimpleReservoir(* — nonlinear_element=sv.elements.NonlinearElement( simulation_parameters=sim_params, response_function=lambda x: x**2, ), delay_element=sv.elements.FreeSpace( simulation_parameters=sim_params, distance=0.2, method="AS" ), feedback_gain=0.5, input_gain=0.5, delay=3,
-- *)* — 
-- *for input_wavefront in input_wavefront_sequence:* — output = reservoir(input_wavefront)
-- *# clear the delay line before the next sequence or batch* — 
-- *reservoir.drop_feedback_queue()* — 
-- *show_structure(reservoir)* — 
-- *```* — 
-- *Output (in IPython environment):* — 
-- *<iframe* — 
-- *src="show_structure_SimpleReservoir.html"* — 
-- *style="width:100%; height:300px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`append_feedback_queue`**
-
-```python
-append_feedback_queue(self, field: Wavefront)
-```
-
-Append a new wavefront to the feedback queue.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `field` | `Wavefront` | The new wavefront to be added to the end of the queue. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`pop_feedback_queue`**
-
-```python
-pop_feedback_queue(self) -> None | Wavefront
-```
-
-Retrieve and remove the first element from the feedback queue
-if available.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`None | Wavefront`**
-
-The first wavefront in the queue if the queue is not empty; otherwise, None.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`drop_feedback_queue`**
-
-```python
-drop_feedback_queue(self) -> None
-```
-
-Clear all elements from the feedback queue.
+sim_params: SimulationParameters
+    Simulation parameters for the task.
+sequence_len: int
+    A size (number of frames) of sequences (of Wavefronts) for prediction.
+fusing_coeff: float
+    A coefficient in a function for a hidden state (lambda in methods of the article).
+read_in_layer, memory_layer: nn.Sequential
+    Systems of elements for a D-RNN parts (see the article).
+hidden_forward_layer: nn.Sequential
+    System for a hidden state after each frame input.
+    Comment:
+        mix_i = (1 - fusing_coeff) * read_in_layer(input_i) + fusing_coeff * hidden_i
+        hidden_i = hidden_forward_layer(mix_i)
+read_out_layer, detector_layer: nn.Sequential
+    System of elements for a D-RNN output. `detector_layer` ends with a Detector!
+device: torch.device
+    Specified device.
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -142,8 +60,18 @@ Clear all elements from the feedback queue.
 **`forward`**
 
 ```python
-forward(self, input_wavefront: Wavefront) -> Wavefront
+forward(self, subsequence_wf: Wavefront)
 ```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `None` | `subsequence_wf: Wavefront('batch_size', 'sequence_len', 'y', 'x')` | Wavefronts for a sequence. Comment: works for a single wavelength in SimulationParameters! |
+
+</details>
 
 </div>
 
@@ -153,6 +81,16 @@ forward(self, input_wavefront: Wavefront) -> Wavefront
 
 ```python
 to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to`**
+
+```python
+to(self, device: str | torch.device | int) -> 'DiffractiveRNN'
 ```
 
 </div>
@@ -296,94 +234,6 @@ to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 </div>
 
 
-### DiffractiveRNN
-
-<small>Наследует: `nn.Module`</small>
-
-A simple recurrent diffractive network of an architecture proposed in the article:
-https://www.nature.com/articles/s41566-021-00796-w
-
-#### Свойства
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">device</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
-</div>
-</div>
-
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, sim_params: SimulationParameters, sequence_len: int, fusing_coeff: float, read_in_layer: nn.Sequential, memory_layer: nn.Sequential, hidden_forward_layer: nn.Sequential, read_out_layer: nn.Sequential, detector_layer: nn.Sequential, device: str | torch.device = torch.get_default_device())
-```
-
-sim_params: SimulationParameters
-    Simulation parameters for the task.
-sequence_len: int
-    A size (number of frames) of sequences (of Wavefronts) for prediction.
-fusing_coeff: float
-    A coefficient in a function for a hidden state (lambda in methods of the article).
-read_in_layer, memory_layer: nn.Sequential
-    Systems of elements for a D-RNN parts (see the article).
-hidden_forward_layer: nn.Sequential
-    System for a hidden state after each frame input.
-    Comment:
-        mix_i = (1 - fusing_coeff) * read_in_layer(input_i) + fusing_coeff * hidden_i
-        hidden_i = hidden_forward_layer(mix_i)
-read_out_layer, detector_layer: nn.Sequential
-    System of elements for a D-RNN output. `detector_layer` ends with a Detector!
-device: torch.device
-    Specified device.
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, subsequence_wf: Wavefront)
-```
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `None` | `subsequence_wf: Wavefront('batch_size', 'sequence_len', 'y', 'x')` | Wavefronts for a sequence. Comment: works for a single wavelength in SimulationParameters! |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
-```
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to`**
-
-```python
-to(self, device: str | torch.device | int) -> 'DiffractiveRNN'
-```
-
-</div>
-
-
 ### LinearAutoencoder
 
 <small>Наследует: `nn.Module`</small>
@@ -495,3 +345,153 @@ to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 
 </div>
 
+
+### SimpleReservoir
+
+<small>Наследует: `torch.nn.Module`</small>
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, nonlinear_element: LinearOpticalSetupLike, delay_element: LinearOpticalSetupLike, feedback_gain: float, input_gain: float, delay: int) -> None
+```
+
+Reservoir network.
+The main idea is explained in [the work](https://doi.org/10.1364/OE.20.022783).
+The governing formula is:
+$$
+x_\text&#123;out&#125;[i] = F_\text&#123;NL&#125;(\beta x_\text&#123;in&#125;[i] + \alpha F_\text&#123;D&#125;(x_\text&#123;out&#125;[i-\tau]))
+$$
+where $F_\text&#123;NL&#125;$ is the nonlinear element, $F_\text&#123;D&#125;$ is the delay element,
+$\alpha$ is the feedback_gain, $\beta$ is the input_gain,
+$\tau$ is the delay in samples.
+The user should match the delay in samples with the actual
+light propagation time in $F_\text&#123;D&#125;$.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `nonlinear_element` | `LinearOpticalSetupLike` | The nonlinear element the light passes through. |
+| `delay_element` | `LinearOpticalSetupLike` | The delay line element. |
+| `feedback_gain` | `float` | The feedback (delay line) gain $\alpha$. |
+| `input_gain` | `float` | The input gain $\beta$ |
+| `delay` | `int` | The delay time, measured in samples, that the light spends in the delay line. |
+
+</details>
+
+
+**Examples**
+
+- *```python* — 
+- *import svetlanna as sv* — 
+- *from svetlanna.visualization import show_structure* — 
+- *sim_params = ...* — 
+- *reservoir = SimpleReservoir(* — nonlinear_element=sv.elements.NonlinearElement( simulation_parameters=sim_params, response_function=lambda x: x**2, ), delay_element=sv.elements.FreeSpace( simulation_parameters=sim_params, distance=0.2, method="AS" ), feedback_gain=0.5, input_gain=0.5, delay=3,
+- *)* — 
+- *for input_wavefront in input_wavefront_sequence:* — output = reservoir(input_wavefront)
+- *# clear the delay line before the next sequence or batch* — 
+- *reservoir.drop_feedback_queue()* — 
+- *show_structure(reservoir)* — 
+- *```* — 
+- *Output (in IPython environment):* — 
+- *<iframe* — 
+- *src="show_structure_SimpleReservoir.html"* — 
+- *style="width:100%; height:300px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`append_feedback_queue`**
+
+```python
+append_feedback_queue(self, field: Wavefront)
+```
+
+Append a new wavefront to the feedback queue.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `field` | `Wavefront` | The new wavefront to be added to the end of the queue. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`pop_feedback_queue`**
+
+```python
+pop_feedback_queue(self) -> None | Wavefront
+```
+
+Retrieve and remove the first element from the feedback queue
+if available.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`None | Wavefront`**
+
+The first wavefront in the queue if the queue is not empty; otherwise, None.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`drop_feedback_queue`**
+
+```python
+drop_feedback_queue(self) -> None
+```
+
+Clear all elements from the feedback queue.
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, input_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
+```
+
+</div>
+
+
+### LinearOpticalSetupLike
+
+<small>Наследует: `Protocol`</small>
+
+Protocol for objects that behave like linear optical setups.
+
+This protocol provides flexibility when defining optical setups: any callable
+object (or composition of callables) is valid as long as it accepts a
+[Wavefront][svetlanna.Wavefront] and returns a [Wavefront][svetlanna.Wavefront].
+
+It generalizes [`LinearOpticalSetup`][svetlanna.LinearOpticalSetup].

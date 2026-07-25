@@ -8,6 +8,74 @@ from svetlanna.elements import ...
 
 ## Классы
 
+### NonlinearElement
+
+<small>Наследует: `Element`</small>
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, response_function: Callable[[Wavefront], Wavefront])
+```
+
+Nonlinear optical element with a given response function.
+The response function takes an incident wavefront and returns the modified wavefront.
+
+
+**Examples**
+
+- *Suppose the response function is defined as* — 
+- *$E^\text&#123;out&#125; = \sqrt&#123;|E^\text&#123;in&#125;|&#125;e^&#123;i \arg(E^\text&#123;in&#125;)&#125;$:* — 
+- *```python hl_lines="8"* — 
+- *import svetlanna as sv* — 
+- *import torch* — 
+- *sim_params = sv.SimulationParameters(...)* — 
+- *sv.elements.NonlinearElement(* — simulation_parameters=sim_params, response_function = lambda E: torch.polar(torch.sqrt(E.abs()), E.angle())
+- *)* — 
+- *```* — 
+- *If you want to optimize the parameters of the response function, you can use* — 
+- *`svetlanna.PartialWithParameters` to wrap the response function with trainable parameters.* — 
+- *For example, if the response function is defined as* — 
+- *$E^\text&#123;out&#125; = |E^\text&#123;in&#125;|^a e^&#123;i b \arg(E^\text&#123;in&#125;)&#125;$, where $0<a<1$ and* — 
+- *$b$ are trainable, you can define the nonlinear element as follows:* — 
+- *```python hl_lines="1 2 6-10"* — 
+- *def response_function(E, a, b):* — return torch.polar(E.abs()**a, b * E.angle())
+- *sv.elements.NonlinearElement(* — simulation_parameters=sim_params, response_function = sv.PartialWithParameters( response_function, a=sv.ConstrainedParameter(0.5, min_value=0.0, max_value=1.0), b=sv.Parameter(1.0), ),
+- *)* — 
+- *```* — 
+- *You can also train a neural network inside the nonlinear element!* — 
+- *```python hl_lines="3"* — 
+- *sv.elements.NonlinearElement(* — simulation_parameters=sim_params, response_function=my_neural_network,
+- *)* — 
+- *```* — 
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `response_function` | `Callable[[Wavefront], Wavefront]` | Function that describes the nonlinear response of the element. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+
 ### ThinLens
 
 <small>Наследует: `Element`</small>
@@ -75,226 +143,6 @@ reverse(self, transmission_wavefront: Wavefront) -> Wavefront
 
 ```python
 to_specs(self) -> Iterable[ParameterSpecs]
-```
-
-</div>
-
-
-### _BufferedValueContainer
-
-<small>Наследует: `tuple`</small>
-
-Internal class that marks buffered values.
-
-It is used to prevent double __setattr__ calls with the same value in
-patterns like `self.x = self.make_buffer('x', x_value)`.
-Inheriting from tuple is used for performance reasons, hence `__slots__`.
-This approach was identified by GPT as the fastest one.
-
-### Element
-
-<small>Наследует: `nn.Module`</small>
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters) -> None
-```
-
-This is the abstract class for all optical elements in SVETlANNa.
-It is inherited from `torch.nn.Module`, so it is PyTorch-compatible.
-Each element takes an incident wavefront and produces a transmitted wavefront.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
-```
-
-Forward propagation through the optical element.
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`to_specs`**
-
-```python
-to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
-```
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`make_buffer`**
-
-```python
-make_buffer(self, name: str, value: _T, persistent: bool = False) -> _T
-```
-
-Make buffer for internal use.
-
-Use case in `__init__` method:
-```python linenums="0"
-self.mask = self.make_buffer('mask', some_tensor)
-```
-This allow torch to properly process the `.to` method on the element, since the buffer `maask` will be transferred to the required device along with simulation parameters.
-This allows torch to properly process the `.to` method on the element, since the buffer `mask` will be transferred to the required device along with simulation parameters.
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `name` | `str` | Name of the new buffer (it is more convenient to use the name of the new attribute). |
-| `value` | `_T` | Tensor to be buffered. |
-| `persistent` | `bool, optional` | See torch docs on buffers, by default `False`. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`_T`**
-
-The value passed to the method.
-
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`process_parameter`**
-
-```python
-process_parameter(self, name: str, value: _V) -> _V
-```
-
-Process element parameter passed by user.
-Automatically registers buffer for non-parametric tensors.
-
-Use case in `__init__` method:
-```python linenums="0"
-class SomeElement(Element):
-    def __init__(self, simulation_parameters, mask, a):
-        super().__init__(simulation_parameters)
-
-        self.mask = self.process_parameter('mask', mask)
-        self.a = self.process_parameter('a', a)
-
-        ...
-```
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `name` | `str` | Name of the new buffer (it is more convenient to use the name of the new attribute). |
-| `value` | `_V` | The value of the element parameter. |
-
-</details>
-
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
-
-**`_V`**
-
-The value passed to the method.
-
-
-</details>
-
-</div>
-
-
-### NonlinearElement
-
-<small>Наследует: `Element`</small>
-
-#### Методы
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
-
-```python
-__init__(self, simulation_parameters: SimulationParameters, response_function: Callable[[Wavefront], Wavefront])
-```
-
-Nonlinear optical element with a given response function.
-The response function takes an incident wavefront and returns the modified wavefront.
-
-
-**Examples**
-
-- *Suppose the response function is defined as* — 
-- *$E^\text&#123;out&#125; = \sqrt&#123;|E^\text&#123;in&#125;|&#125;e^&#123;i \arg(E^\text&#123;in&#125;)&#125;$:* — 
-- *```python hl_lines="8"* — 
-- *import svetlanna as sv* — 
-- *import torch* — 
-- *sim_params = sv.SimulationParameters(...)* — 
-- *sv.elements.NonlinearElement(* — simulation_parameters=sim_params, response_function = lambda E: torch.polar(torch.sqrt(E.abs()), E.angle())
-- *)* — 
-- *```* — 
-- *If you want to optimize the parameters of the response function, you can use* — 
-- *`svetlanna.PartialWithParameters` to wrap the response function with trainable parameters.* — 
-- *For example, if the response function is defined as* — 
-- *$E^\text&#123;out&#125; = |E^\text&#123;in&#125;|^a e^&#123;i b \arg(E^\text&#123;in&#125;)&#125;$, where $0<a<1$ and* — 
-- *$b$ are trainable, you can define the nonlinear element as follows:* — 
-- *```python hl_lines="1 2 6-10"* — 
-- *def response_function(E, a, b):* — return torch.polar(E.abs()**a, b * E.angle())
-- *sv.elements.NonlinearElement(* — simulation_parameters=sim_params, response_function = sv.PartialWithParameters( response_function, a=sv.ConstrainedParameter(0.5, min_value=0.0, max_value=1.0), b=sv.Parameter(1.0), ),
-- *)* — 
-- *```* — 
-- *You can also train a neural network inside the nonlinear element!* — 
-- *```python hl_lines="3"* — 
-- *sv.elements.NonlinearElement(* — simulation_parameters=sim_params, response_function=my_neural_network,
-- *)* — 
-- *```* — 
-
-<details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
-
-| Параметр | Тип | Описание |
-|:---------|:----|:---------|
-| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
-| `response_function` | `Callable[[Wavefront], Wavefront]` | Function that describes the nonlinear response of the element. |
-
-</details>
-
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`forward`**
-
-```python
-forward(self, incident_wavefront: Wavefront) -> Wavefront
 ```
 
 </div>
@@ -493,6 +341,83 @@ to_specs(self) -> Iterable[ParameterSpecs]
 </div>
 
 
+### DiffractiveLayer
+
+<small>Наследует: `Element`</small>
+
+#### Свойства
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+
+<div className="border rounded-lg p-4 dark:border-neutral-700">
+  <code className="text-sm font-semibold">transmission_function</code>
+  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">The tensor representing the transmission function of the element</p>
+</div>
+</div>
+
+
+#### Методы
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
+
+```python
+__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor, mask_norm: float = 2 * torch.pi)
+```
+
+Diffractive layer defined by a phase mask.
+The field after propagating through the layer is calculated as:
+
+$$
+E^\text&#123;out&#125;_&#123;xyw...&#125; = E^\text&#123;in&#125;_&#123;xyw...&#125; \cdot \exp\left(2\pi i \frac&#123;\text&#123;mask&#125;_&#123;xy&#125;&#125;&#123;\text&#123;mask\_norm&#125;&#125;\right)
+$$
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
+| `mask` | `OptimizableTensor` | Two-dimensional tensor representing the aperture mask of shape `(H, W)`. |
+| `mask_norm` | `float, optional` | Mask normalization factor. |
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`forward`**
+
+```python
+forward(self, incident_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`reverse`**
+
+```python
+reverse(self, transmission_wavefront: Wavefront) -> Wavefront
+```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`to_specs`**
+
+```python
+to_specs(self) -> Iterable[ParameterSpecs]
+```
+
+</div>
+
+
 ### FreeSpace
 
 <small>Наследует: `Element`</small>
@@ -663,20 +588,20 @@ reverse(self, transmission_wavefront: Wavefront) -> Wavefront
 </div>
 
 
-### DiffractiveLayer
+### _BufferedValueContainer
 
-<small>Наследует: `Element`</small>
+<small>Наследует: `tuple`</small>
 
-#### Свойства
+Internal class that marks buffered values.
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+It is used to prevent double __setattr__ calls with the same value in
+patterns like `self.x = self.make_buffer('x', x_value)`.
+Inheriting from tuple is used for performance reasons, hence `__slots__`.
+This approach was identified by GPT as the fastest one.
 
-<div className="border rounded-lg p-4 dark:border-neutral-700">
-  <code className="text-sm font-semibold">transmission_function</code>
-  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">The tensor representing the transmission function of the element</p>
-</div>
-</div>
+### Element
 
+<small>Наследует: `nn.Module`</small>
 
 #### Методы
 
@@ -685,15 +610,12 @@ reverse(self, transmission_wavefront: Wavefront) -> Wavefront
 **`__init__`** <small className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs">constructor</small>
 
 ```python
-__init__(self, simulation_parameters: SimulationParameters, mask: OptimizableTensor, mask_norm: float = 2 * torch.pi)
+__init__(self, simulation_parameters: SimulationParameters) -> None
 ```
 
-Diffractive layer defined by a phase mask.
-The field after propagating through the layer is calculated as:
-
-$$
-E^\text&#123;out&#125;_&#123;xyw...&#125; = E^\text&#123;in&#125;_&#123;xyw...&#125; \cdot \exp\left(2\pi i \frac&#123;\text&#123;mask&#125;_&#123;xy&#125;&#125;&#123;\text&#123;mask\_norm&#125;&#125;\right)
-$$
+This is the abstract class for all optical elements in SVETlANNa.
+It is inherited from `torch.nn.Module`, so it is PyTorch-compatible.
+Each element takes an incident wavefront and produces a transmitted wavefront.
 
 
 <details open>
@@ -702,8 +624,6 @@ $$
 | Параметр | Тип | Описание |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
-| `mask` | `OptimizableTensor` | Two-dimensional tensor representing the aperture mask of shape `(H, W)`. |
-| `mask_norm` | `float, optional` | Mask normalization factor. |
 
 </details>
 
@@ -717,16 +637,7 @@ $$
 forward(self, incident_wavefront: Wavefront) -> Wavefront
 ```
 
-</div>
-
-<div className="border-l-4 border-blue-500 pl-4 my-6">
-
-**`reverse`**
-
-```python
-reverse(self, transmission_wavefront: Wavefront) -> Wavefront
-```
-
+Forward propagation through the optical element.
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -734,8 +645,97 @@ reverse(self, transmission_wavefront: Wavefront) -> Wavefront
 **`to_specs`**
 
 ```python
-to_specs(self) -> Iterable[ParameterSpecs]
+to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 ```
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`make_buffer`**
+
+```python
+make_buffer(self, name: str, value: _T, persistent: bool = False) -> _T
+```
+
+Make buffer for internal use.
+
+Use case in `__init__` method:
+```python linenums="0"
+self.mask = self.make_buffer('mask', some_tensor)
+```
+This allow torch to properly process the `.to` method on the element, since the buffer `maask` will be transferred to the required device along with simulation parameters.
+This allows torch to properly process the `.to` method on the element, since the buffer `mask` will be transferred to the required device along with simulation parameters.
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `name` | `str` | Name of the new buffer (it is more convenient to use the name of the new attribute). |
+| `value` | `_T` | Tensor to be buffered. |
+| `persistent` | `bool, optional` | See torch docs on buffers, by default `False`. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`_T`**
+
+The value passed to the method.
+
+
+</details>
+
+</div>
+
+<div className="border-l-4 border-blue-500 pl-4 my-6">
+
+**`process_parameter`**
+
+```python
+process_parameter(self, name: str, value: _V) -> _V
+```
+
+Process element parameter passed by user.
+Automatically registers buffer for non-parametric tensors.
+
+Use case in `__init__` method:
+```python linenums="0"
+class SomeElement(Element):
+    def __init__(self, simulation_parameters, mask, a):
+        super().__init__(simulation_parameters)
+
+        self.mask = self.process_parameter('mask', mask)
+        self.a = self.process_parameter('a', a)
+
+        ...
+```
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+
+| Параметр | Тип | Описание |
+|:---------|:----|:---------|
+| `name` | `str` | Name of the new buffer (it is more convenient to use the name of the new attribute). |
+| `value` | `_V` | The value of the element parameter. |
+
+</details>
+
+
+<details open>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+
+**`_V`**
+
+The value passed to the method.
+
+
+</details>
 
 </div>
 
