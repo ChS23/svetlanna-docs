@@ -112,7 +112,7 @@ The response function takes an incident wavefront and returns the modified wavef
 - *If you want to optimize the parameters of the response function, you can use* — 
 - *`svetlanna.PartialWithParameters` to wrap the response function with trainable parameters.* — 
 - *For example, if the response function is defined as* — 
-- *$E^\text&#123;out&#125; = |E^\text&#123;in&#125;|^a e^&#123;i b \arg(E^\text&#123;in&#125;)&#125;$, where $0<a<1$ and* — 
+- *$E^\text&#123;out&#125; = |E^\text&#123;in&#125;|^a e^&#123;i b \arg(E^\text&#123;in&#125;)&#125;$, where $0&lt;a&lt;1$ and* — 
 - *$b$ are trainable, you can define the nonlinear element as follows:* — 
 - *```python hl_lines="1 2 6-10"* — 
 - *def response_function(E, a, b):* — return torch.polar(E.abs()**a, b * E.angle())
