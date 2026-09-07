@@ -1,32 +1,38 @@
-# Восстановление фазы
+# Phase retrieval
 
-Восстановление фазы — классическая задача оптики: определить фазу волнового фронта по измерениям интенсивности. В этом туториале мы реализуем алгоритм Gerchberg-Saxton.
+import { Callout } from 'nextra/components'
 
-## Проблема фазы
+Phase retrieval is a classical inverse problem in optics: recover the phase of a wavefront
+from intensity measurements alone. In this tutorial we implement the Gerchberg–Saxton
+algorithm.
 
-При измерении света детекторы регистрируют только интенсивность $I = |E|^2$, теряя информацию о фазе $\phi = \arg(E)$. Однако фаза критически важна для многих приложений:
+## The phase problem
 
-- Формирование пучка
-- Адаптивная оптика
-- Голография
-- Оптические пинцеты
+Detectors record only intensity, $I = |E|^2$, and discard the phase $\phi = \arg(E)$. Yet
+the phase is what matters for many applications:
 
-## Алгоритм Gerchberg-Saxton
+- beam shaping
+- adaptive optics
+- holography
+- optical tweezers
 
-### Идея
+## The Gerchberg–Saxton algorithm
 
-Если известны распределения интенсивности в двух сопряжённых плоскостях (например, объектной и фокальной), можно итеративно восстановить фазу.
+### Idea
 
-### Шаги алгоритма
+If the intensity distributions in two conjugate planes are known (for example the object
+plane and the focal plane), the phase can be recovered iteratively.
 
-1. Начать со случайной фазы
-2. Применить известную амплитуду в плоскости 1
-3. Выполнить преобразование (FFT или распространение)
-4. Применить известную амплитуду в плоскости 2
-5. Выполнить обратное преобразование
-6. Повторять до сходимости
+### Steps
 
-## Шаг 1: Настройка
+1. Start from a random phase.
+2. Impose the known amplitude in plane 1.
+3. Transform to plane 2 (FFT or physical propagation).
+4. Impose the known amplitude in plane 2.
+5. Transform back.
+6. Repeat until convergence.
+
+## Step 1: Setup
 
 ```python
 import torch
@@ -35,178 +41,154 @@ from svetlanna import SimulationParameters, Wavefront
 from svetlanna.elements import ThinLens, FreeSpace
 from svetlanna.units import ureg
 
-# Параметры
 params = SimulationParameters.from_ranges(
-    w_range=(-2*ureg.mm, 2*ureg.mm), w_points=256,
-    h_range=(-2*ureg.mm, 2*ureg.mm), h_points=256,
-    wavelength=632.8*ureg.nm
+    x_range=(-2*ureg.mm, 2*ureg.mm), x_points=256,
+    y_range=(-2*ureg.mm, 2*ureg.mm), y_points=256,
+    wavelength=632.8*ureg.nm,
 )
 
-# Координаты
-W, H = torch.meshgrid(params.axes.W, params.axes.H, indexing='xy')
+X, Y = params.meshgrid(x_axis="x", y_axis="y")
 ```
 
-## Шаг 2: Создание тестовых данных
+## Step 2: Test data
 
-Создадим "известные" распределения интенсивности:
+Two "known" amplitude distributions:
 
 ```python
-# Целевая амплитуда в плоскости объекта — буква "A"
-def create_letter_A(W, H, size=1e-3):
-    """Создаёт маску в форме буквы A."""
-    mask = torch.zeros_like(W)
+def create_letter_A(X, Y, size=1*ureg.mm):
+    """Build a mask shaped like the letter A."""
+    left = (X > -size*0.4) & (X < -size*0.3) & (Y > -size*0.5) & (Y < size*0.5)
+    right = (X > size*0.3) & (X < size*0.4) & (Y > -size*0.5) & (Y < size*0.5)
+    bar = (X > -size*0.3) & (X < size*0.3) & (Y > -size*0.1) & (Y < size*0.1)
+    top = (Y > size*0.3) & (Y < size*0.5) & (torch.abs(X) < (size*0.5 - Y)*0.8)
+    return (left | right | bar | top).float()
 
-    # Вертикальные линии
-    left = (W > -size*0.4) & (W < -size*0.3) & (H > -size*0.5) & (H < size*0.5)
-    right = (W > size*0.3) & (W < size*0.4) & (H > -size*0.5) & (H < size*0.5)
+source_amplitude = create_letter_A(X, Y)
 
-    # Горизонтальная перекладина
-    bar = (W > -size*0.3) & (W < size*0.3) & (H > -size*0.1) & (H < size*0.1)
+# target in the focal plane — an annulus
+r = torch.sqrt(X**2 + Y**2)
+target_amplitude = ((r > 0.3*ureg.mm) & (r < 0.5*ureg.mm)).float()
 
-    # Верхняя часть (треугольник)
-    top = (H > size*0.3) & (H < size*0.5) & (torch.abs(W) < (size*0.5 - H)*0.8)
-
-    mask = (left | right | bar | top).float()
-    return mask
-
-source_amplitude = create_letter_A(W, H)
-
-# Целевая амплитуда в фокальной плоскости — кольцо
-r = torch.sqrt(W**2 + H**2)
-inner_r = 0.3e-3
-outer_r = 0.5e-3
-target_amplitude = ((r > inner_r) & (r < outer_r)).float()
-
-# Нормализация
 source_amplitude = source_amplitude / source_amplitude.max()
 target_amplitude = target_amplitude / target_amplitude.sum().sqrt()
 ```
 
-## Шаг 3: Прямое и обратное преобразование
+## Step 3: Forward and backward transforms
 
-Для простоты используем FFT как модель распространения:
+For simplicity we model propagation with an FFT:
 
 ```python
 def forward_propagate(field):
-    """Прямое преобразование (FFT)."""
+    """Forward transform (FFT)."""
     return torch.fft.fftshift(torch.fft.fft2(torch.fft.ifftshift(field)))
 
 def backward_propagate(field):
-    """Обратное преобразование (IFFT)."""
+    """Inverse transform (IFFT)."""
     return torch.fft.fftshift(torch.fft.ifft2(torch.fft.ifftshift(field)))
 ```
 
-## Шаг 4: Алгоритм Gerchberg-Saxton
+## Step 4: The algorithm
 
 ```python
 def gerchberg_saxton(source_amplitude, target_amplitude, n_iterations=100):
     """
-    Алгоритм Gerchberg-Saxton для восстановления фазы.
+    Gerchberg–Saxton phase retrieval.
 
     Parameters
     ----------
     source_amplitude : Tensor
-        Амплитуда в исходной плоскости
+        Amplitude in the source plane.
     target_amplitude : Tensor
-        Амплитуда в целевой плоскости
+        Amplitude in the target plane.
     n_iterations : int
-        Количество итераций
+        Number of iterations.
 
     Returns
     -------
     phase : Tensor
-        Восстановленная фаза
+        Recovered phase.
     errors : list
-        История ошибок
+        Error history.
     """
-    # Инициализация случайной фазой
     phase = torch.rand_like(source_amplitude) * 2 * torch.pi
-
     errors = []
 
     for iteration in range(n_iterations):
-        # 1. Поле в исходной плоскости с текущей фазой
+        # 1. field in the source plane with the current phase
         source_field = source_amplitude * torch.exp(1j * phase)
 
-        # 2. Прямое распространение
+        # 2. propagate forward
         target_field = forward_propagate(source_field)
 
-        # 3. Вычисление ошибки
-        target_intensity = torch.abs(target_field)**2
-        error = torch.mean((torch.sqrt(target_intensity) - target_amplitude)**2)
+        # 3. measure the error
+        error = torch.mean((torch.abs(target_field) - target_amplitude)**2)
         errors.append(error.item())
 
-        # 4. Замена амплитуды, сохранение фазы
+        # 4. replace the amplitude, keep the phase
         target_phase = torch.angle(target_field)
         target_field = target_amplitude * torch.exp(1j * target_phase)
 
-        # 5. Обратное распространение
+        # 5. propagate back
         source_field = backward_propagate(target_field)
 
-        # 6. Извлечение фазы
+        # 6. extract the phase
         phase = torch.angle(source_field)
 
         if iteration % 20 == 0:
-            print(f"Итерация {iteration}: ошибка = {error:.6f}")
+            print(f"Iteration {iteration}: error = {error:.6f}")
 
     return phase, errors
 
-# Запуск алгоритма
+
 recovered_phase, errors = gerchberg_saxton(
-    source_amplitude,
-    target_amplitude,
-    n_iterations=100
+    source_amplitude, target_amplitude, n_iterations=100
 )
 ```
 
-## Шаг 5: Проверка результата
+## Step 5: Checking the result
 
 ```python
-# Применяем восстановленную фазу
 source_field = source_amplitude * torch.exp(1j * recovered_phase)
 target_field = forward_propagate(source_field)
 
-# Сравнение
 fig, axes = plt.subplots(2, 3, figsize=(15, 10))
 
-# Исходная плоскость
 axes[0, 0].imshow(source_amplitude.cpu(), cmap='gray')
-axes[0, 0].set_title('Исходная амплитуда')
+axes[0, 0].set_title('Source amplitude')
 
 axes[0, 1].imshow(recovered_phase.cpu(), cmap='twilight')
-axes[0, 1].set_title('Восстановленная фаза')
+axes[0, 1].set_title('Recovered phase')
 
 axes[0, 2].plot(errors)
-axes[0, 2].set_xlabel('Итерация')
-axes[0, 2].set_ylabel('Ошибка')
-axes[0, 2].set_title('Сходимость')
+axes[0, 2].set_xlabel('Iteration')
+axes[0, 2].set_ylabel('Error')
+axes[0, 2].set_title('Convergence')
 axes[0, 2].set_yscale('log')
 
-# Целевая плоскость
 axes[1, 0].imshow(target_amplitude.cpu()**2, cmap='hot')
-axes[1, 0].set_title('Целевая интенсивность')
+axes[1, 0].set_title('Target intensity')
 
 axes[1, 1].imshow(torch.abs(target_field).cpu()**2, cmap='hot')
-axes[1, 1].set_title('Полученная интенсивность')
+axes[1, 1].set_title('Achieved intensity')
 
-# Разница
 diff = torch.abs(torch.abs(target_field)**2 - target_amplitude**2)
 axes[1, 2].imshow(diff.cpu(), cmap='hot')
-axes[1, 2].set_title('Разница')
+axes[1, 2].set_title('Difference')
 
 plt.tight_layout()
 plt.show()
 ```
 
-## Шаг 6: Модифицированный алгоритм с ограничениями
+## Step 6: Constraining the phase
 
-Добавим ограничения на фазу (например, только положительные значения):
+Real modulators cover a limited phase range:
 
 ```python
 def gerchberg_saxton_constrained(source_amplitude, target_amplitude,
-                                  n_iterations=100, phase_range=(0, 2*torch.pi)):
-    """GS с ограничением диапазона фазы."""
-    phase = torch.rand_like(source_amplitude) * (phase_range[1] - phase_range[0]) + phase_range[0]
+                                 n_iterations=100, phase_range=(0, 2*torch.pi)):
+    """GS with a restricted phase range."""
+    lo, hi = phase_range
+    phase = torch.rand_like(source_amplitude) * (hi - lo) + lo
     errors = []
 
     for iteration in range(n_iterations):
@@ -220,125 +202,104 @@ def gerchberg_saxton_constrained(source_amplitude, target_amplitude,
         target_field = target_amplitude * torch.exp(1j * target_phase)
 
         source_field = backward_propagate(target_field)
-        phase = torch.angle(source_field)
-
-        # Ограничение фазы
-        phase = torch.clamp(phase, phase_range[0], phase_range[1])
+        phase = torch.clamp(torch.angle(source_field), lo, hi)
 
     return phase, errors
 ```
 
-## Шаг 7: Использование с SVETlANNa элементами
+## Step 7: Using real SVETlANNa elements
 
-Реализуем GS с использованием оптических элементов:
+Instead of a bare FFT, propagate through an actual lens. Backward propagation uses a
+negative distance and a negative focal length:
 
 ```python
 def gerchberg_saxton_optical(params, source_amplitude, target_amplitude,
                              focal_length, n_iterations=100):
-    """
-    GS с использованием оптической системы (линза + распространение).
-    """
+    """GS driven by a physical optical system (lens + free space)."""
     lens = ThinLens(params, focal_length=focal_length)
-    prop = FreeSpace(params, distance=focal_length, method="AS")
+    prop = FreeSpace(params, distance=focal_length, method="zpASM")
+
+    # backward branch
+    prop_back = FreeSpace(params, distance=-focal_length, method="zpASM")
+    lens_inv = ThinLens(params, focal_length=-focal_length)
 
     phase = torch.rand_like(source_amplitude) * 2 * torch.pi
     errors = []
 
     for iteration in range(n_iterations):
-        # Прямое распространение через линзу
-        source_field = source_amplitude * torch.exp(1j * phase)
-        wf = Wavefront(source_field.to(torch.complex64))
+        wf = Wavefront((source_amplitude * torch.exp(1j * phase)).to(torch.complex64))
+        target_field = prop(lens(wf))
 
-        wf = lens(wf)
-        wf = prop(wf)
-
-        target_field = wf
-
-        # Ошибка
         error = torch.mean((torch.sqrt(target_field.intensity) - target_amplitude)**2)
         errors.append(error.item())
 
-        # Замена амплитуды
-        target_phase = target_field.phase
         target_field = Wavefront(
-            (target_amplitude * torch.exp(1j * target_phase)).to(torch.complex64)
+            (target_amplitude * torch.exp(1j * target_field.phase)).to(torch.complex64)
         )
 
-        # Обратное распространение
-        prop_back = FreeSpace(params, distance=-focal_length, method="AS")
-        lens_inv = ThinLens(params, focal_length=-focal_length)
-
-        wf = prop_back(target_field)
-        wf = lens_inv(wf)
-
-        phase = wf.phase
+        phase = lens_inv(prop_back(target_field)).phase
 
     return phase, errors
 ```
 
-## Шаг 8: Градиентная оптимизация
+<Callout type="info">
+`FreeSpace` has no `reverse()` method — build a second `FreeSpace` with a negative
+`distance` to propagate backwards. `ThinLens`, `DiffractiveLayer` and
+`SpatialLightModulator` do provide `reverse()`.
+</Callout>
 
-Альтернативный подход — использовать autograd PyTorch:
+## Step 8: Gradient-based retrieval
+
+An alternative is to let PyTorch autograd do the work:
 
 ```python
 def phase_retrieval_gradient(source_amplitude, target_amplitude,
                              n_iterations=500, lr=0.1):
-    """Восстановление фазы градиентным спуском."""
-
-    # Оптимизируемая фаза
+    """Phase retrieval by gradient descent."""
     phase = torch.nn.Parameter(torch.rand_like(source_amplitude) * 2 * torch.pi)
     optimizer = torch.optim.Adam([phase], lr=lr)
 
     errors = []
-
     for iteration in range(n_iterations):
         optimizer.zero_grad()
 
-        # Forward
         source_field = source_amplitude * torch.exp(1j * phase)
         target_field = forward_propagate(source_field)
 
-        # Loss
         loss = torch.mean((torch.abs(target_field) - target_amplitude)**2)
-
-        # Backward
         loss.backward()
         optimizer.step()
 
         errors.append(loss.item())
-
         if iteration % 100 == 0:
-            print(f"Итерация {iteration}: loss = {loss.item():.6f}")
+            print(f"Iteration {iteration}: loss = {loss.item():.6f}")
 
     return phase.detach(), errors
 ```
 
-## Полный код
+## Full code
 
 ```python
 import torch
-import matplotlib.pyplot as plt
-from svetlanna import SimulationParameters, Wavefront
+from svetlanna import SimulationParameters
 from svetlanna.units import ureg
 
-# Параметры
 params = SimulationParameters.from_ranges(
-    w_range=(-2*ureg.mm, 2*ureg.mm), w_points=256,
-    h_range=(-2*ureg.mm, 2*ureg.mm), h_points=256,
-    wavelength=632.8*ureg.nm
+    x_range=(-2*ureg.mm, 2*ureg.mm), x_points=256,
+    y_range=(-2*ureg.mm, 2*ureg.mm), y_points=256,
+    wavelength=632.8*ureg.nm,
 )
 
-W, H = torch.meshgrid(params.axes.W, params.axes.H, indexing='xy')
+X, Y = params.meshgrid(x_axis="x", y_axis="y")
 
-# Целевое распределение — кольцо
-r = torch.sqrt(W**2 + H**2)
-target = ((r > 0.3e-3) & (r < 0.5e-3)).float()
+# target — an annulus
+r = torch.sqrt(X**2 + Y**2)
+target = ((r > 0.3*ureg.mm) & (r < 0.5*ureg.mm)).float()
 target = target / target.sum().sqrt()
 
-# Исходная амплитуда — гауссов пучок
-source = torch.exp(-(W**2 + H**2) / (0.5e-3)**2)
+# source — a Gaussian beam
+source = torch.exp(-(X**2 + Y**2) / (0.5*ureg.mm)**2)
 
-# GS алгоритм
 phase = torch.rand(256, 256) * 2 * torch.pi
 for i in range(100):
     field = source * torch.exp(1j * phase)
@@ -347,17 +308,17 @@ for i in range(100):
     field = torch.fft.fftshift(torch.fft.ifft2(torch.fft.ifftshift(spectrum)))
     phase = torch.angle(field)
 
-print("Восстановление завершено!")
+print("Retrieval finished.")
 ```
 
-## Выводы
+## Conclusions
 
-1. Алгоритм GS эффективно восстанавливает фазу при известных интенсивностях
-2. Сходимость достигается за 50-100 итераций
-3. Градиентный подход может быть точнее, но требует больше вычислений
-4. SVETlANNa позволяет использовать реалистичные модели распространения
+1. Gerchberg–Saxton recovers phase efficiently when both intensities are known.
+2. Convergence is typically reached in 50–100 iterations.
+3. The gradient-based variant can be more accurate but costs more compute.
+4. SVETlANNa lets you replace the FFT with a realistic propagation model.
 
-## Что дальше?
+## What next?
 
-- [Дифракционная нейросеть](/docs/tutorials/diffractive-nn) — обучение D²NN
-- [Оптимизация](/docs/guides/optimization) — градиентные методы
+- [Phase grating on an SLM](/docs/tutorials/slm-grating) — displaying the retrieved phase
+- [Optimisation](/docs/guides/optimization) — gradient-based methods

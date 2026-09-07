@@ -38,7 +38,7 @@ export function TrackSwitcher() {
               : (dark ? "#9ca3af" : "#4b5563"),
           }}
         >
-          Все
+          All
         </button>
         {trackKeys.map((track) => {
           const s = TRACK_STYLES[track];

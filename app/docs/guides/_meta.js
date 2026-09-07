@@ -1,9 +1,9 @@
 export default {
   "simulation-parameters": "SimulationParameters",
-  wavefronts: "Волновые фронты",
-  elements: "Оптические элементы",
-  "optical-systems": "Оптические системы",
-  detector: "Детекторы",
+  wavefronts: "Wavefronts",
+  elements: "Optical elements",
+  "optical-systems": "Optical systems",
+  detector: "Detectors",
   transforms: "Transforms",
-  optimization: "Оптимизация и обучение",
+  optimization: "Optimisation and training",
 };

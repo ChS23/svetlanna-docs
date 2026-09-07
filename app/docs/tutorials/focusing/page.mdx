@@ -1,241 +1,235 @@
-# Фокусировка пучка
+# Beam focusing
 
-В этом туториале мы смоделируем фокусировку гауссова пучка тонкой линзой и сравним результат с теорией.
+In this tutorial we simulate the focusing of a Gaussian beam by a thin lens and compare the
+result with the diffraction limit.
 
-## Теория
+## Theory
 
-### Гауссов пучок
+### Gaussian beam
 
-Гауссов пучок описывается распределением:
+A Gaussian beam has the field distribution
 
 $$E(r) = E_0 \exp\left(-\frac{r^2}{w_0^2}\right)$$
 
-где $w_0$ — радиус перетяжки (waist radius), определяемый как расстояние от оси до точки, где интенсивность падает в $e^2$ раз.
+where $w_0$ is the waist radius — the distance from the axis at which the intensity drops
+by a factor of $e^2$.
 
-### Дифракционный предел
+### Diffraction limit
 
-При фокусировке гауссова пучка с радиусом $w_0$ линзой с фокусным расстоянием $f$ размер пятна в фокусе определяется формулой:
+When a beam of waist $w_0$ is focused by a lens of focal length $f$, the amplitude waist in
+the focal plane is
 
-$$w_{focus} = \frac{\lambda f}{\pi w_0}$$
+$$w_{\text{focus}} = \frac{\lambda f}{\pi w_0},$$
 
-Это дифракционный предел для гауссова пучка.
+which corresponds to an intensity full width at half maximum of
 
-## Шаг 1: Импорты и параметры
+$$\text{FWHM} = w_{\text{focus}}\sqrt{2\ln 2}.$$
+
+This is the diffraction limit for a Gaussian beam.
+
+## Step 1: Imports and parameters
 
 ```python
+import math
 import torch
 import matplotlib.pyplot as plt
 from svetlanna import SimulationParameters, Wavefront
 from svetlanna.elements import ThinLens, FreeSpace, RoundAperture
 from svetlanna.units import ureg
 
-# Параметры симуляции
 params = SimulationParameters.from_ranges(
-    w_range=(-2*ureg.mm, 2*ureg.mm), w_points=512,
-    h_range=(-2*ureg.mm, 2*ureg.mm), h_points=512,
-    wavelength=632.8*ureg.nm  # HeNe лазер
+    x_range=(-1.5*ureg.mm, 1.5*ureg.mm), x_points=2048,
+    y_range=(-1.5*ureg.mm, 1.5*ureg.mm), y_points=2048,
+    wavelength=632.8*ureg.nm,   # HeNe laser
 )
 
-# Параметры эксперимента
-w0 = 0.5e-3  # Радиус пучка 0.5 мм
-f = 100e-3   # Фокусное расстояние 100 мм
-wavelength = 632.8e-9  # Длина волны
+w0 = 0.5*ureg.mm     # beam waist radius
+f = 100*ureg.mm      # focal length
+wavelength = 632.8*ureg.nm
 ```
 
-## Шаг 2: Создание гауссова пучка
+The grid step is $\approx 1.5\ \mu\text{m}$, so the focal spot is sampled by roughly 30
+points — enough to measure its width reliably.
+
+## Step 2: Creating the Gaussian beam
 
 ```python
 wf = Wavefront.gaussian_beam(params, waist_radius=w0)
 
-print(f"Форма: {wf.shape}")
-print(f"Тип: {wf.dtype}")
-print(f"Максимальная интенсивность: {wf.max_intensity:.3f}")
+print(f"Shape: {wf.shape}")
+print(f"Dtype: {wf.dtype}")
+print(f"Max intensity: {wf.max_intensity:.3f}")
 ```
 
-**Вывод:**
+**Output:**
 ```
-Форма: torch.Size([512, 512])
-Тип: torch.complex64
-Максимальная интенсивность: 1.000
+Shape: torch.Size([2048, 2048])
+Dtype: torch.complex64
+Max intensity: 1.000
 ```
 
-## Шаг 3: Оптическая система
+## Step 3: The optical setup
 
-Создадим систему: апертура → линза → распространение в фокус.
+Aperture → lens → propagation to the focal plane.
 
 ```python
-# Апертура (ограничивает пучок)
-aperture = RoundAperture(params, radius=1.5*ureg.mm)
+# aperture, truncating the beam
+aperture = RoundAperture(params, radius=1.2*ureg.mm)
 
-# Тонкая линза
+# thin lens
 lens = ThinLens(params, focal_length=f)
 
-# Распространение на фокусное расстояние
-propagate = FreeSpace(params, distance=f, method="AS")
+# propagation over one focal length
+propagate = FreeSpace(params, distance=f, method="zpASM")
 ```
 
-## Шаг 4: Прохождение через систему
+## Step 4: Propagating through the setup
 
 ```python
-# Применяем элементы последовательно
 wf_after_aperture = aperture(wf)
 wf_after_lens = lens(wf_after_aperture)
 wf_focus = propagate(wf_after_lens)
 
-print(f"Интенсивность в фокусе: {wf_focus.max_intensity:.2e}")
+print(f"Intensity in the focus: {wf_focus.max_intensity:.2e}")
 ```
 
-## Шаг 5: Анализ результата
+**Output:**
+```
+Intensity in the focus: 1.53e+02
+```
+
+## Step 5: Analysing the result
 
 ```python
-# FWHM (полуширина на полувысоте)
 fwhm_x, fwhm_y = wf_focus.fwhm(params)
-print(f"Измеренный FWHM: {fwhm_x*1e6:.2f} × {fwhm_y*1e6:.2f} мкм")
+print(f"Measured FWHM: {fwhm_x*1e6:.2f} × {fwhm_y*1e6:.2f} um")
 
-# Теоретический размер пятна
-w_theory = wavelength * f / (torch.pi * w0)
-fwhm_theory = w_theory * 2 * torch.sqrt(torch.log(torch.tensor(2.0)))
-print(f"Теоретический FWHM: {fwhm_theory*1e6:.2f} мкм")
+w_focus = float(wavelength) * float(f) / (math.pi * float(w0))
+fwhm_theory = w_focus * math.sqrt(2 * math.log(2))
+print(f"Theoretical FWHM: {fwhm_theory*1e6:.2f} um")
 ```
 
-**Вывод:**
+**Output:**
 ```
-Измеренный FWHM: 37.45 × 37.45 мкм
-Теоретический FWHM: 37.51 мкм
+Measured FWHM: 45.43 × 45.43 um
+Theoretical FWHM: 47.43 um
 ```
 
-Отличное совпадение с теорией!
+The 4 % difference comes from two sources: `fwhm()` counts only the grid points that lie
+strictly above half maximum (so it under-reports by up to one grid step), and the aperture
+truncates the tails of the Gaussian. Refining the grid brings the measurement closer to the
+analytical value.
 
-## Шаг 6: Визуализация
+## Step 6: Visualisation
 
 ```python
+extent = [-1.5, 1.5, -1.5, 1.5]
 fig, axes = plt.subplots(2, 3, figsize=(15, 10))
 
-# Входной пучок
-ax = axes[0, 0]
-im = ax.imshow(wf.intensity.cpu(), cmap='hot',
-               extent=[-2, 2, -2, 2])
-ax.set_title('Входной гауссов пучок')
-ax.set_xlabel('x, мм')
-ax.set_ylabel('y, мм')
-plt.colorbar(im, ax=ax)
+axes[0, 0].imshow(wf.intensity.cpu(), cmap='hot', extent=extent)
+axes[0, 0].set_title('Input Gaussian beam')
+axes[0, 0].set_xlabel('x, mm'); axes[0, 0].set_ylabel('y, mm')
 
-# После апертуры
-ax = axes[0, 1]
-im = ax.imshow(wf_after_aperture.intensity.cpu(), cmap='hot',
-               extent=[-2, 2, -2, 2])
-ax.set_title('После апертуры')
-ax.set_xlabel('x, мм')
-plt.colorbar(im, ax=ax)
+axes[0, 1].imshow(wf_after_aperture.intensity.cpu(), cmap='hot', extent=extent)
+axes[0, 1].set_title('After the aperture')
+axes[0, 1].set_xlabel('x, mm')
 
-# После линзы (фаза)
-ax = axes[0, 2]
-im = ax.imshow(wf_after_lens.phase.cpu(), cmap='twilight',
-               extent=[-2, 2, -2, 2])
-ax.set_title('Фаза после линзы')
-ax.set_xlabel('x, мм')
-plt.colorbar(im, ax=ax)
+axes[0, 2].imshow(wf_after_lens.phase.cpu(), cmap='twilight', extent=extent)
+axes[0, 2].set_title('Phase after the lens')
+axes[0, 2].set_xlabel('x, mm')
 
-# В фокусе (интенсивность)
-ax = axes[1, 0]
-im = ax.imshow(wf_focus.intensity.cpu(), cmap='hot',
-               extent=[-2, 2, -2, 2])
-ax.set_title('В фокусе')
-ax.set_xlabel('x, мм')
-ax.set_ylabel('y, мм')
-plt.colorbar(im, ax=ax)
+axes[1, 0].imshow(wf_focus.intensity.cpu(), cmap='hot', extent=extent)
+axes[1, 0].set_title('Focal plane')
+axes[1, 0].set_xlabel('x, mm'); axes[1, 0].set_ylabel('y, mm')
 
-# В фокусе (увеличено)
-ax = axes[1, 1]
-center = 256
-window = 30
-im = ax.imshow(wf_focus.intensity[center-window:center+window,
-                                   center-window:center+window].cpu(),
-               cmap='hot')
-ax.set_title('Фокус (увеличено)')
-plt.colorbar(im, ax=ax)
+center, window = 1024, 60
+axes[1, 1].imshow(
+    wf_focus.intensity[center-window:center+window,
+                       center-window:center+window].cpu(),
+    cmap='hot',
+)
+axes[1, 1].set_title('Focal spot (zoom)')
 
-# Профиль интенсивности
-ax = axes[1, 2]
-profile = wf_focus.intensity[256, :].cpu()
-x_um = params.axes.W.cpu() * 1e6
-ax.plot(x_um, profile / profile.max())
-ax.set_xlim(-100, 100)
-ax.set_xlabel('x, мкм')
-ax.set_ylabel('Нормированная интенсивность')
-ax.set_title('Профиль в фокусе')
-ax.grid(True)
+profile = wf_focus.intensity[center, :].cpu()
+x_um = params.x.cpu() * 1e6
+axes[1, 2].plot(x_um, profile / profile.max())
+axes[1, 2].set_xlim(-150, 150)
+axes[1, 2].set_xlabel('x, um')
+axes[1, 2].set_ylabel('Normalised intensity')
+axes[1, 2].set_title('Profile in the focus')
+axes[1, 2].grid(True)
 
 plt.tight_layout()
 plt.show()
 ```
 
-## Шаг 7: Влияние апертуры
+## Step 7: Effect of the aperture
 
-Исследуем, как размер апертуры влияет на фокусировку:
+How does the aperture size change the focus?
 
 ```python
-aperture_radii = [0.5, 1.0, 1.5, 2.0]  # мм
-results = []
+aperture_radii = [0.4, 0.6, 0.8, 1.2]  # mm
 
+print("Aperture radius | FWHM     | Max I")
+print("-" * 40)
 for r in aperture_radii:
     aperture = RoundAperture(params, radius=r*ureg.mm)
     wf_out = propagate(lens(aperture(wf)))
     fwhm_x, _ = wf_out.fwhm(params)
-    results.append({
-        'radius': r,
-        'fwhm': fwhm_x * 1e6,
-        'max_intensity': wf_out.max_intensity.item()
-    })
-
-# Вывод результатов
-print("Радиус апертуры | FWHM | Max I")
-print("-" * 40)
-for r in results:
-    print(f"{r['radius']:.1f} мм          | {r['fwhm']:.1f} мкм | {r['max_intensity']:.2e}")
+    print(f"{r:.1f} mm          | {fwhm_x*1e6:5.1f} um | {wf_out.max_intensity:.3e}")
 ```
 
-## Полный код
+**Output:**
+```
+Aperture radius | FWHM     | Max I
+----------------------------------------
+0.4 mm          |  83.5 um | 3.436e+01
+0.6 mm          |  60.1 um | 8.957e+01
+0.8 mm          |  51.3 um | 1.309e+02
+1.2 mm          |  45.4 um | 1.527e+02
+```
+
+A hard aperture much smaller than the beam acts as the dominant diffracting element: the
+spot broadens and the peak intensity drops. Once the aperture stops clipping the beam
+(radius $\gtrsim 2 w_0$), the focus converges to the diffraction limit.
+
+## Full code
 
 ```python
+import math
 import torch
-import matplotlib.pyplot as plt
 from svetlanna import SimulationParameters, Wavefront
 from svetlanna.elements import ThinLens, FreeSpace, RoundAperture
 from svetlanna.units import ureg
 
-# Параметры
 params = SimulationParameters.from_ranges(
-    w_range=(-2*ureg.mm, 2*ureg.mm), w_points=512,
-    h_range=(-2*ureg.mm, 2*ureg.mm), h_points=512,
-    wavelength=632.8*ureg.nm
+    x_range=(-1.5*ureg.mm, 1.5*ureg.mm), x_points=2048,
+    y_range=(-1.5*ureg.mm, 1.5*ureg.mm), y_points=2048,
+    wavelength=632.8*ureg.nm,
 )
 
-w0 = 0.5e-3  # Радиус пучка
-f = 100e-3   # Фокусное расстояние
+w0, f = 0.5*ureg.mm, 100*ureg.mm
 
-# Создание пучка и системы
 wf = Wavefront.gaussian_beam(params, waist_radius=w0)
-aperture = RoundAperture(params, radius=1.5*ureg.mm)
+aperture = RoundAperture(params, radius=1.2*ureg.mm)
 lens = ThinLens(params, focal_length=f)
-propagate = FreeSpace(params, distance=f, method="AS")
+propagate = FreeSpace(params, distance=f, method="zpASM")
 
-# Фокусировка
 wf_focus = propagate(lens(aperture(wf)))
 
-# Результат
 fwhm_x, fwhm_y = wf_focus.fwhm(params)
-print(f"FWHM: {fwhm_x*1e6:.2f} × {fwhm_y*1e6:.2f} мкм")
+print(f"FWHM: {fwhm_x*1e6:.2f} × {fwhm_y*1e6:.2f} um")
 print(f"Max I: {wf_focus.max_intensity:.2e}")
 ```
 
-## Выводы
+## Conclusions
 
-1. SVETlANNa точно моделирует дифракционную фокусировку
-2. Результат совпадает с теоретическим предсказанием
-3. Размер апертуры влияет на размер пятна и интенсивность
+1. SVETlANNa reproduces diffraction-limited focusing accurately.
+2. The measured spot size matches the analytical prediction once the grid is fine enough.
+3. The aperture controls both the spot size and the peak intensity.
 
-## Что дальше?
+## What next?
 
-- [4f-система](/docs/tutorials/4f-system) — оптическая фильтрация
-- [Оптические элементы](/docs/guides/elements) — все доступные элементы
+- [4f system](/docs/tutorials/4f-system) — optical filtering
+- [Phase grating on an SLM](/docs/tutorials/slm-grating) — programmable phase masks
+- [Optical elements](/docs/guides/elements) — every available element

@@ -1,21 +1,21 @@
 # Core
 
-Основные классы для работы с оптическими симуляциями
+Core classes for optical simulations
 
 ```python
 from svetlanna import Wavefront, SimulationParameters, Parameter
 ```
 
-## Классы
+## Classes
 
 ### Wavefront
 
-<small>Наследует: `torch.Tensor`</small>
+<small>Inherits: `torch.Tensor`</small>
 
 Class that represents wavefront.
 It is a subclass of `torch.Tensor` with additional properties and methods for wavefront analysis and generation.
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -36,7 +36,7 @@ It is a subclass of `torch.Tensor` with additional properties and methods for wa
 </div>
 
 
-#### Фабричные методы
+#### Factory methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -53,9 +53,9 @@ $$
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `distance` | `float, optional` | Free wave propagation distance $z$, by default 0. |
@@ -66,7 +66,7 @@ $$
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Wavefront`**
 
@@ -96,9 +96,9 @@ and $z_R = \frac&#123;\pi w_0^2&#125;&#123;\lambda&#125;$ is the Rayleigh range.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `waist_radius` | `float` | Beam waist radius ($w_0$). |
@@ -110,7 +110,7 @@ and $z_R = \frac&#123;\pi w_0^2&#125;&#123;\lambda&#125;$ is the Rayleigh range.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Wavefront`**
 
@@ -137,9 +137,9 @@ where $r = \sqrt&#123;(x - d_x)^2 + (y - d_y)^2 + z^2&#125;$ is the distance fro
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `distance` | `float` | Distance from the point source to the oXY plane ($z$). |
@@ -151,7 +151,7 @@ where $r = \sqrt&#123;(x - d_x)^2 + (y - d_y)^2 + z^2&#125;$ is the distance fro
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Wavefront`**
 
@@ -181,9 +181,9 @@ and $z_R = \frac&#123;\pi w_0^2&#125;&#123;\lambda&#125;$ is the Rayleigh range.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `waist_radius` | `float` | Beam waist radius ($w_0$). |
@@ -197,7 +197,7 @@ and $z_R = \frac&#123;\pi w_0^2&#125;&#123;\lambda&#125;$ is the Rayleigh range.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Wavefront`**
 
@@ -209,7 +209,7 @@ Hermite-Gaussian field.
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -223,9 +223,9 @@ Full width at half maximum (FWHM) of the wavefront intensity.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 
@@ -233,7 +233,7 @@ Full width at half maximum (FWHM) of the wavefront intensity.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`tuple[float, float]`**
 
@@ -247,9 +247,9 @@ FWHM along x and y axes.
 
 ### SimulationParameters
 
-<small>Наследует: `nn.Module`</small>
+<small>Inherits: `nn.Module`</small>
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -275,7 +275,7 @@ FWHM along x and y axes.
 </div>
 
 
-#### Фабричные методы
+#### Factory methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -289,9 +289,9 @@ Create SimulationParameters from coordinate ranges.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `x_range` | `tuple[float, float]` | (min, max) range for x-axis. Use `ureg` for units. |
 | `x_points` | `int` | Number of points along x-axis. |
@@ -325,9 +325,9 @@ Create SimulationParameters from a dictionary.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `axes_dict` | `Mapping[str, torch.Tensor | float]` | Dictionary with axis names as keys and tensor/scalar values. |
 
@@ -336,7 +336,7 @@ Create SimulationParameters from a dictionary.
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -429,7 +429,7 @@ Create a deep copy of the SimulationParameters instance.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`SimulationParameters`**
 
@@ -455,9 +455,9 @@ Comparing instances on diffrent devices will raise `RuntimeError` because `torch
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `value` | `SimulationParameters` | SimulationParameters instance to compare with. |
 
@@ -465,7 +465,7 @@ Comparing instances on diffrent devices will raise `RuntimeError` because `torch
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`bool`**
 
@@ -488,9 +488,9 @@ Create a coordinate meshgrid from two axes.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `x_axis` | `str` | Name of the axis for x-coordinates (typically 'x'). |
 | `y_axis` | `str` | Name of the axis for y-coordinates (typically 'y'). |
@@ -499,7 +499,7 @@ Create a coordinate meshgrid from two axes.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`tuple[torch.Tensor, torch.Tensor]`**
 
@@ -533,9 +533,9 @@ Get the size of specified axes in order (cached for performance).
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `axs` | `tuple[str, ...] | None` | Tuple of axis names in the desired order. |
 
@@ -543,7 +543,7 @@ Get the size of specified axes in order (cached for performance).
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`torch.Size`**
 
@@ -576,9 +576,9 @@ Get the negative index of an axis in tensors.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `name` | `str` | Name of the axis. |
 
@@ -586,7 +586,7 @@ Get the negative index of an axis in tensors.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`int`**
 
@@ -597,7 +597,7 @@ Negative index for use in tensor operations.
 
 
 <details>
-<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Исключения</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Raises</summary>
 
 - **`AxisNotFound`** — If the axis doesn't exist or is scalar.
 
@@ -620,9 +620,9 @@ Scalar axes are skipped (they don't affect tensor shape).
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `tensor` | `torch.Tensor` | Input tensor whose trailing dimensions correspond to `axes`. |
 | `*axes` | `str` | Axes names corresponding to tensor's trailing dimensions. |
@@ -631,7 +631,7 @@ Scalar axes are skipped (they don't affect tensor shape).
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`torch.Tensor`**
 
@@ -670,14 +670,14 @@ axes_size(self, *args, **kwargs)
 
 ### Parameter
 
-<small>Наследует: `torch.Tensor`</small>
+<small>Inherits: `torch.Tensor`</small>
 
 `torch.Parameter`-like tensor with an internal storage module.
 
 This class is used to keep a trainable `torch.nn.Parameter` inside a
 `torch.nn.Module` while presenting a `torch.Tensor`-like interface.
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -688,7 +688,7 @@ This class is used to keep a trainable `torch.nn.Parameter` inside a
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -700,9 +700,9 @@ __init__(self, data: Any, requires_grad: bool = True)
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `data` | `Any` | Initial value, should be a tensor or convertible to a tensor. |
 | `requires_grad` | `bool, optional` | Whether the parameter requires gradients, by default True. |
@@ -728,7 +728,7 @@ __init__(self, data: Any, requires_grad: bool = True)
 
 ### ConstrainedParameter
 
-<small>Наследует: `Parameter`</small>
+<small>Inherits: `Parameter`</small>
 
 Parameter constrained to a bounded range.
 
@@ -736,7 +736,7 @@ The constraint is implemented by applying `bound_func` to the inner
 parameter, mapping it to $[0, 1]$, and then scaling and shifting it to
 `(min_value, max_value)`.
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -767,7 +767,7 @@ parameter, mapping it to $[0, 1]$, and then scaling and shifting it to
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -779,9 +779,9 @@ __init__(self, data: Any, min_value: Any, max_value: Any, bound_func: Callable[[
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `data` | `Any` | Initial parameter value. |
 | `min_value` | `Any` | Minimum allowed value. |
@@ -811,12 +811,12 @@ __init__(self, data: Any, min_value: Any, max_value: Any, bound_func: Callable[[
 
 ### LinearOpticalSetup
 
-<small>Наследует: `nn.Module`</small>
+<small>Inherits: `nn.Module`</small>
 
 Linear optical network composed of [`Element`][svetlanna.elements.Element] instances.
 It works the same way as a `torch.nn.Sequential` module, but with some additional features.
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -828,9 +828,9 @@ __init__(self, elements: Iterable[Element]) -> None
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `elements` | `Iterable[Element]` | Optical elements that make up the setup. Elements are evaluated in the provided order. |
 
@@ -869,9 +869,9 @@ Apply elements step-by-step and collect intermediate wavefronts.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `input_wavefront` | `Wavefront` | A wavefront that enters the optical network. |
 
@@ -879,7 +879,7 @@ Apply elements step-by-step and collect intermediate wavefronts.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`tuple[Wavefront, ...]`**
 
@@ -904,9 +904,9 @@ lacks this method, a `TypeError` is raised.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `Ein` | `Tensor` | Input wavefront to reverse propagate. |
 
@@ -914,7 +914,7 @@ lacks this method, a `TypeError` is raised.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Tensor`**
 
@@ -925,7 +925,7 @@ Output wavefront after reverse propagation.
 
 
 <details>
-<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Исключения</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Raises</summary>
 
 - **`TypeError`** — If reverse propagation is not supported by all elements in the setup.
 
@@ -946,14 +946,14 @@ to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 
 ### Detector
 
-<small>Наследует: `Element`</small>
+<small>Inherits: `Element`</small>
 
 Object that plays a role of a physical detector in an optical system:
 (1) func='intensity'
     transforms incident field to intensities for further image analysis
 (2) ...
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -965,9 +965,9 @@ __init__(self, simulation_parameters: SimulationParameters, func = 'intensity')
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters for a further optical network. |
 | `func` | `str` | A parameter that defines a function that will be applied to an incident field to obtain a detector image. (1) func='intensity' – detector returns intensities (2) ... |
@@ -991,9 +991,9 @@ in the simplest case the image on a detector is an intensities image)
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `input_field` | `Wavefront` | A tensor (Wavefront) of an incident field on a detector. |
 
@@ -1001,7 +1001,7 @@ in the simplest case the image on a detector is an intensities image)
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`detector_output`** : `torch.Tensor`
 

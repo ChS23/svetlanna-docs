@@ -1,238 +1,40 @@
-# 4f-система
+# 4f system
 
-4f-система — классическая оптическая конфигурация для пространственной фильтрации. В этом туториале мы построим 4f-систему и продемонстрируем её применение для фильтрации высоких частот.
+The 4f system is the classical optical configuration for spatial filtering. In this
+tutorial we build one and use it to remove or enhance selected spatial frequencies of an
+object.
 
-## Теория
+## Theory
 
-### Структура 4f-системы
+### Structure
 
 ```
-вход → f → L1 → f → Фурье-плоскость → f → L2 → f → выход
+input → f → L1 → f → Fourier plane → f → L2 → f → output
 ```
 
-Система состоит из двух линз с одинаковым фокусным расстоянием $f$, расположенных на расстоянии $2f$ друг от друга.
+Two lenses of equal focal length $f$ are placed $2f$ apart, with the object one focal
+length in front of the first lens and the image one focal length behind the second.
 
-### Оптическое Фурье-преобразование
+### The optical Fourier transform
 
-В фокальной плоскости первой линзы (Фурье-плоскости) формируется Фурье-образ входного поля:
+In the back focal plane of the first lens (the *Fourier plane*) the field is the Fourier
+transform of the input:
 
-$$E_{Fourier}(u, v) = \mathcal{F}[E_{input}](u, v)$$
+$$E_{\text{Fourier}}(u, v) = \mathcal{F}[E_{\text{input}}](u, v)$$
 
-где $(u, v)$ — пространственные частоты.
+A periodic object of period $\Lambda$ produces peaks in that plane at
 
-### Фильтрация
+$$x_n = n \frac{\lambda f}{\Lambda}.$$
 
-Размещая маску в Фурье-плоскости, можно модифицировать спектр сигнала:
+### Filtering
 
-- **Низкочастотный фильтр** — пропускает только центральную часть
-- **Высокочастотный фильтр** — блокирует центр
-- **Полосовой фильтр** — пропускает кольцо частот
+Placing a mask in the Fourier plane modifies the spectrum:
 
-## Шаг 1: Настройка симуляции
+- **Low-pass** — passes only the central region (blurring);
+- **High-pass** — blocks the centre (edge enhancement);
+- **Band-pass** — passes an annulus of frequencies.
 
-```python
-import torch
-import torch.nn as nn
-import matplotlib.pyplot as plt
-from svetlanna import SimulationParameters, Wavefront
-from svetlanna.elements import ThinLens, FreeSpace, Aperture, RoundAperture
-from svetlanna.units import ureg
-
-# Параметры с высоким разрешением
-params = SimulationParameters.from_ranges(
-    w_range=(-5*ureg.mm, 5*ureg.mm), w_points=1024,
-    h_range=(-5*ureg.mm, 5*ureg.mm), h_points=1024,
-    wavelength=632.8*ureg.nm
-)
-
-f = 100*ureg.mm  # Фокусное расстояние линз
-```
-
-## Шаг 2: Создание тестового объекта
-
-Создадим объект с периодической структурой (решётку):
-
-```python
-# Координатные сетки
-W, H = torch.meshgrid(params.axes.W, params.axes.H, indexing='xy')
-
-# Решётка с периодом 0.5 мм
-period = 0.5e-3
-grating = (torch.cos(2 * torch.pi * W / period) > 0).float()
-
-# Добавим круглую апертуру
-R = 2e-3
-circular_mask = (W**2 + H**2 < R**2).float()
-
-# Тестовый объект
-test_object = grating * circular_mask
-
-# Создаём волновой фронт с этим объектом
-wf_input = Wavefront(test_object.to(torch.complex64))
-```
-
-## Шаг 3: Построение 4f-системы
-
-```python
-class FourFSystem(nn.Module):
-    """4f-система с опциональным фильтром в Фурье-плоскости."""
-
-    def __init__(self, params, focal_length, filter_mask=None):
-        super().__init__()
-        self.params = params
-        self.f = focal_length
-
-        # Элементы
-        self.prop_f = FreeSpace(params, distance=focal_length, method="AS")
-        self.lens1 = ThinLens(params, focal_length=focal_length)
-        self.lens2 = ThinLens(params, focal_length=focal_length)
-
-        # Фильтр
-        if filter_mask is not None:
-            self.filter = Aperture(params, mask=filter_mask)
-        else:
-            self.filter = None
-
-    def forward(self, wf, return_fourier=False):
-        # Первая половина: вход → Фурье-плоскость
-        wf = self.prop_f(wf)
-        wf = self.lens1(wf)
-        wf = self.prop_f(wf)
-
-        # Сохраняем Фурье-плоскость
-        wf_fourier = wf.clone() if return_fourier else None
-
-        # Применяем фильтр
-        if self.filter is not None:
-            wf = self.filter(wf)
-
-        # Вторая половина: Фурье-плоскость → выход
-        wf = self.prop_f(wf)
-        wf = self.lens2(wf)
-        wf = self.prop_f(wf)
-
-        if return_fourier:
-            return wf, wf_fourier
-        return wf
-```
-
-## Шаг 4: Система без фильтра
-
-Проверим, что 4f-система воспроизводит входной объект (с инверсией):
-
-```python
-# 4f-система без фильтра
-system_no_filter = FourFSystem(params, f)
-
-# Прохождение через систему
-wf_output, wf_fourier = system_no_filter(wf_input, return_fourier=True)
-
-# Визуализация
-fig, axes = plt.subplots(1, 3, figsize=(15, 4))
-
-axes[0].imshow(wf_input.intensity.cpu(), cmap='gray')
-axes[0].set_title('Входной объект')
-
-axes[1].imshow(torch.log1p(wf_fourier.intensity).cpu(), cmap='hot')
-axes[1].set_title('Фурье-плоскость (log)')
-
-axes[2].imshow(wf_output.intensity.cpu(), cmap='gray')
-axes[2].set_title('Выход (инвертированный)')
-
-plt.tight_layout()
-plt.show()
-```
-
-## Шаг 5: Низкочастотный фильтр
-
-Создадим фильтр, пропускающий только низкие пространственные частоты:
-
-```python
-# Низкочастотный фильтр — круг в центре
-filter_radius = 0.3e-3  # Радиус в Фурье-плоскости
-low_pass_filter = (W**2 + H**2 < filter_radius**2).float()
-
-# 4f-система с низкочастотным фильтром
-system_lowpass = FourFSystem(params, f, filter_mask=low_pass_filter)
-
-# Фильтрация
-wf_lowpass = system_lowpass(wf_input)
-
-# Результат — размытое изображение (удалены мелкие детали)
-plt.figure(figsize=(12, 4))
-
-plt.subplot(131)
-plt.imshow(wf_input.intensity.cpu(), cmap='gray')
-plt.title('Вход')
-
-plt.subplot(132)
-plt.imshow(low_pass_filter.cpu(), cmap='gray')
-plt.title('Фильтр (низкие частоты)')
-
-plt.subplot(133)
-plt.imshow(wf_lowpass.intensity.cpu(), cmap='gray')
-plt.title('После фильтрации')
-
-plt.tight_layout()
-plt.show()
-```
-
-## Шаг 6: Высокочастотный фильтр
-
-Фильтр, пропускающий только высокие частоты (выделение границ):
-
-```python
-# Высокочастотный фильтр — блокируем центр
-block_radius = 0.15e-3
-high_pass_filter = (W**2 + H**2 > block_radius**2).float()
-
-# 4f-система с высокочастотным фильтром
-system_highpass = FourFSystem(params, f, filter_mask=high_pass_filter)
-
-# Фильтрация
-wf_highpass = system_highpass(wf_input)
-
-# Результат — видны только края
-```
-
-## Шаг 7: Анализ спектра
-
-```python
-def plot_spectrum(wf_fourier, params, title="Спектр"):
-    """Визуализация спектра с правильными осями частот."""
-    # Пространственные частоты
-    dx = params.axes.W[1] - params.axes.W[0]
-    freq_max = 1 / (2 * dx)  # Частота Найквиста
-
-    fig, ax = plt.subplots(figsize=(6, 6))
-    im = ax.imshow(
-        torch.log1p(wf_fourier.intensity).cpu(),
-        cmap='hot',
-        extent=[-freq_max*1e-3, freq_max*1e-3, -freq_max*1e-3, freq_max*1e-3]
-    )
-    ax.set_xlabel('$f_x$, мм$^{-1}$')
-    ax.set_ylabel('$f_y$, мм$^{-1}$')
-    ax.set_title(title)
-    plt.colorbar(im, ax=ax, label='log(I + 1)')
-    return fig
-```
-
-## Шаг 8: Полосовой фильтр
-
-Выделяем определённую полосу частот:
-
-```python
-# Полосовой фильтр
-inner_radius = 0.2e-3
-outer_radius = 0.5e-3
-R_sq = W**2 + H**2
-bandpass_filter = ((R_sq > inner_radius**2) & (R_sq < outer_radius**2)).float()
-
-system_bandpass = FourFSystem(params, f, filter_mask=bandpass_filter)
-wf_bandpass = system_bandpass(wf_input)
-```
-
-## Полный код
+## Step 1: Simulation setup
 
 ```python
 import torch
@@ -242,62 +44,242 @@ from svetlanna import SimulationParameters, Wavefront
 from svetlanna.elements import ThinLens, FreeSpace, Aperture
 from svetlanna.units import ureg
 
-# Параметры
 params = SimulationParameters.from_ranges(
-    w_range=(-5*ureg.mm, 5*ureg.mm), w_points=1024,
-    h_range=(-5*ureg.mm, 5*ureg.mm), h_points=1024,
-    wavelength=632.8*ureg.nm
+    x_range=(-5*ureg.mm, 5*ureg.mm), x_points=1024,
+    y_range=(-5*ureg.mm, 5*ureg.mm), y_points=1024,
+    wavelength=632.8*ureg.nm,
+)
+
+f = 100*ureg.mm   # focal length of both lenses
+```
+
+## Step 2: A test object
+
+A binary grating inside a circular aperture:
+
+```python
+X, Y = params.meshgrid(x_axis="x", y_axis="y")
+
+period = 0.5*ureg.mm
+grating = (torch.cos(2 * torch.pi * X / period) > 0).float()
+
+R = 2*ureg.mm
+circular_mask = (X**2 + Y**2 < R**2).float()
+
+test_object = grating * circular_mask
+wf_input = Wavefront(test_object.to(torch.complex64))
+```
+
+With $\Lambda = 0.5$ mm and $f = 100$ mm the diffraction orders in the Fourier plane are
+spaced by $\lambda f / \Lambda = 0.127$ mm — the scale that all filter radii below are
+chosen against.
+
+## Step 3: Building the 4f system
+
+```python
+class FourFSystem(nn.Module):
+    """4f system with an optional filter in the Fourier plane."""
+
+    def __init__(self, params, focal_length, filter_mask=None):
+        super().__init__()
+        self.prop_f = FreeSpace(params, distance=focal_length, method="zpASM")
+        self.lens1 = ThinLens(params, focal_length=focal_length)
+        self.lens2 = ThinLens(params, focal_length=focal_length)
+        self.filter = (
+            Aperture(params, mask=filter_mask) if filter_mask is not None else None
+        )
+
+    def forward(self, wf, return_fourier=False):
+        # first half: input → Fourier plane
+        wf = self.prop_f(wf)
+        wf = self.lens1(wf)
+        wf = self.prop_f(wf)
+
+        wf_fourier = wf.clone() if return_fourier else None
+
+        if self.filter is not None:
+            wf = self.filter(wf)
+
+        # second half: Fourier plane → output
+        wf = self.prop_f(wf)
+        wf = self.lens2(wf)
+        wf = self.prop_f(wf)
+
+        if return_fourier:
+            return wf, wf_fourier
+        return wf
+```
+
+## Step 4: The system without a filter
+
+An unfiltered 4f system reproduces the input, inverted:
+
+```python
+system_no_filter = FourFSystem(params, f)
+wf_output, wf_fourier = system_no_filter(wf_input, return_fourier=True)
+
+print(f"Input  max intensity: {wf_input.max_intensity:.4f}")
+print(f"Output max intensity: {wf_output.max_intensity:.4f}")
+```
+
+**Output:**
+```
+Input  max intensity: 1.0000
+Output max intensity: 1.0979
+```
+
+The small overshoot is Gibbs ringing at the sharp edges of the binary object, which the
+finite grid cannot represent exactly.
+
+```python
+fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+
+axes[0].imshow(wf_input.intensity.cpu(), cmap='gray')
+axes[0].set_title('Input object')
+
+axes[1].imshow(torch.log1p(wf_fourier.intensity).cpu(), cmap='hot')
+axes[1].set_title('Fourier plane (log)')
+
+axes[2].imshow(wf_output.intensity.cpu(), cmap='gray')
+axes[2].set_title('Output (inverted)')
+
+plt.tight_layout()
+plt.show()
+```
+
+## Step 5: Low-pass filter
+
+A disc that passes only the zero and first orders:
+
+```python
+filter_radius = 0.2*ureg.mm
+low_pass_filter = (X**2 + Y**2 < filter_radius**2).float()
+
+system_lowpass = FourFSystem(params, f, filter_mask=low_pass_filter)
+wf_lowpass = system_lowpass(wf_input)
+
+print(f"Low-pass output max intensity: {wf_lowpass.max_intensity:.4f}")
+```
+
+**Output:**
+```
+Low-pass output max intensity: 1.5589
+```
+
+Keeping only the first orders turns the square-wave grating into a sinusoid: the sharp
+edges are gone and the contrast rises.
+
+## Step 6: High-pass filter
+
+Blocking the centre removes the DC term and leaves only the edges:
+
+```python
+block_radius = 0.06*ureg.mm
+high_pass_filter = (X**2 + Y**2 > block_radius**2).float()
+
+system_highpass = FourFSystem(params, f, filter_mask=high_pass_filter)
+wf_highpass = system_highpass(wf_input)
+
+print(f"High-pass output max intensity: {wf_highpass.max_intensity:.4f}")
+```
+
+**Output:**
+```
+High-pass output max intensity: 0.7093
+```
+
+## Step 7: Inspecting the spectrum
+
+```python
+def plot_spectrum(wf_fourier, params, title="Spectrum"):
+    """Show the Fourier plane with correctly scaled frequency axes."""
+    dx = (params.x[1] - params.x[0]).item()
+    freq_max = 1 / (2 * dx)   # Nyquist frequency
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+    im = ax.imshow(
+        torch.log1p(wf_fourier.intensity).cpu(),
+        cmap='hot',
+        extent=[-freq_max*1e-3, freq_max*1e-3, -freq_max*1e-3, freq_max*1e-3],
+    )
+    ax.set_xlabel('$f_x$, mm$^{-1}$')
+    ax.set_ylabel('$f_y$, mm$^{-1}$')
+    ax.set_title(title)
+    plt.colorbar(im, ax=ax, label='log(I + 1)')
+    return fig
+```
+
+## Step 8: Band-pass filter
+
+Selecting a single annulus of frequencies isolates structures of one particular scale:
+
+```python
+inner_radius = 0.09*ureg.mm
+outer_radius = 0.16*ureg.mm
+R_sq = X**2 + Y**2
+bandpass_filter = ((R_sq > inner_radius**2) & (R_sq < outer_radius**2)).float()
+
+system_bandpass = FourFSystem(params, f, filter_mask=bandpass_filter)
+wf_bandpass = system_bandpass(wf_input)
+```
+
+## Full code
+
+```python
+import torch
+import torch.nn as nn
+from svetlanna import SimulationParameters, Wavefront
+from svetlanna.elements import ThinLens, FreeSpace, Aperture
+from svetlanna.units import ureg
+
+params = SimulationParameters.from_ranges(
+    x_range=(-5*ureg.mm, 5*ureg.mm), x_points=1024,
+    y_range=(-5*ureg.mm, 5*ureg.mm), y_points=1024,
+    wavelength=632.8*ureg.nm,
 )
 
 f = 100*ureg.mm
+X, Y = params.meshgrid(x_axis="x", y_axis="y")
 
-# Координаты
-W, H = torch.meshgrid(params.axes.W, params.axes.H, indexing='xy')
+period = 0.5*ureg.mm
+grating = (torch.cos(2 * torch.pi * X / period) > 0).float()
+circular_mask = (X**2 + Y**2 < (2*ureg.mm)**2).float()
+wf_input = Wavefront((grating * circular_mask).to(torch.complex64))
 
-# Тестовый объект — решётка
-period = 0.5e-3
-grating = (torch.cos(2 * torch.pi * W / period) > 0).float()
-circular_mask = (W**2 + H**2 < (2e-3)**2).float()
-test_object = grating * circular_mask
 
-wf_input = Wavefront(test_object.to(torch.complex64))
-
-# 4f-система
 class FourFSystem(nn.Module):
     def __init__(self, params, focal_length, filter_mask=None):
         super().__init__()
-        self.prop = FreeSpace(params, distance=focal_length, method="AS")
+        self.prop = FreeSpace(params, distance=focal_length, method="zpASM")
         self.lens1 = ThinLens(params, focal_length=focal_length)
         self.lens2 = ThinLens(params, focal_length=focal_length)
-        self.filter = Aperture(params, mask=filter_mask) if filter_mask is not None else None
+        self.filter = (
+            Aperture(params, mask=filter_mask) if filter_mask is not None else None
+        )
 
     def forward(self, wf):
         wf = self.prop(self.lens1(self.prop(wf)))
-        if self.filter:
+        if self.filter is not None:
             wf = self.filter(wf)
-        wf = self.prop(self.lens2(self.prop(wf)))
-        return wf
+        return self.prop(self.lens2(self.prop(wf)))
 
-# Низкочастотный фильтр
-lp_filter = (W**2 + H**2 < (0.3e-3)**2).float()
-system = FourFSystem(params, f, lp_filter)
 
-# Результат
-wf_out = system(wf_input)
+lp_filter = (X**2 + Y**2 < (0.2*ureg.mm)**2).float()
+wf_out = FourFSystem(params, f, lp_filter)(wf_input)
 
-print(f"Входная интенсивность: {wf_input.max_intensity:.3f}")
-print(f"Выходная интенсивность: {wf_out.max_intensity:.3f}")
+print(f"Input  intensity: {wf_input.max_intensity:.4f}")
+print(f"Output intensity: {wf_out.max_intensity:.4f}")
 ```
 
-## Выводы
+## Conclusions
 
-1. 4f-система реализует оптическое Фурье-преобразование
-2. В Фурье-плоскости можно размещать фильтры для модификации спектра
-3. Низкочастотный фильтр размывает изображение
-4. Высокочастотный фильтр выделяет границы
-5. Полосовой фильтр выделяет структуры определённого масштаба
+1. A 4f system performs an optical Fourier transform.
+2. A mask in the Fourier plane reshapes the spectrum of the object.
+3. A low-pass filter blurs the image; a high-pass filter enhances edges.
+4. A band-pass filter isolates structures of a given scale.
 
-## Что дальше?
+## What next?
 
-- [Восстановление фазы](/docs/tutorials/phase-retrieval) — итеративные алгоритмы
-- [Оптические системы](/docs/guides/optical-systems) — сборка систем
+- [Phase grating on an SLM](/docs/tutorials/slm-grating) — a programmable Fourier-plane mask
+- [Phase retrieval](/docs/tutorials/phase-retrieval) — iterative algorithms
+- [Optical systems](/docs/guides/optical-systems) — assembling setups

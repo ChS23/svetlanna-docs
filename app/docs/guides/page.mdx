@@ -1,48 +1,48 @@
-# Руководства
+# Guides
 
 import { Cards } from 'nextra/components'
 
-Подробные руководства по всем компонентам библиотеки SVETlANNa.
+In-depth guides to every part of the SVETlANNa library.
 
-## Основные компоненты
+## Core components
 
 <Cards>
   <Cards.Card title="SimulationParameters" href="/docs/guides/simulation-parameters" />
-  <Cards.Card title="Волновые фронты" href="/docs/guides/wavefronts" />
-  <Cards.Card title="Оптические элементы" href="/docs/guides/elements" />
-  <Cards.Card title="Оптические системы" href="/docs/guides/optical-systems" />
+  <Cards.Card title="Wavefronts" href="/docs/guides/wavefronts" />
+  <Cards.Card title="Optical elements" href="/docs/guides/elements" />
+  <Cards.Card title="Optical systems" href="/docs/guides/optical-systems" />
 </Cards>
 
-## Детекторы и обработка
+## Detection and preprocessing
 
 <Cards>
-  <Cards.Card title="Детекторы" href="/docs/guides/detector" />
+  <Cards.Card title="Detectors" href="/docs/guides/detector" />
   <Cards.Card title="Transforms" href="/docs/guides/transforms" />
 </Cards>
 
-## Оптимизация и обучение
+## Training
 
 <Cards>
-  <Cards.Card title="Оптимизация" href="/docs/guides/optimization" />
+  <Cards.Card title="Optimisation" href="/docs/guides/optimization" />
 </Cards>
 
-## Обзор компонентов
+## Component overview
 
-| Компонент | Описание |
-|-----------|----------|
-| `SimulationParameters` | Координатная система, длина волны, устройство |
-| `Wavefront` | Комплексная амплитуда поля |
-| `Element` | Базовый класс оптических элементов |
-| `LinearOpticalSetup` | Последовательная оптическая система |
-| `Detector` | Преобразование поля в интенсивность |
-| `DetectorProcessorClf` | Классификация по областям детектора |
-| `Clerk` | Логирование экспериментов |
+| Component | Description |
+|-----------|-------------|
+| `SimulationParameters` | Coordinate system, wavelength, device |
+| `Wavefront` | Complex field amplitude |
+| `Element` | Base class of all optical elements |
+| `LinearOpticalSetup` | Sequential optical system |
+| `Detector` | Turns a field into an intensity image |
+| `DetectorProcessorClf` | Classification from detector zones |
+| `specs` | Serialising and exporting a setup |
 
-## Рекомендуемый порядок изучения
+## Suggested reading order
 
-1. **SimulationParameters** — основа всех расчётов
-2. **Wavefront** — создание входных полей
-3. **Elements** — оптические элементы
-4. **Optical Systems** — сборка систем
-5. **Detector** — измерение результата
-6. **Optimization** — обучение систем
+1. **SimulationParameters** — the foundation of every calculation
+2. **Wavefronts** — creating input fields
+3. **Elements** — the optical components
+4. **Optical systems** — assembling setups
+5. **Detectors** — measuring the result
+6. **Optimisation** — training a system

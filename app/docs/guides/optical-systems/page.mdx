@@ -1,12 +1,10 @@
-# Оптические системы
+# Optical systems
 
 import { Callout, Tabs } from 'nextra/components'
 
-SVETlANNa предоставляет `LinearOpticalSetup` для сборки последовательных оптических систем.
+SVETlANNa provides `LinearOpticalSetup` for assembling sequential optical systems.
 
 ## LinearOpticalSetup
-
-Основной класс для создания последовательных оптических систем.
 
 ```python
 from svetlanna import LinearOpticalSetup
@@ -16,44 +14,48 @@ from svetlanna.units import ureg
 setup = LinearOpticalSetup([
     RoundAperture(params, radius=2*ureg.mm),
     ThinLens(params, focal_length=100*ureg.mm),
-    FreeSpace(params, distance=100*ureg.mm, method='AS'),
+    FreeSpace(params, distance=100*ureg.mm, method='zpASM'),
 ])
 
-# Forward propagation
+# forward propagation
 wf_out = setup(wf_in)
 
-# Пошаговое распространение (возвращает промежуточные результаты)
-intermediates = setup.stepwise_forward(wf_in)
+# step-by-step propagation
+steps = setup.stepwise_forward(wf_in)
 ```
 
 <Callout type="warning">
-Все элементы в `LinearOpticalSetup` должны использовать один и тот же `SimulationParameters`. При несовпадении выводится предупреждение.
+All elements in a `LinearOpticalSetup` must share the same `SimulationParameters`. A
+mismatch produces a warning at construction time.
 </Callout>
 
-### Методы
+### Methods
 
-| Метод | Описание |
-|-------|----------|
-| `forward(wf)` | Прямое распространение через все элементы |
-| `stepwise_forward(wf)` | Возвращает список промежуточных волновых фронтов |
+| Method | Description |
+|--------|-------------|
+| `forward(wf)` | Propagate through every element in order |
+| `stepwise_forward(wf)` | Tuple of wavefronts: the input, then the field after each element |
+| `reverse(wf)` | Backward propagation, if every element supports it |
 
-### Обратное распространение
+### Backward propagation
 
-Если все элементы поддерживают `reverse()`, система автоматически создаёт обратную сеть:
+If every element implements `reverse()`, the setup builds a reverse network automatically:
 
 ```python
-# Обратное распространение (если поддерживается)
-if setup._reverse_net is not None:
-    wf_back = setup._reverse_net(wf_out)
+wf_back = setup.reverse(wf_out)
 ```
+
+Otherwise `reverse()` raises `TypeError`. `FreeSpace` has no `reverse()`, so a setup
+containing one must be inverted by hand — build a mirrored setup with negative distances
+and focal lengths.
 
 ---
 
-## Альтернативы: nn.Sequential
+## Alternative: nn.Sequential
 
-Для простых случаев можно использовать стандартный `nn.Sequential`:
+For simple cases the standard `nn.Sequential` works too:
 
-<Tabs items={['Базовый', 'С именами']}>
+<Tabs items={['Basic', 'Named']}>
   <Tabs.Tab>
 ```python
 import torch.nn as nn
@@ -61,7 +63,7 @@ import torch.nn as nn
 system = nn.Sequential(
     RoundAperture(params, radius=2*ureg.mm),
     ThinLens(params, focal_length=100*ureg.mm),
-    FreeSpace(params, distance=100*ureg.mm, method='AS'),
+    FreeSpace(params, distance=100*ureg.mm, method='zpASM'),
 )
 
 wf_out = system(wf_in)
@@ -74,26 +76,28 @@ from collections import OrderedDict
 system = nn.Sequential(OrderedDict([
     ('aperture', RoundAperture(params, radius=2*ureg.mm)),
     ('lens', ThinLens(params, focal_length=100*ureg.mm)),
-    ('propagate', FreeSpace(params, distance=100*ureg.mm, method='AS')),
+    ('propagate', FreeSpace(params, distance=100*ureg.mm, method='zpASM')),
 ]))
 
-# Доступ к элементам по имени
 print(system.lens)
 ```
   </Tabs.Tab>
 </Tabs>
 
+`LinearOpticalSetup` adds the parameter checks, `stepwise_forward`, `reverse` and the
+specification export on top of that.
+
 ---
 
-## Классические оптические системы
+## Classic configurations
 
-### Фокусирующая система
+### Focusing system
 
 ```python
 from svetlanna import LinearOpticalSetup
 
 def focusing_system(params, focal_length, aperture_radius=None):
-    """Создаёт фокусирующую систему."""
+    """Aperture (optional) → lens → propagation to the focal plane."""
     elements = []
 
     if aperture_radius is not None:
@@ -101,68 +105,62 @@ def focusing_system(params, focal_length, aperture_radius=None):
 
     elements.extend([
         ThinLens(params, focal_length=focal_length),
-        FreeSpace(params, distance=focal_length, method='AS'),
+        FreeSpace(params, distance=focal_length, method='zpASM'),
     ])
 
     return LinearOpticalSetup(elements)
 
-# Использование
 setup = focusing_system(params, focal_length=100*ureg.mm, aperture_radius=2*ureg.mm)
 wf_focus = setup(wf_in)
 ```
 
-### 4f-система
+### 4f system
 
 ```python
+from svetlanna.elements import Aperture
+
 def four_f_system(params, focal_length, filter_mask=None):
     """
-    4f-система для оптической фильтрации.
-    Структура: вход -> f -> L1 -> f -> [фильтр] -> f -> L2 -> f -> выход
+    A 4f system for optical filtering.
+    Layout: input → f → L1 → f → [filter] → f → L2 → f → output
     """
     f = focal_length
-    prop = lambda: FreeSpace(params, distance=f, method='AS')
 
-    elements = [
-        prop(),
-        ThinLens(params, focal_length=f),
-        prop(),
-    ]
+    def prop():
+        return FreeSpace(params, distance=f, method='zpASM')
+
+    elements = [prop(), ThinLens(params, focal_length=f), prop()]
 
     if filter_mask is not None:
         elements.append(Aperture(params, mask=filter_mask))
 
-    elements.extend([
-        prop(),
-        ThinLens(params, focal_length=f),
-        prop(),
-    ])
+    elements.extend([prop(), ThinLens(params, focal_length=f), prop()])
 
     return LinearOpticalSetup(elements)
 ```
 
-### Телескоп Кеплера
+See the [4f system tutorial](/docs/tutorials/4f-system) for the full worked example.
+
+### Keplerian telescope
 
 ```python
 def kepler_telescope(params, f1, f2):
-    """
-    Телескоп Кеплера.
-    Увеличение M = -f2/f1
-    """
+    """Magnification M = -f2 / f1."""
     return LinearOpticalSetup([
         ThinLens(params, focal_length=f1),
-        FreeSpace(params, distance=f1 + f2, method='AS'),
+        FreeSpace(params, distance=f1 + f2, method='zpASM'),
         ThinLens(params, focal_length=f2),
     ])
 
 telescope = kepler_telescope(params, f1=50*ureg.mm, f2=200*ureg.mm)
-# Увеличение: -4x
+# magnification: -4×
 ```
 
 ---
 
-## Дифракционные нейронные сети (DONN)
+## Diffractive neural networks (DONNs)
 
-### Многослойная D²NN
+### A multi-layer D²NN
 
 ```python
 import torch
@@ -171,33 +169,33 @@ from svetlanna import LinearOpticalSetup
 from svetlanna.elements import DiffractiveLayer, FreeSpace
 
 class DONN(nn.Module):
-    """Дифракционная оптическая нейронная сеть."""
+    """A diffractive optical neural network."""
 
-    def __init__(self, params, n_layers, layer_distance):
+    def __init__(self, params, n_layers, layer_distance, grid=512):
         super().__init__()
 
         elements = []
-        self.phase_masks = nn.ParameterList()
-
-        for i in range(n_layers):
-            # Обучаемая фазовая маска
-            phase = nn.Parameter(torch.rand(512, 512) * 2 * torch.pi)
-            self.phase_masks.append(phase)
-
+        for _ in range(n_layers):
+            # a trainable phase mask
+            phase = nn.Parameter(torch.rand(grid, grid) * 2 * torch.pi)
             elements.append(DiffractiveLayer(params, mask=phase))
-            elements.append(FreeSpace(params, distance=layer_distance, method='AS'))
+            elements.append(
+                FreeSpace(params, distance=layer_distance, method='zpASM')
+            )
 
         self.optical = LinearOpticalSetup(elements)
 
     def forward(self, wf):
         return self.optical(wf)
 
-# Использование
 donn = DONN(params, n_layers=5, layer_distance=10*ureg.mm)
 wf_out = donn(wf_in)
 ```
 
-### С детектором для классификации
+`DiffractiveLayer` registers the mask through `process_parameter`, so the masks appear in
+`donn.parameters()` and are picked up by any PyTorch optimiser.
+
+### With a detector for classification
 
 ```python
 from svetlanna.detector import Detector, DetectorProcessorClf
@@ -221,68 +219,82 @@ class DONNClassifier(nn.Module):
 classifier = DONNClassifier(params, n_layers=5, n_classes=10)
 ```
 
+SVETlANNa also ships ready-made architectures in `svetlanna.networks`:
+`DiffractiveRNN`, `ConvDiffNetwork4F`, `LinearAutoencoder` and `SimpleReservoir`.
+
 ---
 
-## Промежуточные результаты
+## Intermediate fields
 
-Метод `stepwise_forward` возвращает волновой фронт после каждого элемента:
+`stepwise_forward` returns the input wavefront followed by the field after each element, so
+a setup with three elements yields four wavefronts:
 
 ```python
 setup = LinearOpticalSetup([
     RoundAperture(params, radius=2*ureg.mm),
     ThinLens(params, focal_length=100*ureg.mm),
-    FreeSpace(params, distance=100*ureg.mm, method='AS'),
+    FreeSpace(params, distance=100*ureg.mm, method='zpASM'),
 ])
 
-intermediates = setup.stepwise_forward(wf_in)
+steps = setup.stepwise_forward(wf_in)
 
-# intermediates[0] — после апертуры
-# intermediates[1] — после линзы
-# intermediates[2] — в фокусе
+# steps[0] — the input
+# steps[1] — after the aperture
+# steps[2] — after the lens
+# steps[3] — in the focal plane
 
 import matplotlib.pyplot as plt
-fig, axes = plt.subplots(1, len(intermediates), figsize=(4*len(intermediates), 4))
-for i, wf in enumerate(intermediates):
-    axes[i].imshow(wf.intensity.cpu(), cmap='hot')
-    axes[i].set_title(f'После элемента {i+1}')
+titles = ['Input', 'After the aperture', 'After the lens', 'Focal plane']
+fig, axes = plt.subplots(1, len(steps), figsize=(4*len(steps), 4))
+for ax, wf, title in zip(axes, steps, titles):
+    ax.imshow(wf.intensity.cpu(), cmap='hot')
+    ax.set_title(title)
 ```
+
+<Callout type="info">
+`stepwise_forward` runs under `torch.no_grad()` — it is a diagnostic tool, not part of a
+training loop.
+</Callout>
 
 ---
 
-## Работа с GPU
+## Working on the GPU
 
 ```python
-# Способ 1: перенос params, затем создание системы
+# option 1: move params first, then build the system
 params.to('cuda')
-setup = LinearOpticalSetup([...])  # Автоматически на GPU
+setup = LinearOpticalSetup([...])   # already on the GPU
 
-# Способ 2: перенос готовой системы
+# option 2: move an existing system
 setup = LinearOpticalSetup([...])
 setup = setup.to('cuda')
 
-# Волновой фронт тоже должен быть на GPU
-wf_gpu = wf.to('cuda')
-wf_out = setup(wf_gpu)
+# the wavefront must be on the GPU too
+wf_out = setup(wf.to('cuda'))
 ```
 
 ---
 
-## Сериализация
+## Serialisation
 
 ```python
-# Сохранение
+import torch
+
 torch.save(setup.state_dict(), 'optical_system.pth')
 
-# Загрузка
-setup = LinearOpticalSetup([...])  # Создать с той же структурой
+setup = LinearOpticalSetup([...])   # rebuild with the same structure
 setup.load_state_dict(torch.load('optical_system.pth'))
 ```
 
+For a human-readable description of a setup, use the `specs` module and the
+`svetlanna.visualization` helpers (`show_specs`, `show_structure`,
+`show_stepwise_forward`), which render interactive widgets inside Jupyter.
+
 ---
 
-## См. также
+## See also
 
-- [Оптические элементы](/docs/guides/elements) — справочник по элементам
-- [Детекторы](/docs/guides/detector) — измерение результата
-- [Оптимизация](/docs/guides/optimization) — обучение систем
-- [Туториал: D²NN](/docs/tutorials/diffractive-nn) — дифракционная нейросеть
+- [Optical elements](/docs/guides/elements) — the element reference
+- [Detectors](/docs/guides/detector) — measuring the result
+- [Optimisation](/docs/guides/optimization) — training systems
+- [Tutorial: 4f system](/docs/tutorials/4f-system) — a complete worked setup

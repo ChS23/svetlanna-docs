@@ -1,20 +1,20 @@
 # Visualization
 
-Инструменты визуализации
+Visualisation tools
 
 ```python
 from svetlanna.visualization import ...
 ```
 
-## Классы
+## Classes
 
 ### StepwiseForwardWidget
 
-<small>Наследует: `anywidget.AnyWidget`</small>
+<small>Inherits: `anywidget.AnyWidget`</small>
 
 ### SpecsWidget
 
-<small>Наследует: `anywidget.AnyWidget`</small>
+<small>Inherits: `anywidget.AnyWidget`</small>
 
 ### ElementHTML
 
@@ -22,10 +22,10 @@ Representation of an element in HTML format.
 
 ### WidngetHTMLMethod
 
-<small>Наследует: `Protocol`</small>
+<small>Inherits: `Protocol`</small>
 
 
-## Функции
+## Functions
 
 ### `default_widget_html_method(index: int, name: str, element_type: str | None, subelements: list[ElementHTML]) -> str`
 
@@ -39,9 +39,9 @@ Generate HTML for the setup structure tree.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `subelements` | `list[_ElementInTree]` | Elements tree |
 
@@ -49,7 +49,7 @@ Generate HTML for the setup structure tree.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`str`**
 
@@ -68,9 +68,9 @@ and is useful for quick notebook previews.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `*specsable` | `Specsable` | One or more `Specsable` objects to display. |
 
@@ -91,9 +91,9 @@ and is useful for quick notebook previews.
 - *show_structure(setup)* — 
 - *```* — 
 - *Output (in IPython environment):* — 
-- *<iframe* — 
+- *&lt;iframe* — 
 - *src="show_structure.html"* — 
-- *style="width:100%; height:150px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+- *style="width:100%; height:150px; border: 0; color-scheme: inherit;" allowtransparency="true">&lt;/iframe>* — 
 
 ### `show_specs(*specsable: Specsable) -> SpecsWidget`
 
@@ -101,7 +101,7 @@ Display setup structure with interactive specs preview.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`SpecsWidget`**
 
@@ -125,9 +125,9 @@ Widget with element tree and per-element specs HTML.
 - *show_specs(setup)* — 
 - *```* — 
 - *Output (in IPython environment):* — 
-- *<iframe* — 
+- *&lt;iframe* — 
 - *src="show_specs.html"* — 
-- *style="width:100%; height:500px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+- *style="width:100%; height:500px; border: 0; color-scheme: inherit;" allowtransparency="true">&lt;/iframe>* — 
 
 ### `draw_wavefront(wavefront: torch.Tensor, simulation_parameters: SimulationParameters, types_to_plot: tuple[StepwisePlotTypes, ...] = ('I', 'phase'), slices_to_plot: Mapping[str, Index | tuple[Index, ...]] | None = None) -> bytes`
 
@@ -139,9 +139,9 @@ Only a 2D result (`x`, `y`) can be plotted after slicing.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `wavefront` | `Tensor` | Input wavefront tensor. |
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
@@ -152,7 +152,7 @@ Only a 2D result (`x`, `y`) can be plotted after slicing.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`bytes`**
 
@@ -172,9 +172,9 @@ outputs, renders them as images, and returns an interactive widget.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `input` | `torch.Tensor` | Input wavefront. |
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters |
@@ -185,7 +185,7 @@ outputs, renders them as images, and returns an interactive widget.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`StepwiseForwardWidget`**
 
@@ -212,14 +212,14 @@ Widget containing setup structure and captured per-element outputs.
 - *)* — 
 - *```* — 
 - *Output (in IPython environment):* — 
-- *<iframe* — 
+- *&lt;iframe* — 
 - *src="show_stepwise_forward.html"* — 
-- *style="width:100%; height:500px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+- *style="width:100%; height:500px; border: 0; color-scheme: inherit;" allowtransparency="true">&lt;/iframe>* — 
 - ***Spatial slicing with boolean masks:*** — 
 - *Use named axis slicing to focus on a region of interest.* — 
 - *Plot only the central area:* — 
 - *```python* — 
-- *show_stepwise_forward(* — setup, input=input_wavefront, simulation_parameters=sim_params, slices_to_plot=&#123; "x": (sim_params.x > -0.5) & (sim_params.x < 0.5),  # x_mask "y": (sim_params.y > -0.5) & (sim_params.y < 0.5),  # y_mask &#125;,
+- *show_stepwise_forward(* — setup, input=input_wavefront, simulation_parameters=sim_params, slices_to_plot=&#123; "x": (sim_params.x > -0.5) & (sim_params.x &lt; 0.5),  # x_mask "y": (sim_params.y > -0.5) & (sim_params.y &lt; 0.5),  # y_mask &#125;,
 - *)* — 
 - *# Equivalent to: wavefront[y_mask, x_mask] (axis order depends on sim_params)* — 
 - *```* — 

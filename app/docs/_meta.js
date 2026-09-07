@@ -1,5 +1,5 @@
 export default {
-  "getting-started": "Starting",
+  "getting-started": "Getting started",
   guides: "Guides",
   tutorials: "Tutorials",
   api: "API Reference",

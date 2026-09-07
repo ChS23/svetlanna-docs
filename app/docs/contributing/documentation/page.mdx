@@ -1,20 +1,20 @@
-# Контрибьютинг в документацию
+# Contributing documentation
 
 import { Callout, Cards, Steps, Tabs, FileTree } from 'nextra/components'
 
-Руководство по написанию и редактированию документации SVETlANNa.
+How to write and edit the SVETlANNa documentation.
 
-## Стек технологий
+## Technology stack
 
-- **Next.js 16** — React-фреймворк
-- **Nextra 4** — генератор документации
-- **MDX** — Markdown с JSX-компонентами
-- **Tailwind CSS 4** — стилизация
-- **KaTeX** — рендеринг формул
+- **Next.js 16** — the React framework
+- **Nextra 4** — the documentation generator
+- **MDX** — Markdown with JSX components
+- **Tailwind CSS 4** — styling
+- **KaTeX** — formula rendering
 
 ---
 
-## Структура файлов
+## File layout
 
 <FileTree>
   <FileTree.Folder name="app/docs" defaultOpen>
@@ -30,19 +30,19 @@ import { Callout, Cards, Steps, Tabs, FileTree } from 'nextra/components'
   </FileTree.Folder>
 </FileTree>
 
-- `_meta.js` — порядок и названия в сайдбаре
-- `page.mdx` — содержимое страницы
+- `_meta.js` — sidebar order and titles
+- `page.mdx` — the page content
 
 ---
 
-## Навигация (_meta.js)
+## Navigation (`_meta.js`)
 
 ```js filename="_meta.js"
 export default {
-  index: "Главная",
-  "getting-started": "Начало работы",
-  guides: "Руководства",
-  // Внешняя ссылка
+  index: "Home",
+  "getting-started": "Getting started",
+  guides: "Guides",
+  // an external link
   github: {
     title: "GitHub",
     href: "https://github.com/CompPhysLab/SVETlANNa",
@@ -53,11 +53,11 @@ export default {
 
 ---
 
-## LaTeX формулы
+## LaTeX formulas
 
-Используется KaTeX. Инлайн: `$E = mc^2$` отрендерится как $E = mc^2$.
+Rendering is done with KaTeX. Inline: `$E = mc^2$` renders as $E = mc^2$.
 
-Блочная формула:
+A display formula:
 
 ```latex
 $$
@@ -69,10 +69,10 @@ $$
 \nabla^2 E + k^2 E = 0
 $$
 
-Доступные макросы:
+Available macros:
 
-| Макрос | Результат |
-|--------|-----------|
+| Macro | Result |
+|-------|--------|
 | `\R` | $\R$ |
 | `\C` | $\C$ |
 | `\N` | $\N$ |
@@ -81,35 +81,35 @@ $$
 
 ---
 
-## Nextra компоненты
+## Nextra components
 
 ### Callout
 
 ```mdx
 <Callout type="info">
-  Информационное сообщение
+  An informational note
 </Callout>
 ```
 
 <Callout type="info">
-  Информационное сообщение
+  An informational note
 </Callout>
 
 <Callout type="warning">
-  Предупреждение
+  A warning
 </Callout>
 
 <Callout type="error">
-  Ошибка
+  An error
 </Callout>
 
-Типы: `default`, `info`, `warning`, `error`
+Types: `default`, `info`, `warning`, `error`
 
 ### Cards
 
 ```mdx
 <Cards>
-  <Cards.Card title="Заголовок" href="/path" />
+  <Cards.Card title="Title" href="/path" />
 </Cards>
 ```
 
@@ -117,17 +117,17 @@ $$
 
 ```mdx
 <Tabs items={['Tab 1', 'Tab 2']}>
-  <Tabs.Tab>Контент 1</Tabs.Tab>
-  <Tabs.Tab>Контент 2</Tabs.Tab>
+  <Tabs.Tab>Content 1</Tabs.Tab>
+  <Tabs.Tab>Content 2</Tabs.Tab>
 </Tabs>
 ```
 
-<Tabs items={['Python', 'Bash']}>
+<Tabs items={['pip', 'source']}>
   <Tabs.Tab>
     `pip install svetlanna`
   </Tabs.Tab>
   <Tabs.Tab>
-    `pip install svetlanna`
+    `pip install -e .`
   </Tabs.Tab>
 </Tabs>
 
@@ -135,22 +135,22 @@ $$
 
 ```mdx
 <Steps>
-### Шаг 1
-Описание
+### Step 1
+Description
 
-### Шаг 2
-Описание
+### Step 2
+Description
 </Steps>
 ```
 
 <Steps>
-### Установка
+### Install
 
-Выполните `pip install svetlanna`
+Run `pip install svetlanna`
 
-### Импорт
+### Import
 
-Добавьте `from svetlanna import SimulationParameters`
+Add `from svetlanna import SimulationParameters`
 </Steps>
 
 ### FileTree
@@ -163,13 +163,18 @@ $$
 </FileTree>
 ```
 
+<Callout type="warning">
+MDX imports are hoisted, but keep the `import { ... } from 'nextra/components'` line at the
+top of the file — right after the `#` heading — so the page stays readable.
+</Callout>
+
 ---
 
-## Блоки кода
+## Code blocks
 
-### Подсветка синтаксиса
+### Syntax highlighting
 
-Используйте тройные обратные кавычки с указанием языка:
+Use fenced blocks with a language tag:
 
 ~~~
 ```python
@@ -178,7 +183,7 @@ def hello():
 ```
 ~~~
 
-### Имя файла
+### File name
 
 ~~~
 ```python filename="example.py"
@@ -190,7 +195,7 @@ print("Hello")
 print("Hello")
 ```
 
-### Подсветка строк
+### Line highlighting
 
 ~~~
 ```python {2,4-5}
@@ -212,9 +217,15 @@ print(wf.shape)
 
 ---
 
-## Next.js компоненты
+## Images
 
-### Image
+The simplest option is relative Markdown, with the image stored next to the page:
+
+```mdx
+![Focal plane](./focal-plane.png)
+```
+
+Site-wide assets live in `public/` and are referenced from the root:
 
 ```jsx
 import Image from 'next/image'
@@ -222,21 +233,40 @@ import Image from 'next/image'
 <Image src="/images/diagram.png" alt="Diagram" width={600} height={400} />
 ```
 
-Изображения хранить в `public/images/`.
-
-### Link
-
-```jsx
-import Link from 'next/link'
-
-<Link href="/docs/guides">Руководства</Link>
-```
-
-Для внутренних ссылок можно использовать обычный Markdown: `[текст](/path)`.
+<Callout type="info">
+Figures generated from code should be reproducible: keep the script that produced them in
+the page itself, so a reader can regenerate the picture.
+</Callout>
 
 ---
 
-## Mermaid диаграммы
+## Jupyter notebooks
+
+Any `.ipynb` file under `app/docs/` is converted to MDX before the build by
+`lib/convert-notebooks.js`. A notebook `example.ipynb` becomes `example.notebook/page.mdx`,
+with the cell outputs — including images — extracted alongside it. Reference it from
+`_meta.js` as `"example.notebook"`.
+
+The conversion runs automatically via the `predev` and `prebuild` scripts, or manually:
+
+```bash
+pnpm notebooks
+```
+
+---
+
+## Links
+
+Internal links use plain Markdown: `[text](/docs/guides)`.
+
+<Callout type="warning">
+When renaming or removing a page, search the repository for links to it — a broken internal
+link does not fail the build.
+</Callout>
+
+---
+
+## Mermaid diagrams
 
 ~~~
 ```mermaid
@@ -252,35 +282,48 @@ flowchart LR
 
 ---
 
-## Локальный запуск
+## Running locally
 
 <Steps>
-### Клонирование
+### Clone
 
 ```bash
 git clone https://github.com/ChS23/svetlanna-docs.git
 cd svetlanna-docs
 ```
 
-### Установка зависимостей
+### Install dependencies
 
 ```bash
 pnpm install
 ```
 
-### Запуск dev-сервера
+### Start the dev server
 
 ```bash
 pnpm dev
 ```
 
-Откройте http://localhost:3000
+Open http://localhost:3000
 </Steps>
 
 ---
 
-## Рекомендации
+## API reference
 
-1. Добавляйте примеры кода с реальными use-cases
-2. Проверяйте сборку перед коммитом: `pnpm build`
-3. Следуйте структуре существующих страниц
+The pages under `/docs/api` are **generated** from the SVETlANNa docstrings by
+`scripts/generate-api.py`. Do not edit them by hand — the next regeneration overwrites your
+changes. Fix the docstring in the library instead, then re-run:
+
+```bash
+python scripts/generate-api.py
+```
+
+---
+
+## Guidelines
+
+1. Write in English.
+2. Prefer examples that actually run — verify them against the installed library version.
+3. Check the build before committing: `pnpm build`.
+4. Follow the structure of the existing pages.

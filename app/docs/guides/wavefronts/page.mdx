@@ -1,44 +1,52 @@
-# Волновые фронты
+# Wavefronts
 
 import { Callout, Tabs } from 'nextra/components'
 
-Класс `Wavefront` представляет комплексную амплитуду электромагнитного поля $E(x, y)$. Это основной объект, с которым работают все оптические элементы.
+The `Wavefront` class represents the complex amplitude of an electromagnetic field
+$E(x, y)$. It is the object every optical element consumes and produces.
 
-## Наследование от torch.Tensor
+## A torch.Tensor subclass
 
-`Wavefront` наследует `torch.Tensor`, поэтому поддерживает все тензорные операции:
+`Wavefront` inherits from `torch.Tensor`, so all tensor operations are available:
 
 ```python
 from svetlanna import Wavefront
 
-# Арифметика
-wf_sum = wf1 + wf2        # Интерференция
-wf_scaled = wf * 0.5      # Ослабление
-wf_conj = wf.conj()       # Комплексное сопряжение
+# arithmetic
+wf_sum = wf1 + wf2        # interference
+wf_scaled = wf * 0.5      # attenuation
+wf_conj = wf.conj()       # complex conjugate
 
-# Перенос на GPU
+# move to the GPU
 wf_gpu = wf.to("cuda")
 
-# Индексация
+# indexing
 wf_slice = wf[100:400, 100:400]
 ```
 
 ---
 
-## Фабричные методы
+## Factory methods
 
-### Плоская волна
+### Plane wave
 
 ```python
 wf = Wavefront.plane_wave(params)
 ```
 
-Создаёт волну с единичной амплитудой и нулевой фазой:
+By default a unit-amplitude, zero-phase field:
+
 $$E(x, y) = 1$$
 
-### Гауссов пучок
+A tilted wave is obtained with `wave_direction`:
 
-<Tabs items={['Базовый', 'Со смещением', 'На расстоянии']}>
+```python
+wf = Wavefront.plane_wave(params, wave_direction=[0.01, 0.0, 1.0])
+```
+
+### Gaussian beam
+
+<Tabs items={['Basic', 'Offset', 'At a distance']}>
   <Tabs.Tab>
 ```python
 from svetlanna import Wavefront
@@ -47,57 +55,73 @@ from svetlanna.units import ureg
 wf = Wavefront.gaussian_beam(params, waist_radius=0.5*ureg.mm)
 ```
 
-Гауссово распределение интенсивности:
+Gaussian amplitude distribution:
 $$E(x, y) = \exp\left(-\frac{x^2 + y^2}{w_0^2}\right)$$
   </Tabs.Tab>
   <Tabs.Tab>
 ```python
-# Гауссов пучок со смещением центра
+# Gaussian beam with a shifted centre
 wf = Wavefront.gaussian_beam(
     params,
     waist_radius=0.5*ureg.mm,
-    dx=0.2*ureg.mm,  # Смещение по X
-    dy=0.1*ureg.mm   # Смещение по Y
+    dx=0.2*ureg.mm,  # offset along X
+    dy=0.1*ureg.mm   # offset along Y
 )
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```python
-# Гауссов пучок на расстоянии от перетяжки
+# Gaussian beam evaluated away from the waist
 wf = Wavefront.gaussian_beam(
     params,
     waist_radius=0.5*ureg.mm,
-    distance=10*ureg.mm  # Расстояние от перетяжки
+    distance=10*ureg.mm   # distance from the waist
 )
 ```
+The result carries the correct $w(z)$, wavefront curvature and Gouy phase.
   </Tabs.Tab>
 </Tabs>
 
-**Параметры:**
+**Parameters:**
 
-| Параметр | Описание | По умолчанию |
-|----------|----------|--------------|
-| `waist_radius` | Радиус перетяжки $w_0$ | — |
-| `distance` | Расстояние от перетяжки | `0.0` |
-| `dx`, `dy` | Смещение центра | `0.0` |
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `waist_radius` | Waist radius $w_0$ | — |
+| `distance` | Distance from the waist | `0.0` |
+| `dx`, `dy` | Offset of the centre | `0.0` |
 
-### Сферическая волна
+### Spherical wave
 
 ```python
 wf = Wavefront.spherical_wave(params, distance=50*ureg.mm)
 ```
 
-Сходящаяся (distance > 0) или расходящаяся (distance < 0) сферическая волна:
-$$E(x, y) = \exp\left(-i \frac{k}{2R}(x^2 + y^2)\right)$$
+$$E(x, y) = \frac{1}{r}\exp\left(i(kr + \phi_0)\right), \quad
+r = \sqrt{(x-d_x)^2 + (y-d_y)^2 + z^2}$$
 
-где $R$ — радиус кривизны (distance).
+A positive `distance` places the point source behind the plane (a diverging wave); a
+negative one puts it in front (a converging wave).
 
-### Создание из тензора
+### Hermite–Gaussian modes
+
+```python
+wf = Wavefront.hermite_gauss(
+    params, waist_radius=0.5*ureg.mm, m=2, n=1, distance=0.0
+)
+```
+
+`m` and `n` are the mode indices along X and Y. The Gouy phase is scaled by $(m+n+1)$.
+
+<Callout type="info">
+Laguerre–Gaussian modes are not built in, but they are only a few lines of code — see the
+[Laguerre–Gaussian tutorial](/docs/tutorials/laguerre-gauss).
+</Callout>
+
+### From a tensor
 
 ```python
 import torch
 
-# Пользовательское распределение
 amplitude = torch.ones(512, 512)
 phase = torch.zeros(512, 512)
 complex_field = amplitude * torch.exp(1j * phase)
@@ -105,128 +129,101 @@ complex_field = amplitude * torch.exp(1j * phase)
 wf = Wavefront(complex_field)
 ```
 
-<Callout type="info">
-При создании из тензора `Wavefront` автоматически приводит тип к `complex64`.
-</Callout>
-
 ---
 
-## Свойства
+## Properties
 
-| Свойство | Описание | Формула |
-|----------|----------|---------|
-| `wf.intensity` | Интенсивность | $I = \|E\|^2$ |
-| `wf.phase` | Фаза (радианы) | $\phi = \arg(E)$ |
-| `wf.max_intensity` | Максимум интенсивности | $\max(I)$ |
+| Property | Description | Formula |
+|----------|-------------|---------|
+| `wf.intensity` | Intensity | $I = \|E\|^2$ |
+| `wf.phase` | Phase, radians | $\phi = \arg(E)$ |
+| `wf.max_intensity` | Peak intensity | $\max(I)$ |
 
-### Интенсивность
+### Intensity
 
 ```python
 I = wf.intensity  # |E|²
 ```
 
-Возвращает квадрат модуля комплексной амплитуды.
-
-### Фаза
+### Phase
 
 ```python
-phi = wf.phase  # arg(E)
+phi = wf.phase  # arg(E), wrapped to [-π, π]
 ```
-
-Возвращает фазу в радианах от $-\pi$ до $\pi$.
-
-### Максимальная интенсивность
-
-```python
-I_max = wf.max_intensity
-```
-
-Эквивалентно `wf.intensity.max()`.
 
 ### FWHM
 
 ```python
 fwhm_x, fwhm_y = wf.fwhm(params)
+print(f"FWHM: {fwhm_x*1e6:.2f} × {fwhm_y*1e6:.2f} um")
 ```
 
-Полная ширина на полувысоте (Full Width at Half Maximum) по осям X и Y.
-
-```python
-# Перевод в микрометры
-print(f"FWHM: {fwhm_x*1e6:.2f} × {fwhm_y*1e6:.2f} мкм")
-```
+<Callout type="warning">
+`fwhm()` measures the extent of the grid points that lie above half maximum, so it is
+quantised by the grid step and under-reports narrow features. Refine the grid when the
+feature spans only a handful of points.
+</Callout>
 
 ---
 
-## Операции над волновыми фронтами
+## Operations on wavefronts
 
-### Интерференция
+### Interference
 
 ```python
-# Сложение двух волн — интерференция
 wf_interference = wf1 + wf2
-
-# Интерференционная картина
 I_interference = wf_interference.intensity
 ```
 
-### Модуляция амплитуды
+### Amplitude modulation
 
 ```python
-# Ослабление
 wf_attenuated = wf * 0.5
-
-# Усиление
 wf_amplified = wf * 2.0
 
-# Маска пропускания (0 или 1)
-X, Y = params.meshgrid(x_axis='W', y_axis='H')
-radius = 0.5e-3
+# a binary transmission mask
+X, Y = params.meshgrid(x_axis='x', y_axis='y')
+radius = 0.5*ureg.mm
 mask = (X**2 + Y**2 < radius**2).float()
 wf_masked = wf * mask
 ```
 
-### Модуляция фазы
+### Phase modulation
 
 ```python
 import torch
 
-# Добавление фазы
-phase_shift = torch.pi / 4
-wf_shifted = wf * torch.exp(1j * phase_shift)
+# a constant phase shift
+wf_shifted = wf * torch.exp(1j * torch.tensor(torch.pi / 4))
 
-# Пространственная фазовая модуляция
-phase_mask = create_phase_mask(params)  # ваша функция
+# a spatially varying phase
 wf_modulated = wf * torch.exp(1j * phase_mask)
 ```
 
 ---
 
-## Визуализация
+## Visualisation
 
 ```python
 import matplotlib.pyplot as plt
 
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
-# Extent для правильных осей
 extent = [
-    params.axes.W[0].item()*1e3, params.axes.W[-1].item()*1e3,
-    params.axes.H[0].item()*1e3, params.axes.H[-1].item()*1e3
+    params.x[0].item()*1e3, params.x[-1].item()*1e3,
+    params.y[0].item()*1e3, params.y[-1].item()*1e3
 ]
 
-# Интенсивность
 im0 = axes[0].imshow(wf.intensity.cpu(), cmap='hot', extent=extent, origin='lower')
-axes[0].set_title('Интенсивность')
-axes[0].set_xlabel('x, мм')
-axes[0].set_ylabel('y, мм')
+axes[0].set_title('Intensity')
+axes[0].set_xlabel('x, mm')
+axes[0].set_ylabel('y, mm')
 plt.colorbar(im0, ax=axes[0])
 
-# Фаза
 im1 = axes[1].imshow(wf.phase.cpu(), cmap='twilight', extent=extent, origin='lower')
-axes[1].set_title('Фаза')
-axes[1].set_xlabel('x, мм')
-axes[1].set_ylabel('y, мм')
+axes[1].set_title('Phase')
+axes[1].set_xlabel('x, mm')
+axes[1].set_ylabel('y, mm')
 plt.colorbar(im1, ax=axes[1])
 
 plt.tight_layout()
@@ -235,37 +232,36 @@ plt.show()
 
 ---
 
-## Многомерные волновые фронты
+## Multi-dimensional wavefronts
 
-При использовании нескольких длин волн волновой фронт автоматически становится многомерным:
+With several wavelengths the wavefront gains a leading axis automatically:
 
 ```python
 import torch
 from svetlanna import SimulationParameters, Wavefront
 
-# Три длины волны (RGB)
 params = SimulationParameters(
-    W=torch.linspace(-1e-3, 1e-3, 256),
-    H=torch.linspace(-1e-3, 1e-3, 256),
+    x=torch.linspace(-1e-3, 1e-3, 256),
+    y=torch.linspace(-1e-3, 1e-3, 256),
     wavelength=torch.tensor([630, 532, 465]) * 1e-9
 )
 
 wf = Wavefront.gaussian_beam(params, waist_radius=0.3e-3)
 print(wf.shape)  # torch.Size([3, 256, 256])
 
-# Доступ к отдельным длинам волн
-wf_red = wf[0]    # 630 нм
-wf_green = wf[1]  # 532 нм
-wf_blue = wf[2]   # 465 нм
+wf_red = wf[0]    # 630 nm
+wf_green = wf[1]  # 532 nm
+wf_blue = wf[2]   # 465 nm
 ```
 
 <Callout type="warning">
-При многомерных расчётах все оптические элементы автоматически применяются к каждой длине волны с учётом дисперсии.
+In multi-dimensional simulations every element is applied to each wavelength with the
+correct dispersion — no extra work on your side.
 </Callout>
 
 ---
 
-## Пример: суперпозиция мод
+## Example: superposition of beams
 
 ```python
 import torch
@@ -273,43 +269,38 @@ from svetlanna import SimulationParameters, Wavefront
 from svetlanna.units import ureg
 
 params = SimulationParameters.from_ranges(
-    w_range=(-2*ureg.mm, 2*ureg.mm), w_points=512,
-    h_range=(-2*ureg.mm, 2*ureg.mm), h_points=512,
+    x_range=(-2*ureg.mm, 2*ureg.mm), x_points=512,
+    y_range=(-2*ureg.mm, 2*ureg.mm), y_points=512,
     wavelength=632.8*ureg.nm
 )
 
-# Суперпозиция двух гауссовых пучков
-wf1 = Wavefront.gaussian_beam(params, waist_radius=0.5*ureg.mm)
-wf2 = Wavefront.gaussian_beam(params, waist_radius=0.3*ureg.mm)
+wf1 = Wavefront.gaussian_beam(params, waist_radius=0.5*ureg.mm, dx=-0.5*ureg.mm)
+wf2 = Wavefront.gaussian_beam(params, waist_radius=0.5*ureg.mm, dx=0.5*ureg.mm)
 
-# Сдвиг по фазе
-wf2 = wf2 * torch.exp(1j * torch.pi / 2)
+# put the second beam in quadrature
+wf2 = wf2 * torch.exp(1j * torch.tensor(torch.pi / 2))
 
-# Интерференция
 wf_super = wf1 + wf2
-
-# Интерференционная картина
-I = wf_super.intensity
-print(f"Максимальная интенсивность: {I.max():.4f}")
+print(f"Max intensity: {wf_super.intensity.max():.4f}")
 ```
 
 ---
 
-## GPU-ускорение
+## GPU acceleration
 
 ```python
-# Перенос на GPU
+# move an existing field
 wf_gpu = wf.to('cuda')
 
-# Или при создании через params
+# or move the parameters first
 params.to('cuda')
-wf = Wavefront.gaussian_beam(params, waist_radius=0.5e-3)  # Автоматически на GPU
+wf = Wavefront.gaussian_beam(params, waist_radius=0.5e-3)  # already on the GPU
 ```
 
 ---
 
-## См. также
+## See also
 
-- [SimulationParameters](/docs/guides/simulation-parameters) — настройка координат
-- [Оптические элементы](/docs/guides/elements) — преобразование волновых фронтов
-- [Transforms](/docs/guides/transforms) — преобразование изображений в волновые фронты
+- [SimulationParameters](/docs/guides/simulation-parameters) — the coordinate grid
+- [Optical elements](/docs/guides/elements) — transforming wavefronts
+- [Transforms](/docs/guides/transforms) — turning images into wavefronts

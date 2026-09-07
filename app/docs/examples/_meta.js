@@ -1,3 +1,3 @@
 export default {
-  index: "Примеры LaTeX",
+  index: "LaTeX examples",
 };

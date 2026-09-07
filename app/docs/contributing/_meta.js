@@ -1,5 +1,5 @@
 export default {
-  index: "Введение",
-  code: "Код",
-  documentation: "Документация",
+  index: "Introduction",
+  code: "Code",
+  documentation: "Documentation",
 };

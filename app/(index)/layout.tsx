@@ -12,8 +12,8 @@ export default function IndexLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Возвращаем children напрямую без Nextra Layout wrapper
-  // Это работает потому что root layout уже предоставляет html/body
+  // Return children directly, without the Nextra Layout wrapper.
+  // This works because the root layout already provides html/body.
   return (
     <div className="x:isolate">
       {children}

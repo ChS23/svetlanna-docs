@@ -1,50 +1,59 @@
-# Начало работы
+# Getting started
 
 import { Cards, Callout } from 'nextra/components'
 
-Добро пожаловать в документацию SVETlANNa! Этот раздел поможет вам быстро начать работу с библиотекой.
+Welcome to the SVETlANNa documentation. This section gets you from an empty folder to a
+working optical simulation.
 
-## Что такое SVETlANNa?
+## What is SVETlANNa?
 
-SVETlANNa — это Python-библиотека для моделирования распространения света в оптических системах и построения дифракционных нейронных сетей (DONN). Она построена на PyTorch, что обеспечивает:
+SVETlANNa is a Python library for simulating light propagation through optical systems and
+for building diffractive optical neural networks (DONNs). It is built on PyTorch, which
+gives you:
 
-- **Автоматическое дифференцирование** для оптимизации оптических систем
-- **GPU-ускорение** через CUDA
-- **Интеграцию с PyTorch** (nn.Module, DataLoader, autograd)
+- **Automatic differentiation** for optimising optical systems
+- **GPU acceleration** via CUDA
+- **Native PyTorch integration** (`nn.Module`, `DataLoader`, autograd)
 
 <Callout type="info">
-SVETlANNa поддерживает два метода распространения света: **Angular Spectrum (AS)** для точных расчётов и **Fresnel** для быстрых приближений.
+SVETlANNa provides four propagation methods: **ASM** (angular spectrum) and **RSC**
+(Rayleigh–Sommerfeld convolution), each with a zero-padded variant (`zpASM`, `zpRSC`) that
+suppresses wrap-around artefacts.
 </Callout>
 
-## Содержание раздела
+## In this section
 
 <Cards>
-  <Cards.Card title="Установка" href="/docs/getting-started/installation" />
-  <Cards.Card title="Быстрый старт" href="/docs/getting-started/quickstart" />
-  <Cards.Card title="Основные концепции" href="/docs/getting-started/concepts" />
+  <Cards.Card title="Virtual environment" href="/docs/getting-started/virtual-environment" />
+  <Cards.Card title="Installation" href="/docs/getting-started/installation" />
+  <Cards.Card title="Quickstart" href="/docs/getting-started/quickstart" />
+  <Cards.Card title="Core concepts" href="/docs/getting-started/concepts" />
 </Cards>
 
-## Минимальный пример
+## A minimal example
 
 ```python
 from svetlanna import SimulationParameters, Wavefront
 from svetlanna.units import ureg
 
-# Создаём параметры симуляции
+# define the simulation grid
 params = SimulationParameters.from_ranges(
-    w_range=(-1*ureg.mm, 1*ureg.mm), w_points=256,
-    h_range=(-1*ureg.mm, 1*ureg.mm), h_points=256,
+    x_range=(-1*ureg.mm, 1*ureg.mm), x_points=256,
+    y_range=(-1*ureg.mm, 1*ureg.mm), y_points=256,
     wavelength=632.8*ureg.nm
 )
 
-# Создаём гауссов пучок
+# create a Gaussian beam
 wf = Wavefront.gaussian_beam(params, waist_radius=0.3*ureg.mm)
 
-# Анализируем результат
-print(f"Форма поля: {wf.shape}")
-print(f"Максимальная интенсивность: {wf.max_intensity:.3f}")
+# inspect the result
+print(f"Field shape: {wf.shape}")
+print(f"Max intensity: {wf.max_intensity:.3f}")
 ```
 
-## Следующие шаги
+## Next steps
 
-После установки рекомендуем пройти [Быстрый старт](/docs/getting-started/quickstart) — там вы создадите полную оптическую систему за 5 минут.
+Start with [Virtual environment](/docs/getting-started/virtual-environment) to set up an
+isolated Python environment with PyTorch and SVETlANNa, then move on to the
+[Quickstart](/docs/getting-started/quickstart), where you build a complete optical system
+in five minutes.

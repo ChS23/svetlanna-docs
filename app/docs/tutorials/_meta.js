@@ -1,7 +1,7 @@
 export default {
-  focusing: "Фокусировка пучка",
-  "4f-system": "4f-система",
-  "phase-retrieval": "Восстановление фазы",
-  "diffractive-nn": "Дифракционная нейросеть",
-  "example.notebook": "Пример ноутбука",
+  focusing: "Beam focusing",
+  "4f-system": "4f system",
+  "slm-grating": "Phase grating on an SLM",
+  "laguerre-gauss": "Laguerre–Gaussian beam",
+  "phase-retrieval": "Phase retrieval",
 };

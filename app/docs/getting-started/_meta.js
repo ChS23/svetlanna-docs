@@ -1,5 +1,6 @@
 export default {
-  installation: "Установка",
-  quickstart: "Быстрый старт",
-  concepts: "Основные концепции",
+  "virtual-environment": "Virtual environment",
+  installation: "Installation",
+  quickstart: "Quickstart",
+  concepts: "Core concepts",
 };

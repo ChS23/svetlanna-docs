@@ -1,124 +1,118 @@
-# Оптимизация и обучение
+# Optimisation and training
 
-SVETlANNa полностью дифференцируема благодаря интеграции с PyTorch. Это позволяет использовать градиентные методы для оптимизации оптических систем.
+import { Callout } from 'nextra/components'
 
-## Основы автоматического дифференцирования
+SVETlANNa is fully differentiable thanks to its PyTorch backend, so optical systems can be
+designed by gradient descent rather than by hand.
 
-### Оптимизируемые параметры
+## Automatic differentiation basics
 
-Используйте `nn.Parameter` для параметров, которые нужно оптимизировать:
+### Trainable parameters
+
+Use `nn.Parameter` — or SVETlANNa's `Parameter` / `ConstrainedParameter` — for anything you
+want to optimise:
 
 ```python
 import torch
 import torch.nn as nn
+from svetlanna import ConstrainedParameter
+from svetlanna.elements import ThinLens, FreeSpace
+from svetlanna.units import ureg
 
-class OptimizableLens(nn.Module):
-    def __init__(self, params, initial_focal_length):
-        super().__init__()
-        # Оптимизируемое фокусное расстояние
-        self.focal_length = nn.Parameter(
-            torch.tensor(initial_focal_length)
-        )
-        self.params = params
+# a lens whose focal length is trainable but physically bounded
+lens = ThinLens(
+    params,
+    focal_length=ConstrainedParameter(
+        100e-3, min_value=50e-3, max_value=200e-3
+    ),
+)
 
-    def forward(self, wf):
-        k = 2 * torch.pi / self.params.axes.wavelength
-        W, H = torch.meshgrid(
-            self.params.axes.W,
-            self.params.axes.H,
-            indexing='xy'
-        )
-        phase = -k / (2 * self.focal_length) * (W**2 + H**2)
-        return wf * torch.exp(1j * phase)
+# a trainable phase mask
+phase_mask = nn.Parameter(torch.rand(512, 512) * 2 * torch.pi)
 ```
 
-### Вычисление градиентов
+<Callout type="info">
+`ConstrainedParameter` reparametrises the value through a sigmoid, so the optimiser is
+unconstrained while the physical value never leaves the interval.
+</Callout>
+
+### Computing gradients
 
 ```python
-# Forward pass
 wf_out = system(wf_in)
 loss = loss_function(wf_out)
 
-# Backward pass
 loss.backward()
 
-# Градиенты доступны
 for name, param in system.named_parameters():
-    print(f"{name}: grad = {param.grad}")
+    print(f"{name}: grad norm = {param.grad.norm():.3e}")
 ```
 
-## Функции потерь
+## Loss functions
 
-### Максимизация интенсивности в точке
+### Maximising intensity at a point
 
 ```python
 def peak_intensity_loss(wf, target_x, target_y, params):
-    """Максимизация интенсивности в заданной точке."""
-    # Найти индексы ближайшей точки
-    ix = torch.argmin(torch.abs(params.axes.W - target_x))
-    iy = torch.argmin(torch.abs(params.axes.H - target_y))
-
-    # Отрицательная интенсивность (минимизируем)
-    return -wf.intensity[iy, ix]
+    """Maximise the intensity at a given point."""
+    ix = torch.argmin(torch.abs(params.x - target_x))
+    iy = torch.argmin(torch.abs(params.y - target_y))
+    return -wf.intensity[iy, ix]   # negated: we minimise
 ```
 
-### Соответствие целевому распределению
+### Matching a target distribution
 
 ```python
 def target_distribution_loss(wf, target_intensity):
-    """MSE между интенсивностью и целевым распределением."""
+    """MSE between the normalised intensity and a target."""
     return nn.functional.mse_loss(
         wf.intensity / wf.intensity.max(),
         target_intensity / target_intensity.max()
     )
 ```
 
-### Минимизация FWHM
+### Minimising the spot size
 
 ```python
 def fwhm_loss(wf, params):
-    """Минимизация размера пятна."""
     fwhm_x, fwhm_y = wf.fwhm(params)
     return fwhm_x + fwhm_y
 ```
 
-### Эффективность в область
+<Callout type="warning">
+`fwhm()` involves a comparison and an index difference, so it carries no useful gradient.
+Use it as a metric, not as a loss — minimise a smooth surrogate such as the second moment
+of the intensity instead.
+</Callout>
+
+### Energy in a target region
 
 ```python
 def efficiency_loss(wf, target_mask):
-    """Максимизация энергии в целевой области."""
+    """Maximise the fraction of energy inside a region."""
     total_energy = wf.intensity.sum()
     target_energy = (wf.intensity * target_mask).sum()
-    efficiency = target_energy / total_energy
-    return -efficiency  # Минимизируем отрицательную эффективность
+    return -target_energy / total_energy
 ```
 
-## Оптимизаторы PyTorch
+## PyTorch optimisers
 
-### Adam (рекомендуется)
+### Adam (recommended)
 
 ```python
 optimizer = torch.optim.Adam(system.parameters(), lr=1e-3)
 ```
 
-### SGD с momentum
+### SGD with momentum
 
 ```python
-optimizer = torch.optim.SGD(
-    system.parameters(),
-    lr=1e-2,
-    momentum=0.9
-)
+optimizer = torch.optim.SGD(system.parameters(), lr=1e-2, momentum=0.9)
 ```
 
-### LBFGS (для точной оптимизации)
+### LBFGS (for fine convergence)
 
 ```python
-optimizer = torch.optim.LBFGS(
-    system.parameters(),
-    lr=1.0,
-    max_iter=20
-)
+optimizer = torch.optim.LBFGS(system.parameters(), lr=1.0, max_iter=20)
 
 def closure():
     optimizer.zero_grad()
@@ -130,32 +124,26 @@ def closure():
 optimizer.step(closure)
 ```
 
-## Цикл обучения
+## The training loop
 
-### Базовый цикл
+### Basic loop
 
 ```python
 import torch
 from svetlanna import SimulationParameters, Wavefront
 from svetlanna.units import ureg
 
-# Параметры
 params = SimulationParameters.from_ranges(
-    w_range=(-1*ureg.mm, 1*ureg.mm), w_points=256,
-    h_range=(-1*ureg.mm, 1*ureg.mm), h_points=256,
+    x_range=(-1*ureg.mm, 1*ureg.mm), x_points=256,
+    y_range=(-1*ureg.mm, 1*ureg.mm), y_points=256,
     wavelength=632.8*ureg.nm
 )
 
-# Входной волновой фронт
 wf_in = Wavefront.gaussian_beam(params, waist_radius=0.3*ureg.mm)
 
-# Система с оптимизируемыми параметрами
 system = OptimizableSystem(params)
-
-# Оптимизатор
 optimizer = torch.optim.Adam(system.parameters(), lr=1e-3)
 
-# Обучение
 losses = []
 for epoch in range(1000):
     optimizer.zero_grad()
@@ -167,57 +155,54 @@ for epoch in range(1000):
     optimizer.step()
 
     losses.append(loss.item())
-
     if epoch % 100 == 0:
         print(f"Epoch {epoch}: loss = {loss.item():.6f}")
 ```
 
-### С валидацией
+### With validation
 
 ```python
 for epoch in range(1000):
-    # Training
     system.train()
     optimizer.zero_grad()
-    wf_out = system(wf_in)
-    train_loss = loss_function(wf_out)
+    train_loss = loss_function(system(wf_in))
     train_loss.backward()
     optimizer.step()
 
-    # Validation (без градиентов)
     system.eval()
     with torch.no_grad():
-        wf_val = system(wf_validation)
-        val_loss = loss_function(wf_val)
+        val_loss = loss_function(system(wf_validation))
 
     print(f"Epoch {epoch}: train={train_loss:.6f}, val={val_loss:.6f}")
 ```
 
-## Примеры оптимизации
+## Worked examples
 
-### Оптимизация фазовой маски SLM
+### Optimising an SLM phase mask
 
 ```python
-class SLMOptimization(nn.Module):
-    def __init__(self, params, focal_length):
-        super().__init__()
-        # Оптимизируемая фаза (от 0 до 2π)
-        self.phase = nn.Parameter(torch.zeros(256, 256))
+import torch
+import torch.nn as nn
+from svetlanna.elements import ThinLens, FreeSpace
+from svetlanna.units import ureg
 
+class SLMOptimization(nn.Module):
+    def __init__(self, params, focal_length, grid=256):
+        super().__init__()
+        self.phase = nn.Parameter(torch.zeros(grid, grid))
         self.lens = ThinLens(params, focal_length=focal_length)
-        self.prop = FreeSpace(params, distance=focal_length, method="AS")
+        self.prop = FreeSpace(params, distance=focal_length, method="zpASM")
 
     def forward(self, wf):
-        # Ограничиваем фазу диапазоном [0, 2π]
+        # keep the phase inside [0, 2π]
         phase = torch.sigmoid(self.phase) * 2 * torch.pi
         wf = wf * torch.exp(1j * phase)
-        wf = self.lens(wf)
-        wf = self.prop(wf)
-        return wf
+        return self.prop(self.lens(wf))
 
-# Целевое распределение (например, кольцо)
-r = torch.sqrt(W**2 + H**2)
-target = ((r > 10e-6) & (r < 20e-6)).float()
+
+X, Y = params.meshgrid(x_axis='x', y_axis='y')
+r = torch.sqrt(X**2 + Y**2)
+target = ((r > 10*ureg.um) & (r < 20*ureg.um)).float()
 
 system = SLMOptimization(params, focal_length=100*ureg.mm)
 optimizer = torch.optim.Adam(system.parameters(), lr=0.1)
@@ -225,72 +210,55 @@ optimizer = torch.optim.Adam(system.parameters(), lr=0.1)
 for epoch in range(500):
     optimizer.zero_grad()
     wf_out = system(wf_in)
-    loss = nn.functional.mse_loss(wf_out.intensity, target)
+    loss = nn.functional.mse_loss(
+        wf_out.intensity / wf_out.intensity.max(), target
+    )
     loss.backward()
     optimizer.step()
 ```
 
-### Восстановление фазы (Gerchberg-Saxton)
+### Gerchberg–Saxton phase retrieval
 
 ```python
-def gerchberg_saxton(params, target_amplitude, n_iterations=100):
-    """Итеративный алгоритм восстановления фазы."""
-    # Начальная фаза — случайная
-    phase = torch.rand(256, 256) * 2 * torch.pi
+def gerchberg_saxton(source_amplitude, target_amplitude, n_iterations=100):
+    """Iterative phase retrieval."""
+    phase = torch.rand_like(source_amplitude) * 2 * torch.pi
 
     for _ in range(n_iterations):
-        # Прямое преобразование
-        field = target_amplitude * torch.exp(1j * phase)
+        field = source_amplitude * torch.exp(1j * phase)
         spectrum = torch.fft.fft2(field)
 
-        # Ограничение в частотной области
-        spectrum_phase = torch.angle(spectrum)
-        spectrum = torch.abs(target_spectrum) * torch.exp(1j * spectrum_phase)
+        spectrum = target_amplitude * torch.exp(1j * torch.angle(spectrum))
 
-        # Обратное преобразование
         field = torch.fft.ifft2(spectrum)
-
-        # Ограничение в пространственной области
         phase = torch.angle(field)
 
     return phase
 ```
 
-## GPU ускорение
+See the [phase retrieval tutorial](/docs/tutorials/phase-retrieval) for the complete
+version.
 
-### Перенос на GPU
+## GPU acceleration
 
 ```python
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-params = params.to(device)
+params.to(device)      # in-place
 wf_in = wf_in.to(device)
 system = system.to(device)
 target = target.to(device)
 ```
 
-### Смешанная точность (AMP)
+<Callout type="warning">
+Mixed precision (`torch.autocast`) is of limited use here: complex-valued FFTs are not
+covered by `float16` autocasting, and reduced precision quickly degrades phase accuracy.
+Prefer `float32` and reduce the grid size if memory is tight.
+</Callout>
 
-```python
-from torch.cuda.amp import autocast, GradScaler
+## Regularisation
 
-scaler = GradScaler()
-
-for epoch in range(1000):
-    optimizer.zero_grad()
-
-    with autocast():
-        wf_out = system(wf_in)
-        loss = loss_function(wf_out)
-
-    scaler.scale(loss).backward()
-    scaler.step(optimizer)
-    scaler.update()
-```
-
-## Регуляризация
-
-### L2 регуляризация фазы
+### L2 penalty on the phase
 
 ```python
 def regularized_loss(wf_out, target, phase, lambda_reg=0.01):
@@ -299,54 +267,51 @@ def regularized_loss(wf_out, target, phase, lambda_reg=0.01):
     return main_loss + reg_loss
 ```
 
-### Total Variation (гладкость фазы)
+### Total variation (phase smoothness)
 
 ```python
 def total_variation(phase):
-    """Total variation для гладкости фазы."""
+    """Encourage a smooth, manufacturable phase profile."""
     diff_x = torch.abs(phase[:, 1:] - phase[:, :-1])
     diff_y = torch.abs(phase[1:, :] - phase[:-1, :])
     return diff_x.mean() + diff_y.mean()
 ```
 
-### Ограничение диапазона фазы
+### Bounding the phase range
 
 ```python
-# Мягкое ограничение через sigmoid
+# soft bound through a sigmoid — keeps gradients everywhere
 phase_constrained = torch.sigmoid(self.phase) * 2 * torch.pi
 
-# Или через clamp
+# hard bound — zero gradient outside the interval
 phase_constrained = torch.clamp(self.phase, 0, 2 * torch.pi)
 ```
 
-## Визуализация обучения
+## Visualising training
 
 ```python
 import matplotlib.pyplot as plt
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 4))
 
-# Loss
 axes[0].plot(losses)
 axes[0].set_xlabel('Epoch')
 axes[0].set_ylabel('Loss')
-axes[0].set_title('Training Loss')
+axes[0].set_title('Training loss')
 axes[0].set_yscale('log')
 
-# Результат
 axes[1].imshow(wf_out.intensity.detach().cpu(), cmap='hot')
-axes[1].set_title('Output Intensity')
+axes[1].set_title('Output intensity')
 
-# Оптимизированная фаза
 axes[2].imshow(system.phase.detach().cpu(), cmap='twilight')
-axes[2].set_title('Optimized Phase')
+axes[2].set_title('Optimised phase')
 
 plt.tight_layout()
 plt.show()
 ```
 
-## См. также
+## See also
 
-- [Оптические системы](/docs/guides/optical-systems) — сборка систем
-- [Туториал: Восстановление фазы](/docs/tutorials/phase-retrieval) — GS алгоритм
-- [Туториал: Дифракционная нейросеть](/docs/tutorials/diffractive-nn) — D²NN
+- [Optical systems](/docs/guides/optical-systems) — building setups
+- [Tutorial: phase retrieval](/docs/tutorials/phase-retrieval) — the GS algorithm
+- [Tutorial: phase grating on an SLM](/docs/tutorials/slm-grating) — differentiable quantisation

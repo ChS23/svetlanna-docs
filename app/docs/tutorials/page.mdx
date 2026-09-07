@@ -1,86 +1,97 @@
-# Туториалы
+# Tutorials
 
 import { Cards, Callout, Steps } from 'nextra/components'
 
-Пошаговые примеры решения практических задач с SVETlANNa.
+Step-by-step examples that solve a concrete problem with SVETlANNa.
 
 <Callout type="info">
-Все туториалы содержат полный исполняемый код. Рекомендуем запускать примеры в Jupyter Notebook или Python скрипте.
+Every tutorial contains complete, runnable code. We recommend following along in a Jupyter
+notebook or a Python script.
 </Callout>
 
-## Содержание
+## Contents
 
 <Cards>
-  <Cards.Card title="Фокусировка пучка" href="/docs/tutorials/focusing" />
-  <Cards.Card title="4f-система" href="/docs/tutorials/4f-system" />
-  <Cards.Card title="Восстановление фазы" href="/docs/tutorials/phase-retrieval" />
-  <Cards.Card title="Дифракционная нейросеть" href="/docs/tutorials/diffractive-nn" />
+  <Cards.Card title="Beam focusing" href="/docs/tutorials/focusing" />
+  <Cards.Card title="4f system" href="/docs/tutorials/4f-system" />
+  <Cards.Card title="Phase grating on an SLM" href="/docs/tutorials/slm-grating" />
+  <Cards.Card title="Laguerre–Gaussian beam" href="/docs/tutorials/laguerre-gauss" />
+  <Cards.Card title="Phase retrieval" href="/docs/tutorials/phase-retrieval" />
 </Cards>
 
 ---
 
-## Уровни сложности
+## Difficulty
 
-| Туториал | Уровень | Ключевые концепции |
-|----------|---------|-------------------|
-| Фокусировка пучка | Начальный | ThinLens, FreeSpace, Wavefront |
-| 4f-система | Средний | Фурье-оптика, пространственная фильтрация |
-| Восстановление фазы | Средний | Итеративные алгоритмы, Gerchberg-Saxton |
-| Дифракционная нейросеть | Продвинутый | DiffractiveLayer, обучение, классификация |
+| Tutorial | Level | Key concepts |
+|----------|-------|--------------|
+| Beam focusing | Beginner | `ThinLens`, `FreeSpace`, `Wavefront` |
+| 4f system | Intermediate | Fourier optics, spatial filtering |
+| Phase grating on an SLM | Intermediate | `SpatialLightModulator`, diffraction orders, quantisation |
+| Laguerre–Gaussian beam | Intermediate | Custom wavefronts, vortex beams, free-space propagation |
+| Phase retrieval | Advanced | Iterative algorithms, Gerchberg–Saxton |
 
 ---
 
-## Рекомендуемый порядок изучения
+## Suggested order
 
 <Steps>
-### Фокусировка пучка
+### Beam focusing
 
-Базовый пример: фокусировка гауссова пучка линзой. Изучите основы работы с `Wavefront`, `ThinLens` и `FreeSpace`.
+The basics: focusing a Gaussian beam with a lens. Introduces `Wavefront`, `ThinLens` and
+`FreeSpace`.
 
-### 4f-система
+### 4f system
 
-Построение классической 4f-системы для оптической фильтрации. Практическое применение Фурье-оптики.
+A classical 4f setup for optical filtering — Fourier optics put to work.
 
-### Восстановление фазы
+### Phase grating on an SLM
 
-Алгоритм Gerchberg-Saxton для восстановления фазы из измерений интенсивности. Итеративная оптимизация.
+A sinusoidal phase grating displayed on a `SpatialLightModulator`; the diffraction orders
+are compared with the Bessel-function prediction.
 
-### Дифракционная нейросеть
+### Laguerre–Gaussian beam
 
-Обучение многослойной D²NN для классификации изображений. Полный цикл: данные → обучение → оценка.
+Building a vortex mode from scratch on the simulation grid and propagating it through free
+space, validated against the analytical solution.
+
+### Phase retrieval
+
+The Gerchberg–Saxton algorithm: recovering phase from intensity measurements.
 </Steps>
 
 ---
 
-## Предварительные требования
+## Prerequisites
 
-Перед началом рекомендуем ознакомиться с:
+Before you start we suggest reading:
 
-- [Основные концепции](/docs/getting-started/concepts) — архитектура библиотеки
-- [SimulationParameters](/docs/guides/simulation-parameters) — настройка параметров
-- [Оптические элементы](/docs/guides/elements) — доступные элементы
-- [Волновые фронты](/docs/guides/wavefronts) — работа с полями
+- [Core concepts](/docs/getting-started/concepts) — the architecture of the library
+- [SimulationParameters](/docs/guides/simulation-parameters) — setting up the grid
+- [Optical elements](/docs/guides/elements) — the available elements
+- [Wavefronts](/docs/guides/wavefronts) — working with fields
 
 ---
 
-## Запуск примеров
+## Running the examples
 
 ```python
-# Минимальный шаблон для туториалов
+# minimal template used throughout the tutorials
 import torch
 from svetlanna import SimulationParameters, Wavefront
 from svetlanna.units import ureg
 
 params = SimulationParameters.from_ranges(
-    w_range=(-2*ureg.mm, 2*ureg.mm), w_points=512,
-    h_range=(-2*ureg.mm, 2*ureg.mm), h_points=512,
+    x_range=(-2*ureg.mm, 2*ureg.mm), x_points=512,
+    y_range=(-2*ureg.mm, 2*ureg.mm), y_points=512,
     wavelength=632.8*ureg.nm
 )
 
 wf = Wavefront.gaussian_beam(params, waist_radius=0.5*ureg.mm)
-print(f"Готово! Форма поля: {wf.shape}")
+print(f"Ready. Field shape: {wf.shape}")
 ```
 
 <Callout type="warning">
-Для работы с GPU убедитесь, что установлена CUDA-версия PyTorch и выполните `params.to('cuda')` перед созданием элементов.
+To run on a GPU, install the CUDA build of PyTorch and call `params.to('cuda')` **before**
+creating any elements.
 </Callout>

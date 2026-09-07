@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Генератор API документации для SVETlANNa.
-Парсит docstrings из исходного кода и генерирует MDX файлы.
+API documentation generator for SVETlANNa.
+Parses docstrings from the source code and emits MDX files.
 """
 
 import ast
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -14,7 +15,7 @@ from typing import Optional
 
 
 def clone_or_update_repo(repo_url: str, target_dir: Path) -> None:
-    """Клонирует или обновляет репозиторий."""
+    """Clone or update the repository."""
     if target_dir.exists():
         print(f"Updating {target_dir}...")
         subprocess.run(["git", "-C", str(target_dir), "pull"], check=True)
@@ -24,7 +25,7 @@ def clone_or_update_repo(repo_url: str, target_dir: Path) -> None:
 
 
 def extract_docstring(node: ast.AST) -> Optional[str]:
-    """Извлекает docstring из AST узла."""
+    """Extract the docstring from an AST node."""
     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)):
         if node.body and isinstance(node.body[0], ast.Expr):
             if isinstance(node.body[0].value, ast.Constant):
@@ -35,7 +36,7 @@ def extract_docstring(node: ast.AST) -> Optional[str]:
 
 
 def extract_function_signature(node: ast.FunctionDef) -> str:
-    """Извлекает сигнатуру функции."""
+    """Extract a function signature."""
     args = []
 
     # Positional args
@@ -73,7 +74,7 @@ def extract_function_signature(node: ast.FunctionDef) -> str:
 
 
 def parse_module(file_path: Path) -> dict:
-    """Парсит Python модуль и извлекает информацию о классах и функциях."""
+    """Parse a Python module and collect its classes and functions."""
     with open(file_path, "r", encoding="utf-8") as f:
         source = f.read()
 
@@ -131,15 +132,43 @@ def parse_module(file_path: Path) -> dict:
     return module_info
 
 
+def escape_angle_brackets(text: Optional[str]) -> str:
+    """Neutralise `<` so raw HTML in a docstring is not parsed as JSX by MDX."""
+    if not text:
+        return text or ""
+    return text.replace("<", "&lt;")
+
+
+def strip_mkdocs_images(text: str) -> str:
+    """Drop MkDocs-only image markup from a docstring.
+
+    Library docstrings are also rendered by MkDocs, so they contain
+    `<figure markdown="span">` blocks with relative image paths such as
+    `slm/one_step.jpg#only-dark`. Those files do not exist in this repository,
+    and Next.js turns every relative Markdown image into a module import, which
+    fails the build. Absolute (`http://`, `https://`) and root-relative (`/...`)
+    images are kept.
+    """
+    # relative Markdown images, plus a trailing MkDocs attribute list
+    text = re.sub(
+        r'!\[[^\]]*\]\((?!https?://|/)[^)]+\)(\s*\{[^}\n]*\})?[ \t]*\n?',
+        "",
+        text,
+    )
+    # figure wrappers that are now empty
+    text = re.sub(r'<figure[^>]*>\s*</figure>\s*', "", text)
+    return text
+
+
 def format_docstring(docstring: Optional[str]) -> str:
-    """Форматирует docstring для MDX с поддержкой numpy-style."""
+    """Format a numpy-style docstring as MDX."""
     if not docstring or not isinstance(docstring, str):
         return ""
 
-    # Убираем лишние отступы
+    # strip common indentation
     lines = docstring.strip().split("\n")
     if len(lines) > 1:
-        # Определяем минимальный отступ (кроме первой строки)
+        # find the minimal indent (ignoring the first line)
         min_indent = float("inf")
         for line in lines[1:]:
             if line.strip():
@@ -149,42 +178,42 @@ def format_docstring(docstring: Optional[str]) -> str:
         if min_indent < float("inf"):
             lines = [lines[0]] + [line[int(min_indent):] if len(line) > min_indent else line for line in lines[1:]]
 
-    # Парсим numpy-style docstring
+    # parse the numpy-style docstring
     result_lines = []
     i = 0
     while i < len(lines):
         line = lines[i]
         stripped = line.strip()
 
-        # Определяем секции numpy docstring
+        # detect numpy docstring sections
         if stripped in ("Parameters", "Returns", "Raises", "Yields", "Examples", "Notes", "Attributes"):
-            # Проверяем следующую строку на ---
+            # check the next line for ---
             if i + 1 < len(lines) and lines[i + 1].strip().startswith("---"):
                 section_name = stripped
-                i += 2  # Пропускаем заголовок и ---
+                i += 2  # skip the heading and the ---
 
-                # Собираем все параметры секции
+                # collect the parameters of the section
                 params = []
                 while i < len(lines):
                     param_line = lines[i]
                     param_stripped = param_line.strip()
 
-                    # Пустая строка
+                    # blank line
                     if not param_stripped:
                         i += 1
                         continue
 
-                    # Новая секция - выходим
+                    # a new section starts here
                     if param_stripped in ("Parameters", "Returns", "Raises", "Yields", "Examples", "Notes", "Attributes"):
                         break
 
-                    # Проверяем формат "name : type"
+                    # match the "name : type" format
                     if " : " in param_line and not param_line.startswith("    "):
                         parts = param_stripped.split(" : ", 1)
                         param_name = parts[0]
                         param_type = parts[1] if len(parts) > 1 else ""
 
-                        # Собираем описание
+                        # collect the description
                         i += 1
                         desc_lines = []
                         while i < len(lines):
@@ -200,9 +229,13 @@ def format_docstring(docstring: Optional[str]) -> str:
                                 break
 
                         desc_text = " ".join(desc_lines) if desc_lines else ""
-                        params.append((param_name, param_type, desc_text))
+                        params.append((
+                            escape_angle_brackets(param_name),
+                            escape_angle_brackets(param_type),
+                            escape_angle_brackets(desc_text),
+                        ))
                     else:
-                        # Просто тип (для Returns)
+                        # bare type (used by Returns)
                         type_name = param_stripped
                         i += 1
                         desc_lines = []
@@ -219,23 +252,27 @@ def format_docstring(docstring: Optional[str]) -> str:
                                 break
 
                         desc_text = " ".join(desc_lines) if desc_lines else ""
-                        params.append((None, type_name, desc_text))
+                        params.append((
+                            None,
+                            escape_angle_brackets(type_name),
+                            escape_angle_brackets(desc_text),
+                        ))
 
-                # Генерируем вывод для секции
+                # emit the section
                 if params:
                     if section_name == "Parameters":
                         result_lines.append("\n<details open>")
-                        result_lines.append(f"<summary className=\"cursor-pointer font-semibold text-sm py-2\">📥 Параметры</summary>\n")
-                        result_lines.append("| Параметр | Тип | Описание |")
+                        result_lines.append(f"<summary className=\"cursor-pointer font-semibold text-sm py-2\">📥 Parameters</summary>\n")
+                        result_lines.append("| Parameter | Type | Description |")
                         result_lines.append("|:---------|:----|:---------|")
                         for name, ptype, desc in params:
-                            # Экранируем | в описании
+                            # escape | inside the description
                             desc_safe = desc.replace("|", "\\|")
                             result_lines.append(f"| `{name}` | `{ptype}` | {desc_safe} |")
                         result_lines.append("\n</details>\n")
                     elif section_name == "Returns":
                         result_lines.append("\n<details open>")
-                        result_lines.append(f"<summary className=\"cursor-pointer font-semibold text-sm py-2\">📤 Возвращает</summary>\n")
+                        result_lines.append(f"<summary className=\"cursor-pointer font-semibold text-sm py-2\">📤 Returns</summary>\n")
                         for name, ptype, desc in params:
                             if name:
                                 result_lines.append(f"**`{name}`** : `{ptype}`")
@@ -246,7 +283,7 @@ def format_docstring(docstring: Optional[str]) -> str:
                         result_lines.append("\n</details>\n")
                     elif section_name == "Raises":
                         result_lines.append("\n<details>")
-                        result_lines.append(f"<summary className=\"cursor-pointer font-semibold text-sm py-2\">⚠️ Исключения</summary>\n")
+                        result_lines.append(f"<summary className=\"cursor-pointer font-semibold text-sm py-2\">⚠️ Raises</summary>\n")
                         for name, ptype, desc in params:
                             if name:
                                 result_lines.append(f"- **`{name}`** : `{ptype}` — {desc}")
@@ -254,7 +291,7 @@ def format_docstring(docstring: Optional[str]) -> str:
                                 result_lines.append(f"- **`{ptype}`** — {desc}")
                         result_lines.append("\n</details>\n")
                     else:
-                        # Другие секции - простой список
+                        # any other section: a plain list
                         result_lines.append(f"\n**{section_name}**\n")
                         for name, ptype, desc in params:
                             if name:
@@ -268,35 +305,37 @@ def format_docstring(docstring: Optional[str]) -> str:
 
     result = "\n".join(result_lines)
 
-    # Экранируем фигурные скобки для MDX
+    result = strip_mkdocs_images(result)
+
+    # escape curly braces for MDX
     result = result.replace("{", "&#123;").replace("}", "&#125;")
 
     return result
 
 
 def generate_class_mdx(class_info: dict, heading_level: int = 3) -> str:
-    """Генерирует MDX для класса с улучшенным форматированием."""
+    """Generate MDX for a class."""
     h = "#" * heading_level
     h_method = "#" * (heading_level + 1)
 
     lines = [f"{h} {class_info['name']}"]
 
-    # Badges для наследования
+    # inheritance badges
     if class_info["bases"]:
         bases_badges = " ".join([f"`{b}`" for b in class_info["bases"]])
-        lines.append(f"\n<small>Наследует: {bases_badges}</small>")
+        lines.append(f"\n<small>Inherits: {bases_badges}</small>")
 
     if class_info["docstring"]:
         lines.append(f"\n{format_docstring(class_info['docstring'])}")
 
-    # Properties в карточках
+    # properties, rendered as cards
     properties = [m for m in class_info["methods"] if m["is_property"] and not m["name"].startswith("_")]
     if properties:
-        lines.append(f"\n{h_method} Свойства\n")
+        lines.append(f"\n{h_method} Properties\n")
         lines.append("<div className=\"grid grid-cols-1 md:grid-cols-2 gap-4 my-4\">")
         for prop in properties:
             doc = format_docstring(prop["docstring"]) if prop["docstring"] else ""
-            # Извлекаем первую строку описания
+            # take the first line of the description
             first_line = doc.split("\n")[0] if doc else ""
             lines.append(f"""
 <div className="border rounded-lg p-4 dark:border-neutral-700">
@@ -309,7 +348,7 @@ def generate_class_mdx(class_info: dict, heading_level: int = 3) -> str:
     classmethods = [m for m in class_info["methods"]
                     if m["is_classmethod"] and not m["name"].startswith("_")]
     if classmethods:
-        lines.append(f"\n{h_method} Фабричные методы\n")
+        lines.append(f"\n{h_method} Factory methods\n")
         for method in classmethods:
             lines.append(generate_method_mdx(method, "classmethod"))
 
@@ -322,7 +361,7 @@ def generate_class_mdx(class_info: dict, heading_level: int = 3) -> str:
                       or m["name"] == "__init__"]
 
     if public_methods:
-        lines.append(f"\n{h_method} Методы\n")
+        lines.append(f"\n{h_method} Methods\n")
         for method in public_methods:
             badge = "constructor" if method["name"] == "__init__" else None
             lines.append(generate_method_mdx(method, badge))
@@ -331,16 +370,16 @@ def generate_class_mdx(class_info: dict, heading_level: int = 3) -> str:
 
 
 def generate_method_mdx(method: dict, badge: str = None) -> str:
-    """Генерирует MDX для метода с улучшенным форматированием."""
+    """Generate MDX for a method."""
     lines = []
 
-    # Заголовок с badge
+    # heading with a badge
     badge_html = f" <small className=\"px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs\">{badge}</small>" if badge else ""
 
     lines.append(f"<div className=\"border-l-4 border-blue-500 pl-4 my-6\">")
     lines.append(f"\n**`{method['name']}`**{badge_html}\n")
 
-    # Сигнатура в блоке кода
+    # signature in a code block
     sig = method['signature']
     lines.append(f"```python\n{method['name']}{sig}\n```\n")
 
@@ -353,7 +392,7 @@ def generate_method_mdx(method: dict, badge: str = None) -> str:
 
 
 def generate_function_mdx(func_info: dict) -> str:
-    """Генерирует MDX для функции."""
+    """Generate MDX for a function."""
     lines = [f"### `{func_info['name']}{func_info['signature']}`"]
 
     if func_info["docstring"]:
@@ -362,18 +401,18 @@ def generate_function_mdx(func_info: dict) -> str:
     return "\n".join(lines)
 
 
-# Описания модулей
+# module descriptions
 MODULE_DESCRIPTIONS = {
-    "core": "Основные классы для работы с оптическими симуляциями",
-    "elements": "Оптические элементы: линзы, апертуры, дифракционные слои, SLM и др.",
-    "networks": "Нейронные сети и оптические системы",
-    "specs": "Спецификации параметров для экспорта и сериализации",
-    "phase_retrieval_problem": "Алгоритмы восстановления фазы",
-    "visualization": "Инструменты визуализации",
-    "detector": "Детекторы излучения",
+    "core": "Core classes for optical simulations",
+    "elements": "Optical elements: lenses, apertures, diffractive layers, SLMs and more",
+    "networks": "Neural networks and optical systems",
+    "specs": "Parameter specifications for export and serialisation",
+    "phase_retrieval_problem": "Phase retrieval algorithms",
+    "visualization": "Visualisation tools",
+    "detector": "Radiation detectors",
 }
 
-# Какие классы/функции экспортировать из корневых файлов
+# which classes/functions to export from the top-level files
 CORE_EXPORTS = {
     "wavefront.py": ["Wavefront", "mul"],
     "simulation_parameters.py": ["SimulationParameters", "Axes"],
@@ -385,7 +424,7 @@ CORE_EXPORTS = {
 
 
 def generate_core_page(svetlanna_pkg: Path) -> tuple[str, dict]:
-    """Генерирует страницу Core с основными классами."""
+    """Generate the Core page."""
     all_classes = []
     all_functions = []
 
@@ -414,13 +453,13 @@ def generate_core_page(svetlanna_pkg: Path) -> tuple[str, dict]:
     ]
 
     if all_classes:
-        lines.append("\n## Классы\n")
+        lines.append("\n## Classes\n")
         for cls in all_classes:
             lines.append(generate_class_mdx(cls))
             lines.append("")
 
     if all_functions:
-        lines.append("\n## Функции\n")
+        lines.append("\n## Functions\n")
         for func in all_functions:
             if not func["name"].startswith("_"):
                 lines.append(generate_function_mdx(func))
@@ -431,7 +470,7 @@ def generate_core_page(svetlanna_pkg: Path) -> tuple[str, dict]:
 
 
 def generate_module_mdx(module_name: str, module_info: dict, submodule: bool = False) -> str:
-    """Генерирует MDX для модуля."""
+    """Generate MDX for a module."""
     title = module_name.replace("_", " ").title()
     lines = [f"# {title}"]
 
@@ -450,7 +489,7 @@ def generate_module_mdx(module_name: str, module_info: dict, submodule: bool = F
 
     # Classes
     if module_info["classes"]:
-        lines.append("\n## Классы\n")
+        lines.append("\n## Classes\n")
         for class_info in module_info["classes"]:
             lines.append(generate_class_mdx(class_info))
             lines.append("")
@@ -458,7 +497,7 @@ def generate_module_mdx(module_name: str, module_info: dict, submodule: bool = F
     # Functions
     public_functions = [f for f in module_info["functions"] if not f["name"].startswith("_")]
     if public_functions:
-        lines.append("\n## Функции\n")
+        lines.append("\n## Functions\n")
         for func_info in public_functions:
             lines.append(generate_function_mdx(func_info))
             lines.append("")
@@ -467,18 +506,18 @@ def generate_module_mdx(module_name: str, module_info: dict, submodule: bool = F
 
 
 def generate_api_overview(submodules: list) -> str:
-    """Генерирует MDX для главной страницы API."""
+    """Generate MDX for the API overview page."""
     lines = [
         "# API Reference",
         "",
-        "Документация по API библиотеки SVETlANNa.",
+        "API reference for the SVETlANNa library.",
         "",
         "```python",
         "import svetlanna",
         "from svetlanna import Wavefront, SimulationParameters",
         "```",
         "",
-        "## Модули",
+        "## Modules",
         "",
     ]
 
@@ -494,9 +533,9 @@ def generate_api_overview(submodules: list) -> str:
         if class_count or func_count:
             parts = []
             if class_count:
-                parts.append(f"{class_count} классов")
+                parts.append(f"{class_count} classes")
             if func_count:
-                parts.append(f"{func_count} функций")
+                parts.append(f"{func_count} functions")
             line += f" ({', '.join(parts)})"
 
         lines.append(line)

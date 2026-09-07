@@ -1,12 +1,12 @@
 # Phase Retrieval Problem
 
-Алгоритмы восстановления фазы
+Phase retrieval algorithms
 
 ```python
 from svetlanna.phase_retrieval_problem import ...
 ```
 
-## Классы
+## Classes
 
 ### PhaseRetrievalResult
 
@@ -14,7 +14,7 @@ Represents the phase retrieval result
 
 ### SetupLike
 
-<small>Наследует: `Protocol`</small>
+<small>Inherits: `Protocol`</small>
 
 A class for phase_retrieval_problem with personal realizations of
 forward and reverse methods instead of methods in
@@ -22,16 +22,16 @@ svetlanna.setup.LinearOpticalSetup
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `Protocol` | `_type_` | _description_ |
 
 </details>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -56,10 +56,10 @@ reverse(self, transmission_field: torch.Tensor) -> torch.Tensor
 
 ### AlgorithmOptions
 
-<small>Наследует: `TypedDict`</small>
+<small>Inherits: `TypedDict`</small>
 
 
-## Функции
+## Functions
 
 ### `gerchberg_saxton_algorithm(target_intensity: torch.Tensor, source_intensity: torch.Tensor, forward: Callable, reverse: Callable, initial_approximation: torch.Tensor, tol: float, maxiter: int, target_phase: torch.Tensor | None = None, target_region: torch.Tensor | None = None) -> prr.PhaseRetrievalResult`
 
@@ -67,9 +67,9 @@ Gerchberg-Saxton algorithm(GS) for solving the phase retrieval problem
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `target_intensity` | `torch.Tensor` | Intensity profile in the Fourier plane |
 | `source_intensity` | `torch.Tensor` | Intensity distribution before the optical setup(in the image plane) |
@@ -85,7 +85,7 @@ Gerchberg-Saxton algorithm(GS) for solving the phase retrieval problem
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`prr.PhaseRetrievalResult`**
 
@@ -102,9 +102,9 @@ problem
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `target_intensity` | `torch.Tensor` | Intensity profile in the Fourier plane |
 | `source_intensity` | `torch.Tensor` | Intensity distribution before the optical setup(in the image plane) |
@@ -121,7 +121,7 @@ problem
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`prr.PhaseRetrievalResult`**
 
@@ -142,9 +142,9 @@ intensity profile or reconstructing the phase profile of the field
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `source_intensity` | `torch.Tensor` | Intensity distribution before the optical setup |
 | `optical_setup` | `LinearOpticalSetup | SetupLike` | Optical system through which the beam is propagated |
@@ -159,7 +159,7 @@ intensity profile or reconstructing the phase profile of the field
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`prr.PhaseRetrievalResult`**
 
@@ -170,7 +170,7 @@ Exemplar of class PhaseRetrievalResult which presents result of optimization
 
 
 <details>
-<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Исключения</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Raises</summary>
 
 - **`ValueError`** — Unknown optimization method
 

@@ -2,21 +2,23 @@
 
 import { Callout, Tabs } from 'nextra/components'
 
-`SimulationParameters` — контейнер, определяющий координатную систему для всех вычислений. Хранит оси координат (W, H), длину волны и дополнительные параметры.
+`SimulationParameters` is the container that defines the coordinate system for every
+calculation. It holds the coordinate axes (`x`, `y`), the wavelength and any additional
+axes you declare.
 
-## Создание
+## Creating it
 
-<Tabs items={['from_ranges', 'конструктор', 'from_dict']}>
+<Tabs items={['from_ranges', 'constructor', 'from_dict']}>
   <Tabs.Tab>
 ```python
 from svetlanna import SimulationParameters
 from svetlanna.units import ureg
 
 params = SimulationParameters.from_ranges(
-    w_range=(-1*ureg.mm, 1*ureg.mm),  # Диапазон по X
-    w_points=512,                       # Количество точек
-    h_range=(-1*ureg.mm, 1*ureg.mm),  # Диапазон по Y
-    h_points=512,
+    x_range=(-1*ureg.mm, 1*ureg.mm),  # range along X
+    x_points=512,                     # number of points
+    y_range=(-1*ureg.mm, 1*ureg.mm),  # range along Y
+    y_points=512,
     wavelength=632.8*ureg.nm
 )
 ```
@@ -27,19 +29,20 @@ import torch
 from svetlanna import SimulationParameters
 
 params = SimulationParameters(
-    W=torch.linspace(-1e-3, 1e-3, 512),
-    H=torch.linspace(-1e-3, 1e-3, 512),
+    x=torch.linspace(-1e-3, 1e-3, 512),
+    y=torch.linspace(-1e-3, 1e-3, 512),
     wavelength=torch.tensor(632.8e-9)
 )
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```python
+import torch
 from svetlanna import SimulationParameters
 
 axes_dict = {
-    'W': torch.linspace(-1e-3, 1e-3, 512),
-    'H': torch.linspace(-1e-3, 1e-3, 512),
+    'x': torch.linspace(-1e-3, 1e-3, 512),
+    'y': torch.linspace(-1e-3, 1e-3, 512),
     'wavelength': torch.tensor(632.8e-9)
 }
 params = SimulationParameters.from_dict(axes_dict)
@@ -47,168 +50,156 @@ params = SimulationParameters.from_dict(axes_dict)
   </Tabs.Tab>
 </Tabs>
 
----
-
-## Обязательные оси
-
-| Ось | Описание | Тип |
-|-----|----------|-----|
-| `W` | Координаты по X (ширина) | 1D Tensor |
-| `H` | Координаты по Y (высота) | 1D Tensor |
-| `wavelength` | Длина волны | Scalar или 1D Tensor |
+<Callout type="warning">
+Earlier versions used `W`/`H` for the transverse axes and `w_range`/`h_range` in
+`from_ranges`. Those names are deprecated — use `x`/`y` and `x_range`/`y_range`.
+</Callout>
 
 ---
 
-## Доступ к осям
+## Required axes
+
+| Axis | Description | Type |
+|------|-------------|------|
+| `x` | Horizontal coordinates | 1D tensor |
+| `y` | Vertical coordinates | 1D tensor |
+| `wavelength` | Wavelength | scalar or 1D tensor |
+
+---
+
+## Accessing the axes
 
 ```python
-# Через атрибут axes
-x = params.axes.W           # 1D тензор
-y = params.axes.H
-wl = params.axes.wavelength
+x = params.x            # 1D tensor
+y = params.y
+wl = params.wavelength
 
-# Или напрямую
-x = params.W
-y = params['W']
+# by name
+x = params['x']
 
-# Имена всех осей
-print(params.axis_names)        # frozenset({'W', 'H', 'wavelength'})
-print(params.additional_axes)   # frozenset() — дополнительные оси
+# names of all axes, in tensor order
+print(params.axis_names)   # ('y', 'x')
+
+# does an axis exist?
+print('pol' in params)     # False
 ```
 
 ---
 
-## Методы
+## Methods
 
 ### meshgrid
 
-Создание 2D сетки координат:
+Build the 2D coordinate grids:
 
 ```python
-X, Y = params.meshgrid(x_axis='W', y_axis='H')
-# X.shape = Y.shape = (512, 512)
+X, Y = params.meshgrid(x_axis='x', y_axis='y')
+# X.shape == Y.shape == (512, 512)
 
-# Для расчёта радиуса
 R = torch.sqrt(X**2 + Y**2)
 ```
 
-### axes_size
+### axis_sizes
 
-Получение размеров осей (кэшируется):
+Sizes of a selection of axes (cached):
 
 ```python
-size = params.axes_size(('H', 'W'))
+size = params.axis_sizes(('y', 'x'))
 # torch.Size([512, 512])
 ```
 
 ### cast
 
-Приведение тензора для broadcasting:
+Reshape a tensor so it broadcasts against the full axis layout:
 
 ```python
 tensor = torch.rand(512, 512)
-casted = params.cast(tensor, 'H', 'W')
-# Добавляет размерности для совместимости с другими осями
+casted = params.cast(tensor, 'y', 'x')
 ```
 
-### copy
+This is what elements use internally to stay compatible with extra axes such as several
+wavelengths.
 
-Создание копии:
+### index
+
+Position of an axis in the tensor layout, counted from the right:
 
 ```python
-params_copy = params.copy()
+print(params.index('x'))   # -1
+print(params.index('y'))   # -2
 ```
 
-### reorder
+### clone
 
-Перестановка осей тензора:
+A deep copy:
 
 ```python
-# axes: (wavelength, H, W), tensor shape: (batch, wavelength, H, W)
-t = params.reorder(tensor, "H", "W")      # без изменений
-t = params.reorder(tensor, "W", "H")      # -> (batch, wavelength, W, H)
-t = params.reorder(tensor, "wavelength")  # -> (batch, H, W, wavelength)
+params_copy = params.clone()
+print(params.equal(params_copy))   # True
 ```
-
-Полезно для совместимости с библиотеками, ожидающими определённый порядок осей.
 
 ---
 
-## Управление состоянием
+## Additional axes
 
-<Callout type="warning">
-`SimulationParameters` по умолчанию **заморожен**. Изменение осей требует разморозки.
+Any keyword argument to the constructor becomes an axis. This is how polarisation, time or
+an ensemble dimension are added:
+
+```python
+import torch
+from svetlanna import SimulationParameters
+
+params = SimulationParameters(
+    x=torch.linspace(-1e-3, 1e-3, 256),
+    y=torch.linspace(-1e-3, 1e-3, 256),
+    wavelength=torch.tensor(632.8e-9),
+    pol=torch.tensor([1., 0.]),   # Jones vector
+)
+
+print(params.axis_names)   # ('pol', 'y', 'x')
+print(params.pol)          # tensor([1., 0.])
+```
+
+<Callout type="info">
+Axes are fixed at construction time. To change the layout, build a new
+`SimulationParameters` — this keeps every element that references it consistent.
 </Callout>
 
-```python
-# Проверка состояния
-print(params.frozen)  # True
-
-# Разморозка для изменений
-params.unfreeze()
-params.add_axis('pol', torch.tensor([1., 0.]))
-params.freeze()
-
-# Удаление оси (нельзя удалять W, H, wavelength)
-params.unfreeze()
-params.remove_axis('pol')
-params.freeze()
-```
-
----
-
-## Дополнительные оси
-
-### Поляризация
+### Several wavelengths
 
 ```python
-params.unfreeze()
-params.add_axis('pol', torch.tensor([1., 0.]))  # Jones vector: горизонтальная
-params.freeze()
-
-# Доступ
-print(params.axes.pol)  # tensor([1., 0.])
-```
-
-### Несколько длин волн
-
-```python
-# RGB источник
+# an RGB source
 params = SimulationParameters(
-    W=torch.linspace(-1e-3, 1e-3, 256),
-    H=torch.linspace(-1e-3, 1e-3, 256),
+    x=torch.linspace(-1e-3, 1e-3, 256),
+    y=torch.linspace(-1e-3, 1e-3, 256),
     wavelength=torch.tensor([630, 532, 465]) * 1e-9  # R, G, B
 )
 
-# Волновой фронт автоматически становится 3D
+# the wavefront becomes three-dimensional automatically
 wf = Wavefront.gaussian_beam(params, waist_radius=0.3e-3)
 print(wf.shape)  # torch.Size([3, 256, 256])
 ```
 
 ---
 
-## Устройство (CPU/GPU)
+## Device (CPU/GPU)
 
-### Перенос на GPU
+### Moving to the GPU
 
 ```python
-# После создания:
-params.to('cuda')  # In-place!
+params.to('cuda')   # in-place!
 
-# Проверка
-print(params.device)  # cuda:0
-
-# Все оси перенесены
-print(params.axes.W.device)  # cuda:0
+print(params.device)     # cuda:0
+print(params.x.device)   # cuda:0
 ```
 
 <Callout type="info">
-Метод `to()` работает **in-place** и идемпотентен — повторный вызов безопасен.
+`to()` works **in-place** and is idempotent — calling it again is safe.
 </Callout>
 
-### Автоматический перенос
+### Automatic propagation of the device
 
-Элементы, созданные с `params`, автоматически используют то же устройство:
+Elements created from `params` inherit its device:
 
 ```python
 params.to('cuda')
@@ -220,52 +211,50 @@ print(wf.device)  # cuda:0
 
 ---
 
-## Свойства
+## Properties
 
-| Свойство | Описание |
-|----------|----------|
-| `params.axes` | Объект Axes для доступа к осям |
-| `params.axis_names` | `frozenset` имён всех осей |
-| `params.additional_axes` | `frozenset` имён дополнительных осей |
-| `params.device` | `torch.device` текущего устройства |
-| `params.frozen` | `bool` — заморожен ли объект |
+| Property | Description |
+|----------|-------------|
+| `params.x`, `params.y` | Coordinate tensors |
+| `params.wavelength` | Wavelength axis |
+| `params.axis_names` | Tuple of axis names in tensor order |
+| `params.device` | `torch.device` currently in use |
 
 ---
 
-## Пример: хроматическая дисперсия
+## Example: chromatic dispersion
 
 ```python
 import torch
-import matplotlib.pyplot as plt
 from svetlanna import SimulationParameters, Wavefront, LinearOpticalSetup
 from svetlanna.elements import ThinLens, FreeSpace
 from svetlanna.units import ureg
 
-# Три длины волны
 wavelengths = torch.tensor([630, 532, 465]) * 1e-9
 
 params = SimulationParameters(
-    W=torch.linspace(-2e-3, 2e-3, 512),
-    H=torch.linspace(-2e-3, 2e-3, 512),
+    x=torch.linspace(-2e-3, 2e-3, 512),
+    y=torch.linspace(-2e-3, 2e-3, 512),
     wavelength=wavelengths
 )
 
-# Гауссов пучок для трёх длин волн
 wf = Wavefront.gaussian_beam(params, waist_radius=0.5e-3)
 
-# Оптическая система
 setup = LinearOpticalSetup([
     ThinLens(params, focal_length=50*ureg.mm),
-    FreeSpace(params, distance=50*ureg.mm, method='AS'),
+    FreeSpace(params, distance=50*ureg.mm, method='zpASM'),
 ])
 
 wf_focus = setup(wf)
-# wf_focus.shape = (3, 512, 512)
+print(wf_focus.shape)   # torch.Size([3, 512, 512])
 ```
+
+Each wavelength diffracts differently, so the three focal spots differ in size — the
+simulation captures chromatic effects for free.
 
 ---
 
-## См. также
+## See also
 
-- [Wavefront](/docs/guides/wavefronts) — создание волновых фронтов
-- [Elements](/docs/guides/elements) — оптические элементы
+- [Wavefronts](/docs/guides/wavefronts) — creating fields
+- [Optical elements](/docs/guides/elements) — the elements themselves

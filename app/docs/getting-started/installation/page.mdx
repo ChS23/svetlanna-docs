@@ -1,23 +1,36 @@
-# Установка
+# Installation
 
 import { Steps, Callout, Tabs } from 'nextra/components'
 
-## Требования
+<Callout type="info">
+New to Python packaging? Start with
+[Setting up a virtual environment](/docs/getting-started/virtual-environment) — it covers
+the whole setup for Windows, macOS and Linux step by step.
+</Callout>
+
+## Requirements
 
 - **Python** 3.11+
-- **PyTorch** 2.0+
-- **CUDA** (опционально, для GPU-ускорения)
+- **PyTorch** 2.0+ — installed separately, see below
+- **CUDA** (optional, for GPU acceleration)
 
-## Установка
+## Installing
 
-<Tabs items={['pip', 'из исходников']}>
+<Callout type="warning">
+SVETlANNa does not declare `torch` as a dependency, so that you can choose the CPU or CUDA
+build yourself. Install PyTorch **before** SVETlANNa.
+</Callout>
+
+<Tabs items={['pip', 'from source']}>
   <Tabs.Tab>
 ```bash
+pip install torch
 pip install svetlanna
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```bash
+pip install torch
 git clone https://github.com/CompPhysLab/SVETlANNa.git
 cd SVETlANNa
 pip install -e .
@@ -25,85 +38,93 @@ pip install -e .
   </Tabs.Tab>
 </Tabs>
 
-## Проверка установки
+## Verifying the installation
 
 <Steps>
-### Импорт библиотеки
+### Import the library
 
 ```python
 import svetlanna
-print(f"SVETlANNa version: {svetlanna.__version__}")
+import torch
+print(f"PyTorch: {torch.__version__}")
 ```
 
-### Проверка GPU
+### Check the GPU
 
 ```python
 import torch
-print(f"CUDA доступна: {torch.cuda.is_available()}")
+print(f"CUDA available: {torch.cuda.is_available()}")
 if torch.cuda.is_available():
     print(f"GPU: {torch.cuda.get_device_name(0)}")
 ```
 
-### Тестовый запуск
+### Run a test
 
 ```python
 from svetlanna import SimulationParameters, Wavefront
 from svetlanna.units import ureg
 
 params = SimulationParameters.from_ranges(
-    w_range=(-1*ureg.mm, 1*ureg.mm), w_points=128,
-    h_range=(-1*ureg.mm, 1*ureg.mm), h_points=128,
+    x_range=(-1*ureg.mm, 1*ureg.mm), x_points=128,
+    y_range=(-1*ureg.mm, 1*ureg.mm), y_points=128,
     wavelength=632.8*ureg.nm
 )
 
 wf = Wavefront.plane_wave(params)
-print(f"Тест пройден! Форма: {wf.shape}")
+print(f"Test passed. Shape: {wf.shape}")
 ```
 </Steps>
 
-## GPU поддержка
+## GPU support
 
 <Callout type="info">
-SVETlANNa автоматически использует CUDA, если PyTorch установлен с поддержкой GPU.
+SVETlANNa uses CUDA automatically when PyTorch is installed with GPU support.
 </Callout>
 
-Для переноса вычислений на GPU:
+To move a simulation onto the GPU:
 
 ```python
-from svetlanna import SimulationParameters
+from svetlanna import SimulationParameters, Wavefront
 from svetlanna.units import ureg
 
-# Создание параметров
 params = SimulationParameters.from_ranges(
-    w_range=(-1*ureg.mm, 1*ureg.mm), w_points=512,
-    h_range=(-1*ureg.mm, 1*ureg.mm), h_points=512,
+    x_range=(-1*ureg.mm, 1*ureg.mm), x_points=512,
+    y_range=(-1*ureg.mm, 1*ureg.mm), y_points=512,
     wavelength=632.8*ureg.nm
 )
 
-# Перенос на GPU (in-place)
+# move to the GPU (in-place)
 params.to("cuda")
 
-# Все созданные с этими параметрами объекты будут на GPU
+# every object created from these parameters now lives on the GPU
 wf = Wavefront.gaussian_beam(params, waist_radius=0.3*ureg.mm)
-print(f"Устройство: {wf.device}")  # cuda:0
+print(f"Device: {wf.device}")  # cuda:0
 ```
 
-## Зависимости
+## Dependencies
 
-| Пакет | Назначение |
-|-------|------------|
-| `torch` | Тензорные вычисления, autograd, CUDA |
-| `numpy` | Вспомогательные операции |
-| `matplotlib` | Визуализация (опционально) |
-| `jinja2` | Шаблоны для Clerk |
-| `anywidget` | Jupyter виджеты |
+| Package | Purpose |
+|---------|---------|
+| `torch` | Tensor maths, autograd, CUDA — install it yourself |
+| `numpy` | Helper operations |
+| `matplotlib` | Visualisation |
+| `jinja2` | Templates for the HTML widgets |
+| `anywidget` | Jupyter widgets |
+| `pandas` | Optional extra: `pip install "svetlanna[pandas]"` |
 
-## Возможные проблемы
+## Common problems
 
 <Callout type="warning">
-**CUDA out of memory**: При работе с большими сетками (>1024×1024) убедитесь, что у вас достаточно GPU памяти. Используйте `torch.cuda.empty_cache()` для очистки.
+**CUDA out of memory**: with large grids (&gt; 1024×1024) make sure you have enough GPU
+memory. Call `torch.cuda.empty_cache()` to release cached blocks.
 </Callout>
 
 <Callout type="error">
-**Import error**: Если `import svetlanna` не работает, проверьте версию Python (`python --version`) и переустановите библиотеку.
+**`ModuleNotFoundError: No module named 'torch'`**: PyTorch is not part of the SVETlANNa
+dependency set. Run `pip install torch`.
+</Callout>
+
+<Callout type="error">
+**Import error**: if `import svetlanna` fails, check your Python version
+(`python --version`, 3.11+ required) and that the right virtual environment is active.
 </Callout>

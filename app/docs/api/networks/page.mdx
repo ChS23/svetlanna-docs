@@ -1,20 +1,20 @@
 # Networks
 
-Нейронные сети и оптические системы
+Neural networks and optical systems
 
 ```python
 from svetlanna.networks import ...
 ```
 
-## Классы
+## Classes
 
 ### ConvLayer4F
 
-<small>Наследует: `nn.Module`</small>
+<small>Inherits: `nn.Module`</small>
 
 Diffractive convolutional layer based on a 4f system.
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -26,9 +26,9 @@ __init__(self, simulation_parameters: SimulationParameters, focal_length: Optimi
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `None` | `simulation_parameters: SimulationParameters` | Simulation parameters. |
 | `None` | `focal_length: OptimizableFloat` | A focal length for [ThinLens][svetlanna.elements.ThinLens]'s in a 4f system. |
@@ -50,9 +50,9 @@ __init__(self, simulation_parameters: SimulationParameters, focal_length: Optimi
 - *show_structure(conv_layer_4f)* — 
 - *```* — 
 - *Output (in IPython environment):* — 
-- *<iframe* — 
+- *&lt;iframe* — 
 - *src="show_structure_ConvLayer4F.html"* — 
-- *style="width:100%; height:250px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+- *style="width:100%; height:250px; border: 0; color-scheme: inherit;" allowtransparency="true">&lt;/iframe>* — 
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -78,12 +78,12 @@ to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 
 ### ConvDiffNetwork4F
 
-<small>Наследует: `nn.Module`</small>
+<small>Inherits: `nn.Module`</small>
 
 A simple convolutional network with a 4f system as an optical convolutional layer.
 It consists of a [ConvLayer4F][svetlanna.networks.ConvLayer4F] and a [LinearOpticalSetup][svetlanna.LinearOpticalSetup] after it.
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -95,9 +95,9 @@ __init__(self, simulation_parameters: SimulationParameters, network_elements: It
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `network_elements` | `Iterable[elements.Element]` | List of Elements for a Network after a convolutional layer (4f system). |
@@ -120,9 +120,9 @@ __init__(self, simulation_parameters: SimulationParameters, network_elements: It
 - *show_structure(conv_diff_network_4f)* — 
 - *```* — 
 - *Output (in IPython environment):* — 
-- *<iframe* — 
+- *&lt;iframe* — 
 - *src="show_structure_ConvDiffNetwork4F.html"* — 
-- *style="width:100%; height:25rem; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+- *style="width:100%; height:25rem; border: 0; color-scheme: inherit;" allowtransparency="true">&lt;/iframe>* — 
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -148,9 +148,9 @@ to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 
 ### SimpleReservoir
 
-<small>Наследует: `torch.nn.Module`</small>
+<small>Inherits: `torch.nn.Module`</small>
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -174,9 +174,9 @@ light propagation time in $F_\text&#123;D&#125;$.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `nonlinear_element` | `LinearOpticalSetupLike` | The nonlinear element the light passes through. |
 | `delay_element` | `LinearOpticalSetupLike` | The delay line element. |
@@ -201,9 +201,9 @@ light propagation time in $F_\text&#123;D&#125;$.
 - *show_structure(reservoir)* — 
 - *```* — 
 - *Output (in IPython environment):* — 
-- *<iframe* — 
+- *&lt;iframe* — 
 - *src="show_structure_SimpleReservoir.html"* — 
-- *style="width:100%; height:300px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+- *style="width:100%; height:300px; border: 0; color-scheme: inherit;" allowtransparency="true">&lt;/iframe>* — 
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -218,9 +218,9 @@ Append a new wavefront to the feedback queue.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `field` | `Wavefront` | The new wavefront to be added to the end of the queue. |
 
@@ -241,7 +241,7 @@ if available.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`None | Wavefront`**
 
@@ -286,12 +286,12 @@ to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 
 ### LinearAutoencoder
 
-<small>Наследует: `nn.Module`</small>
+<small>Inherits: `nn.Module`</small>
 
 A simple autoencoder network consisting of consistent encoder and decoder
 for a simultaneous training.
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -303,9 +303,9 @@ __init__(self, encoder_elements: Iterable[Element], decoder_elements: Iterable[E
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `encoder_elements` | `Iterable[Element]` | The encoder elements. |
 | `decoder_elements` | `Iterable[Element]` | The decoder elements. |
@@ -324,9 +324,9 @@ __init__(self, encoder_elements: Iterable[Element], decoder_elements: Iterable[E
 - *show_structure(linear_autoencoder)* — 
 - *```* — 
 - *Output (in IPython environment):* — 
-- *<iframe* — 
+- *&lt;iframe* — 
 - *src="show_structure_LinearAutoencoder.html"* — 
-- *style="width:100%; height:400px; border: 0; color-scheme: inherit;" allowtransparency="true"></iframe>* — 
+- *style="width:100%; height:400px; border: 0; color-scheme: inherit;" allowtransparency="true">&lt;/iframe>* — 
 </div>
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
@@ -341,7 +341,7 @@ Propagation through the encoder part - encode a wavefront (input).
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Wavefront`**
 
@@ -364,7 +364,7 @@ Propagation through the decoder part - decode an encoded wavefront.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Wavefront`**
 
@@ -398,7 +398,7 @@ to_specs(self) -> Iterable[ParameterSpecs | SubelementSpecs]
 
 ### LinearOpticalSetupLike
 
-<small>Наследует: `Protocol`</small>
+<small>Inherits: `Protocol`</small>
 
 Protocol for objects that behave like linear optical setups.
 
@@ -410,12 +410,12 @@ It generalizes [`LinearOpticalSetup`][svetlanna.LinearOpticalSetup].
 
 ### DiffractiveRNN
 
-<small>Наследует: `nn.Module`</small>
+<small>Inherits: `nn.Module`</small>
 
 A simple recurrent diffractive network of an architecture proposed in the article:
 https://www.nature.com/articles/s41566-021-00796-w
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -426,7 +426,7 @@ https://www.nature.com/articles/s41566-021-00796-w
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -465,9 +465,9 @@ forward(self, subsequence_wf: Wavefront)
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `None` | `subsequence_wf: Wavefront('batch_size', 'sequence_len', 'y', 'x')` | Wavefronts for a sequence. Comment: works for a single wavelength in SimulationParameters! |
 

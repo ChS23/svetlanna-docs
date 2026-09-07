@@ -1,38 +1,39 @@
-# Примеры LaTeX
+# LaTeX examples
 
-## Инлайн формулы
+## Inline formulas
 
-Комплексная амплитуда волны $E(x,y) = A(x,y) e^{i\phi(x,y)}$, где $A$ — амплитуда, $\phi$ — фаза.
+The complex amplitude of a wave is $E(x,y) = A(x,y) e^{i\phi(x,y)}$, where $A$ is the
+amplitude and $\phi$ the phase.
 
-Множества: $x \in \R$, $z \in \C$, $n \in \N$, $k \in \Z$.
+Sets: $x \in \R$, $z \in \C$, $n \in \N$, $k \in \Z$.
 
-## Блочные формулы
+## Display formulas
 
-Преобразование Фурье:
+The Fourier transform:
 
 $$
 \mathcal{F}\{f(x)\} = \int_{-\infty}^{\infty} f(x) e^{-2\pi i \xi x} \, dx
 $$
 
-Дифракция Френеля:
+Fresnel diffraction:
 
 $$
 U(x', y') = \frac{e^{ikz}}{i\lambda z} \iint U(x, y) \exp\left[\frac{ik}{2z}\left((x'-x)^2 + (y'-y)^2\right)\right] dx \, dy
 $$
 
-## Уравнения
+## Equations
 
-Уравнение Гельмгольца:
+The Helmholtz equation:
 
 $$
 \nabla^2 U + k^2 U = 0
 $$
 
-где $k = \frac{2\pi}{\lambda}$ — волновое число.
+where $k = \frac{2\pi}{\lambda}$ is the wavenumber.
 
-## Матрицы
+## Matrices
 
-Матрица передачи тонкой линзы:
+The ray-transfer matrix of a thin lens:
 
 $$
 \begin{pmatrix}
@@ -41,7 +42,7 @@ $$
 \end{pmatrix}
 $$
 
-## Выравнивание
+## Alignment
 
 $$
 \begin{aligned}
@@ -51,15 +52,15 @@ E_{out} &= t(x,y) \cdot E_{in} \\
 \end{aligned}
 $$
 
-## Дроби и индексы
+## Fractions and subscripts
 
-Угловой спектр:
+The angular spectrum transfer function:
 
 $$
 H(f_x, f_y) = \exp\left(ikz\sqrt{1 - \lambda^2 f_x^2 - \lambda^2 f_y^2}\right)
 $$
 
-Функция рассеяния точки:
+The point spread function:
 
 $$
 I(x,y) = \left|\mathcal{F}^{-1}\{H \cdot \mathcal{F}\{U_0\}\}\right|^2

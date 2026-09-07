@@ -2,42 +2,48 @@
 
 import { Callout, Tabs } from 'nextra/components'
 
-Модуль `svetlanna.transforms` предоставляет преобразования для подготовки входных данных к оптической обработке.
+The `svetlanna.transforms` module prepares input data for optical processing.
 
 ## ToWavefront
 
-Преобразует изображение (тензор) в волновой фронт.
+Converts an image tensor into a wavefront.
 
 ```python
 from svetlanna.transforms import ToWavefront
 
-# Фазовая модуляция (значения изображения -> фаза)
+# phase modulation: image values → phase
 to_wf_phase = ToWavefront(modulation_type='phase')
 
-# Амплитудная модуляция (значения изображения -> амплитуда)
+# amplitude modulation: image values → amplitude
 to_wf_amp = ToWavefront(modulation_type='amp')
 
-# Амплитудно-фазовая модуляция
+# both at once
 to_wf_both = ToWavefront(modulation_type='amp&phase')
 ```
 
-### Типы модуляции
+<Callout type="warning">
+The input must be a tensor of shape `[C, H, W]` with values in $[0, 1]$. A single-channel
+image has its channel dimension squeezed out; with several channels the channel axis is
+kept and interpreted as the wavelength axis.
+</Callout>
+
+### Modulation types
 
 <Tabs items={['phase', 'amp', 'amp&phase']}>
   <Tabs.Tab>
-**Фазовая модуляция** — значения изображения кодируются в фазу:
+**Phase modulation** — image values become phase, the amplitude stays constant:
 
-$$E(x, y) = \exp(i \cdot 2\pi \cdot I(x, y))$$
+$$E(x, y) = \exp\left(i\left[2\pi I(x, y) - \pi\right]\right)$$
 
 ```python
 transform = ToWavefront(modulation_type='phase')
 wf = transform(image)  # image ∈ [0, 1]
-# wf.phase ∈ [0, 2π]
+# wf.phase ∈ (-π, π)
 # |wf| = 1
 ```
   </Tabs.Tab>
   <Tabs.Tab>
-**Амплитудная модуляция** — значения изображения кодируются в амплитуду:
+**Amplitude modulation** — image values become amplitude, the phase is zero:
 
 $$E(x, y) = I(x, y)$$
 
@@ -49,14 +55,16 @@ wf = transform(image)
 ```
   </Tabs.Tab>
   <Tabs.Tab>
-**Амплитудно-фазовая модуляция** — оба канала:
+**Amplitude and phase** — the image drives both:
 
-$$E(x, y) = A(x, y) \cdot \exp(i \cdot \phi(x, y))$$
+$$E(x, y) = I(x, y)\exp\left(i\left[2\pi I(x, y) - \pi\right]\right)$$
 
 ```python
 transform = ToWavefront(modulation_type='amp&phase')
-wf = transform(complex_image)  # Комплексный вход
+wf = transform(image)
 ```
+
+This is also the fallback for any unrecognised `modulation_type`.
   </Tabs.Tab>
 </Tabs>
 
@@ -64,7 +72,8 @@ wf = transform(complex_image)  # Комплексный вход
 
 ## GaussModulation
 
-Модулирует волновой фронт гауссовым профилем (имитация лазерного пучка).
+Multiplies a wavefront by a Gaussian envelope — a model of illumination by a real laser
+beam.
 
 ```python
 from svetlanna.transforms import GaussModulation
@@ -72,33 +81,35 @@ from svetlanna.units import ureg
 
 gauss_mod = GaussModulation(
     sim_params=params,
-    fwhm_x=2.0*ureg.mm,  # FWHM по X
-    fwhm_y=2.0*ureg.mm,  # FWHM по Y
-    peak_x=0.0,          # Центр по X
-    peak_y=0.0           # Центр по Y
+    fwhm_x=2.0*ureg.mm,  # FWHM along X
+    fwhm_y=2.0*ureg.mm,  # FWHM along Y
+    peak_x=0.0,          # centre along X
+    peak_y=0.0           # centre along Y
 )
 
-# Применение к волновому фронту
 wf_modulated = gauss_mod(wf)
 # wf_modulated = wf * Gaussian(x, y)
 ```
 
-### Параметры
+### Parameters
 
-| Параметр | Описание |
-|----------|----------|
-| `fwhm_x`, `fwhm_y` | Полуширина на полувысоте |
-| `peak_x`, `peak_y` | Положение центра гауссиана |
+| Parameter | Description |
+|-----------|-------------|
+| `sim_params` | The simulation grid the Gaussian is sampled on |
+| `fwhm_x`, `fwhm_y` | Full width at half maximum, SI units |
+| `peak_x`, `peak_y` | Centre position, SI units |
 
 ---
 
-## Комбинирование transforms
+## Composing transforms
 
-Transforms можно комбинировать с помощью `torchvision.transforms.Compose` или `nn.Sequential`:
+Transforms are `nn.Module`s, so they compose with `nn.Sequential` or
+`torchvision.transforms.Compose`:
 
 ```python
 import torch.nn as nn
 from svetlanna.transforms import ToWavefront, GaussModulation
+from svetlanna.units import ureg
 
 class InputPipeline(nn.Module):
     def __init__(self, params):
@@ -112,8 +123,7 @@ class InputPipeline(nn.Module):
 
     def forward(self, image):
         wf = self.to_wf(image)
-        wf = self.gauss(wf)
-        return wf
+        return self.gauss(wf)
 
 pipeline = InputPipeline(params)
 wf = pipeline(image)
@@ -121,29 +131,29 @@ wf = pipeline(image)
 
 ---
 
-## Нормализация входных данных
+## Normalising the input
 
 <Callout type="warning">
-Перед применением `ToWavefront` убедитесь, что изображение нормализовано в диапазоне [0, 1].
+Make sure the image is normalised to $[0, 1]$ before applying `ToWavefront`; the phase
+mapping assumes that range.
 </Callout>
 
 ```python
 import torch
 
 def normalize_image(image):
-    """Нормализация в [0, 1]."""
+    """Rescale to [0, 1]."""
     min_val = image.min()
     max_val = image.max()
     return (image - min_val) / (max_val - min_val + 1e-8)
 
-# Применение
 image_norm = normalize_image(raw_image)
 wf = ToWavefront('phase')(image_norm)
 ```
 
 ---
 
-## Пример: MNIST classification pipeline
+## Example: an MNIST classification pipeline
 
 ```python
 import torch
@@ -155,41 +165,39 @@ from svetlanna.transforms import ToWavefront, GaussModulation
 from svetlanna.detector import Detector, DetectorProcessorClf
 from svetlanna.units import ureg
 
-# Параметры оптической системы
 params = SimulationParameters.from_ranges(
-    w_range=(-5*ureg.mm, 5*ureg.mm), w_points=28,  # Размер MNIST
-    h_range=(-5*ureg.mm, 5*ureg.mm), h_points=28,
+    x_range=(-5*ureg.mm, 5*ureg.mm), x_points=28,   # MNIST resolution
+    y_range=(-5*ureg.mm, 5*ureg.mm), y_points=28,
     wavelength=632.8*ureg.nm
 )
 
-# Torchvision transforms -> Svetlanna transforms
+
 class MNISTToOptical(torch.nn.Module):
     def __init__(self, params):
         super().__init__()
         self.to_wf = ToWavefront(modulation_type='phase')
         self.gauss = GaussModulation(
-            sim_params=params,
-            fwhm_x=3*ureg.mm,
-            fwhm_y=3*ureg.mm
+            sim_params=params, fwhm_x=3*ureg.mm, fwhm_y=3*ureg.mm
         )
 
     def forward(self, image):
-        # image: (B, 1, 28, 28) -> (B, 28, 28)
-        image = image.squeeze(1)
         wf = self.to_wf(image)
-        wf = self.gauss(wf)
-        return wf
+        return self.gauss(wf)
 
-# Оптическая сеть
+
 class DONN(torch.nn.Module):
-    def __init__(self, params, num_classes):
+    def __init__(self, params, num_classes, grid=28):
         super().__init__()
         self.input_transform = MNISTToOptical(params)
         self.optical = LinearOpticalSetup([
-            DiffractiveLayer(params, mask=torch.rand(28, 28) * 2 * torch.pi),
-            FreeSpace(params, distance=10*ureg.mm, method='AS'),
-            DiffractiveLayer(params, mask=torch.rand(28, 28) * 2 * torch.pi),
-            FreeSpace(params, distance=10*ureg.mm, method='AS'),
+            DiffractiveLayer(
+                params, mask=torch.nn.Parameter(torch.rand(grid, grid) * 2 * torch.pi)
+            ),
+            FreeSpace(params, distance=10*ureg.mm, method='zpASM'),
+            DiffractiveLayer(
+                params, mask=torch.nn.Parameter(torch.rand(grid, grid) * 2 * torch.pi)
+            ),
+            FreeSpace(params, distance=10*ureg.mm, method='zpASM'),
         ])
         self.detector = Detector(params, func='intensity')
         self.processor = DetectorProcessorClf(
@@ -204,28 +212,26 @@ class DONN(torch.nn.Module):
         intensity = self.detector(wf)
         return self.processor.batch_forward(intensity)
 
-# Использование
+
 model = DONN(params, num_classes=10)
 
-# Загрузка данных
-dataset = datasets.MNIST(
-    './data',
-    train=True,
-    download=True,
-    transform=T.ToTensor()
-)
+dataset = datasets.MNIST('./data', train=True, download=True, transform=T.ToTensor())
 loader = DataLoader(dataset, batch_size=32)
 
-# Forward pass
 images, labels = next(iter(loader))
 logits = model(images)
 print(f"Output shape: {logits.shape}")  # (32, 10)
 ```
 
+<Callout type="info">
+Applying `ToWavefront` per sample inside the `Dataset` transform — rather than to a whole
+batch — keeps the shape convention `[C, H, W]` and lets `DataLoader` do the batching.
+</Callout>
+
 ---
 
-## См. также
+## See also
 
-- [Detector](/docs/guides/detector) — детектирование и классификация
-- [Wavefront](/docs/guides/wavefronts) — волновые фронты
-- [Туториал: D²NN](/docs/tutorials/diffractive-nn) — дифракционная нейросеть
+- [Detectors](/docs/guides/detector) — detection and classification
+- [Wavefronts](/docs/guides/wavefronts) — the field object
+- [Optical systems](/docs/guides/optical-systems) — building the network

@@ -61,12 +61,12 @@ export default function CoursePage() {
           </p>
         </section>
 
-        {/* Программа курса */}
+        {/* Course programme */}
         <section className="mb-12">
           <h2 className="text-xl font-semibold mb-6">Syllabus</h2>
 
           <div className="space-y-4">
-            {/* Модуль 1 */}
+            {/* Module 1 */}
             <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">01</span>
@@ -82,7 +82,7 @@ export default function CoursePage() {
               </div>
             </div>
 
-            {/* Модуль 2 */}
+            {/* Module 2 */}
             <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">02</span>
@@ -97,7 +97,7 @@ export default function CoursePage() {
               </div>
             </div>
 
-            {/* Модуль 3 */}
+            {/* Module 3 */}
             <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">03</span>
@@ -110,7 +110,7 @@ export default function CoursePage() {
               </div>
             </div>
 
-            {/* Модуль 4 */}
+            {/* Module 4 */}
             <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">04</span>
@@ -126,7 +126,7 @@ export default function CoursePage() {
               </div>
             </div>
 
-            {/* Модуль 5 */}
+            {/* Module 5 */}
             <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">05</span>
@@ -141,7 +141,7 @@ export default function CoursePage() {
               </div>
             </div>
 
-            {/* Модуль 6 */}
+            {/* Module 6 */}
             <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">06</span>
@@ -157,7 +157,7 @@ export default function CoursePage() {
               </div>
             </div>
 
-            {/* Модуль 7 */}
+            {/* Module 7 */}
             <div className="p-5 border border-gray-200 dark:border-neutral-800 rounded-lg">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-mono text-gray-400 dark:text-gray-500 pt-0.5">07</span>
@@ -174,7 +174,7 @@ export default function CoursePage() {
           </div>
         </section>
 
-        {/* Для кого */}
+        {/* Audience */}
         <section className="mb-12">
           <h2 className="text-xl font-semibold mb-4">For Whom</h2>
           <div className="grid md:grid-cols-3 gap-4">

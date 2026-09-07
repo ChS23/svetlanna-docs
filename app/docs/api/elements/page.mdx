@@ -1,18 +1,18 @@
 # Elements
 
-Оптические элементы: линзы, апертуры, дифракционные слои, SLM и др.
+Optical elements: lenses, apertures, diffractive layers, SLMs and more
 
 ```python
 from svetlanna.elements import ...
 ```
 
-## Классы
+## Classes
 
 ### ThinLens
 
-<small>Наследует: `Element`</small>
+<small>Inherits: `Element`</small>
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -23,7 +23,7 @@ from svetlanna.elements import ...
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -37,9 +37,9 @@ Thin lens element.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `focal_length` | `OptimizableFloat` | The focal length of the lens. $\text&#123;focal\_length&#125; > 0$ for a converging lens. |
@@ -82,9 +82,9 @@ to_specs(self) -> Iterable[ParameterSpecs]
 
 ### NonlinearElement
 
-<small>Наследует: `Element`</small>
+<small>Inherits: `Element`</small>
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -126,9 +126,9 @@ The response function takes an incident wavefront and returns the modified wavef
 - *```* — 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `response_function` | `Callable[[Wavefront], Wavefront]` | Function that describes the nonlinear response of the element. |
@@ -150,9 +150,9 @@ forward(self, incident_wavefront: Wavefront) -> Wavefront
 
 ### SpatialLightModulator
 
-<small>Наследует: `Element` `Generic[_F]`</small>
+<small>Inherits: `Element` `Generic[_F]`</small>
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -163,7 +163,7 @@ forward(self, incident_wavefront: Wavefront) -> Wavefront
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -179,9 +179,9 @@ The lookup table function (`lut_function`) allows applying a non-linear transfor
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `mask` | `OptimizableTensor` | Mask tensor of the shape `(Ny_mask, Nx_mask)`, where `Ny_mask` and `Nx_mask` are the height and width of the mask in pixels. It can be different from the simulation grid shape `(Ny, Nx)`; interpolation is applied to fit the mask to the SLM area. |
@@ -218,9 +218,9 @@ reverse(self, transmission_wavefront: Wavefront) -> Wavefront
 
 ### DiffractiveLayer
 
-<small>Наследует: `Element`</small>
+<small>Inherits: `Element`</small>
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -231,7 +231,7 @@ reverse(self, transmission_wavefront: Wavefront) -> Wavefront
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -250,9 +250,9 @@ $$
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `mask` | `OptimizableTensor` | Two-dimensional tensor representing the aperture mask of shape `(H, W)`. |
@@ -295,7 +295,7 @@ to_specs(self) -> Iterable[ParameterSpecs]
 
 ### _BufferedValueContainer
 
-<small>Наследует: `tuple`</small>
+<small>Inherits: `tuple`</small>
 
 Internal class that marks buffered values.
 
@@ -306,9 +306,9 @@ This approach was identified by GPT as the fastest one.
 
 ### Element
 
-<small>Наследует: `nn.Module`</small>
+<small>Inherits: `nn.Module`</small>
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -324,9 +324,9 @@ Each element takes an incident wavefront and produces a transmitted wavefront.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 
@@ -374,9 +374,9 @@ This allows torch to properly process the `.to` method on the element, since the
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `name` | `str` | Name of the new buffer (it is more convenient to use the name of the new attribute). |
 | `value` | `_T` | Tensor to be buffered. |
@@ -386,7 +386,7 @@ This allows torch to properly process the `.to` method on the element, since the
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`_T`**
 
@@ -422,9 +422,9 @@ class SomeElement(Element):
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `name` | `str` | Name of the new buffer (it is more convenient to use the name of the new attribute). |
 | `value` | `_V` | The value of the element parameter. |
@@ -433,7 +433,7 @@ class SomeElement(Element):
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`_V`**
 
@@ -447,12 +447,12 @@ The value passed to the method.
 
 ### AbstractMulElement
 
-<small>Наследует: `Element` `ABC`</small>
+<small>Inherits: `Element` `ABC`</small>
 
 Class that generalize all apertures with $E^\text&#123;out&#125; = \hat&#123;T&#125;E^\text&#123;in&#125;$ like forward function,
 where $\hat&#123;T&#125;$ is transmission function.
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -463,7 +463,7 @@ where $\hat&#123;T&#125;$ is transmission function.
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -478,9 +478,9 @@ forward(self, incident_wavefront: Wavefront) -> Wavefront
 
 ### Aperture
 
-<small>Наследует: `AbstractMulElement`</small>
+<small>Inherits: `AbstractMulElement`</small>
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -491,7 +491,7 @@ forward(self, incident_wavefront: Wavefront) -> Wavefront
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -507,9 +507,9 @@ where 0 represents blocked light and 1 represents allowed light.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `mask` | `torch.Tensor` | Two-dimensional tensor representing the aperture mask of shape `(Ny, Nx)`. The mask works as following: |
@@ -533,9 +533,9 @@ to_specs(self) -> Iterable[ParameterSpecs]
 
 ### RectangularAperture
 
-<small>Наследует: `AbstractMulElement`</small>
+<small>Inherits: `AbstractMulElement`</small>
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -546,7 +546,7 @@ to_specs(self) -> Iterable[ParameterSpecs]
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -562,9 +562,9 @@ center the light is allowed to pass, otherwise blocked.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `height` | `float` | Aperture height. |
@@ -587,9 +587,9 @@ to_specs(self) -> Iterable[ParameterSpecs]
 
 ### RoundAperture
 
-<small>Наследует: `AbstractMulElement`</small>
+<small>Inherits: `AbstractMulElement`</small>
 
-#### Свойства
+#### Properties
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
 
@@ -600,7 +600,7 @@ to_specs(self) -> Iterable[ParameterSpecs]
 </div>
 
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -616,9 +616,9 @@ the light is allowed to pass, otherwise blocked.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters. |
 | `radius` | `float` | Radius of the round-shaped aperture. |
@@ -640,12 +640,12 @@ to_specs(self) -> Iterable[ParameterSpecs]
 
 ### FreeSpace
 
-<small>Наследует: `Element`</small>
+<small>Inherits: `Element`</small>
 
 A class that describes a propagation of the wavefront in free space
 between two optical elements
 
-#### Методы
+#### Methods
 
 <div className="border-l-4 border-blue-500 pl-4 my-6">
 
@@ -660,9 +660,9 @@ precomputes the parameters for the chosen method of propagation.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `simulation_parameters` | `SimulationParameters` | Simulation parameters of the system. Contains the information about the spatial grid, wavelength, etc. |
 | `distance` | `OptimizableFloat` | The propagation distance along the optical axis. |
@@ -686,9 +686,9 @@ Calculates the wavefront after propagating in the free space
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `incident_wavefront` | `Wavefront` | Wavefront before propagation in free space |
 
@@ -696,7 +696,7 @@ Calculates the wavefront after propagating in the free space
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Wavefront`**
 
@@ -707,7 +707,7 @@ Wavefront after propagation in free space
 
 
 <details>
-<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Исключения</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">⚠️ Raises</summary>
 
 - **`ValueError`** — Occurs when a non-existent direct distribution method is chosen
 
@@ -728,7 +728,7 @@ visualization in the widget
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Iterable[ParameterSpecs]`**
 
@@ -741,7 +741,7 @@ Sequence of ParameterSpecs objects containing the parameters of the element
 
 
 
-## Функции
+## Functions
 
 ### `one_step_tanh(x: torch.Tensor, alpha: torch.Tensor) -> torch.Tensor`
 
@@ -753,16 +753,10 @@ $$f(x) = \dfrac&#123;\tanh(\alpha(x-0.5))&#125;&#123;2\tanh(\alpha/2)&#125; + \f
 The parameter $\alpha \in [0, +\infty)$ controls the steepness of the transition.
 $\alpha=0$ corresponds to a linear function.
 
-<figure markdown="span">
-    ![Image title](slm/one_step_function_one_step_tanh_dark_background.jpg#only-dark)&#123; width="500" &#125;
-    ![Image title](slm/one_step_function_one_step_tanh_default.jpg#only-light)&#123; width="500" &#125;
-</figure>
-
-
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `x` | `torch.Tensor` | Input tensor with values from 0 to 1. |
 | `alpha` | `torch.Tensor` | Steepness control parameter. |
@@ -771,7 +765,7 @@ $\alpha=0$ corresponds to a linear function.
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`torch.Tensor`**
 
@@ -791,16 +785,10 @@ $$f(x) = \dfrac&#123;1 - \cos(\pi x^&#123;\alpha + 1&#125;)&#125;&#123;2&#125;$$
 The parameter $\alpha \in [0, +\infty)$ controls the steepness of the transition.
 $\alpha=0$ corresponds to a function with a smooth transition, but **not linear**, and as $\alpha$ increases, the transition becomes steeper.
 
-<figure markdown="span">
-    ![Image title](slm/one_step_function_one_step_cos_dark_background.jpg#only-dark)&#123; width="500" &#125;
-    ![Image title](slm/one_step_function_one_step_cos_default.jpg#only-light)&#123; width="500" &#125;
-</figure>
-
-
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `x` | `torch.Tensor` | Input tensor with values from 0 to 1. |
 | `alpha` | `torch.Tensor` | Steepness control parameter. |
@@ -809,7 +797,7 @@ $\alpha=0$ corresponds to a function with a smooth transition, but **not linear*
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`torch.Tensor`**
 
@@ -827,9 +815,9 @@ Each level is defined as the output of the one-step function at the fractional p
 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📥 Параметры</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📥 Parameters</summary>
 
-| Параметр | Тип | Описание |
+| Parameter | Type | Description |
 |:---------|:----|:---------|
 | `N` | `int` | Number of quantization levels. |
 | `max_value` | `float` | Maximum value of the input tensor. |
@@ -848,7 +836,7 @@ Each level is defined as the output of the one-step function at the fractional p
 - *```* — 
 
 <details open>
-<summary className="cursor-pointer font-semibold text-sm py-2">📤 Возвращает</summary>
+<summary className="cursor-pointer font-semibold text-sm py-2">📤 Returns</summary>
 
 **`Callable[Concatenate[torch.Tensor, Params], torch.Tensor]`**
 

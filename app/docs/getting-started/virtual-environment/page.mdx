@@ -1,0 +1,357 @@
+# Setting up a virtual environment
+
+import { Steps, Callout, Tabs } from 'nextra/components'
+
+This chapter walks you through creating an isolated Python environment and installing
+**PyTorch** and **SVETlANNa** into it, on Windows, macOS and Linux.
+
+## What is a virtual environment, and why bother?
+
+A virtual environment is a self-contained folder holding its own copy of the Python
+interpreter and its own `site-packages` directory. Anything you install while the
+environment is active goes into that folder and nowhere else.
+
+Without one, every `pip install` writes into a single system-wide location, which causes
+three recurring problems:
+
+| Problem | What happens without a virtual environment |
+|---------|--------------------------------------------|
+| **Version conflicts** | Project A needs `torch 2.4`, project B needs `torch 2.9`. Only one can win. |
+| **Broken system tools** | On Linux and macOS the system Python is used by the OS itself; overwriting its packages can break it. |
+| **Irreproducible results** | You cannot tell which package versions a result was produced with, so a colleague cannot reproduce it. |
+
+With a virtual environment each project gets its own dependency set, you never need
+administrator rights, and deleting the project means deleting one folder.
+
+<Callout type="info">
+Rule of thumb: **one project — one virtual environment.** Create it once, activate it every
+time you work on the project.
+</Callout>
+
+## Requirements
+
+- **Python 3.11 or newer** — SVETlANNa declares `requires-python >= 3.11`.
+- Roughly 3 GB of free disk space (PyTorch wheels are large).
+- An NVIDIA GPU is optional; everything below also works on the CPU.
+
+Check the version you have:
+
+<Tabs items={['Windows', 'macOS', 'Linux']}>
+  <Tabs.Tab>
+```powershell
+py --version
+```
+If `py` is not recognised, install Python from
+[python.org](https://www.python.org/downloads/windows/) and tick
+**"Add python.exe to PATH"** in the installer.
+  </Tabs.Tab>
+  <Tabs.Tab>
+```bash
+python3 --version
+```
+macOS ships an old Python. Install a current one with
+[Homebrew](https://brew.sh): `brew install python@3.12`.
+  </Tabs.Tab>
+  <Tabs.Tab>
+```bash
+python3 --version
+```
+If it is older than 3.11, install a newer one, e.g. on Debian/Ubuntu:
+```bash
+sudo apt install python3.12 python3.12-venv
+```
+The `-venv` package is required — Debian-based distributions ship `venv` separately.
+  </Tabs.Tab>
+</Tabs>
+
+## Step by step
+
+<Steps>
+### Create a project folder
+
+```bash
+mkdir my-optics-project
+cd my-optics-project
+```
+
+Everything below happens inside this folder.
+
+### Create the environment
+
+The `venv` module is part of the standard library, so no extra tooling is needed. The
+`.venv` argument is simply the folder the environment is created in — `.venv` is the
+conventional name and is recognised by VS Code and PyCharm.
+
+<Tabs items={['Windows', 'macOS', 'Linux']}>
+  <Tabs.Tab>
+```powershell
+py -3.12 -m venv .venv
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```bash
+python3 -m venv .venv
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```bash
+python3 -m venv .venv
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Activate it
+
+Activation puts the environment's `python` and `pip` first on your `PATH`. The shell prompt
+gains a `(.venv)` prefix — that is how you know it worked.
+
+<Tabs items={['Windows', 'macOS', 'Linux']}>
+  <Tabs.Tab>
+PowerShell:
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+Command Prompt (`cmd.exe`):
+```bat
+.venv\Scripts\activate.bat
+```
+
+<Callout type="warning">
+If PowerShell refuses with *"running scripts is disabled on this system"*, allow local
+scripts once for your user:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+</Callout>
+  </Tabs.Tab>
+  <Tabs.Tab>
+```bash
+source .venv/bin/activate
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```bash
+source .venv/bin/activate
+```
+  </Tabs.Tab>
+</Tabs>
+
+Verify that the right interpreter is in use:
+
+```bash
+python -c "import sys; print(sys.executable)"
+```
+
+The path printed must point inside your `.venv` folder.
+
+### Update pip
+
+Old pip versions cannot read modern wheel metadata, which produces confusing errors later:
+
+```bash
+python -m pip install --upgrade pip
+```
+
+### Install PyTorch
+
+<Callout type="warning">
+Install **PyTorch first, SVETlANNa second**. SVETlANNa does not list `torch` as a
+dependency — it deliberately leaves the choice of CPU/CUDA build to you — so
+`pip install svetlanna` on its own leaves you without PyTorch.
+</Callout>
+
+<Tabs items={['Windows', 'macOS', 'Linux']}>
+  <Tabs.Tab>
+CPU only:
+```powershell
+pip install torch
+```
+
+With CUDA (NVIDIA GPU). Pick the index URL matching your driver on the
+[PyTorch install selector](https://pytorch.org/get-started/locally/); `cu128` is a current
+choice:
+```powershell
+pip install torch --index-url https://download.pytorch.org/whl/cu128
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```bash
+pip install torch
+```
+
+The macOS wheel is universal: on Apple Silicon it includes the **MPS** backend, so the GPU
+is available through `torch.device("mps")`. CUDA does not exist on macOS.
+  </Tabs.Tab>
+  <Tabs.Tab>
+The default Linux wheel on PyPI already bundles CUDA and is about 2.5 GB:
+```bash
+pip install torch
+```
+
+For a much smaller CPU-only build:
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+```
+
+For a specific CUDA version, take the index URL from the
+[PyTorch install selector](https://pytorch.org/get-started/locally/):
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cu128
+```
+  </Tabs.Tab>
+</Tabs>
+
+### Install SVETlANNa
+
+```bash
+pip install svetlanna
+```
+
+This also pulls in `matplotlib`, `numpy`, `jinja2` and `anywidget`. To get the optional
+`pandas` integration used by some logging helpers:
+
+```bash
+pip install "svetlanna[pandas]"
+```
+
+To work against the development version instead:
+
+```bash
+git clone https://github.com/CompPhysLab/SVETlANNa.git
+cd SVETlANNa
+pip install -e .
+```
+
+### Check that everything works
+
+```bash
+python -c "import torch, svetlanna; print(torch.__version__); print('svetlanna ok')"
+```
+
+A fuller check, including the accelerator:
+
+```python
+import torch
+from svetlanna import SimulationParameters, Wavefront
+from svetlanna.units import ureg
+
+print("PyTorch:", torch.__version__)
+print("CUDA available:", torch.cuda.is_available())
+print("MPS available:", torch.backends.mps.is_available())   # Apple Silicon
+
+params = SimulationParameters.from_ranges(
+    x_range=(-1*ureg.mm, 1*ureg.mm), x_points=128,
+    y_range=(-1*ureg.mm, 1*ureg.mm), y_points=128,
+    wavelength=632.8*ureg.nm,
+)
+wf = Wavefront.plane_wave(params)
+print("Field shape:", wf.shape)
+```
+
+**Expected output:**
+```
+PyTorch: 2.14.0
+CUDA available: False
+MPS available: True
+Field shape: torch.Size([128, 128])
+```
+
+### Record the versions
+
+So that the environment can be recreated later — by a colleague, or by you on another
+machine:
+
+```bash
+pip freeze > requirements.txt
+```
+
+Recreating it elsewhere:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate        # .venv\Scripts\Activate.ps1 on Windows
+pip install -r requirements.txt
+```
+</Steps>
+
+## Everyday use
+
+```bash
+cd my-optics-project
+source .venv/bin/activate        # .venv\Scripts\Activate.ps1 on Windows
+# ... work ...
+deactivate                       # leave the environment
+```
+
+To delete an environment, just remove the folder — nothing is registered anywhere else:
+
+```bash
+rm -rf .venv                     # rmdir /s .venv on Windows
+```
+
+<Callout type="info">
+Add `.venv/` to your `.gitignore`. The environment is a build artefact; `requirements.txt`
+is what belongs in version control.
+</Callout>
+
+## Jupyter
+
+To use the environment as a Jupyter kernel:
+
+```bash
+pip install jupyterlab ipykernel
+python -m ipykernel install --user --name my-optics-project
+jupyter lab
+```
+
+Then pick **my-optics-project** from the kernel list. If `import svetlanna` fails inside a
+notebook, you are almost certainly running a different kernel — check with:
+
+```python
+import sys; print(sys.executable)
+```
+
+## Alternative tools
+
+`venv` requires nothing beyond Python itself, which is why it is used above. Two popular
+alternatives do the same job:
+
+<Tabs items={['uv', 'conda']}>
+  <Tabs.Tab>
+[uv](https://docs.astral.sh/uv/) is a fast Rust-based installer that is a drop-in
+replacement for `venv` + `pip`:
+
+```bash
+uv venv --python 3.12 .venv
+source .venv/bin/activate
+uv pip install torch svetlanna
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+[conda](https://docs.conda.io/) manages non-Python dependencies as well, which helps when
+CUDA libraries are awkward to obtain:
+
+```bash
+conda create -n optics python=3.12
+conda activate optics
+pip install torch svetlanna
+```
+  </Tabs.Tab>
+</Tabs>
+
+## Troubleshooting
+
+| Symptom | Cause and fix |
+|---------|---------------|
+| `ModuleNotFoundError: No module named 'torch'` | SVETlANNa was installed without PyTorch. Run `pip install torch`. |
+| `ModuleNotFoundError: No module named 'venv'` | Debian/Ubuntu ships it separately: `sudo apt install python3-venv`. |
+| `running scripts is disabled on this system` | PowerShell policy: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`. |
+| Packages install but imports fail | The environment is not active, or the IDE points at another interpreter. Check `sys.executable`. |
+| `torch.cuda.is_available()` is `False` on a GPU machine | The CPU-only wheel was installed. Reinstall from the matching `download.pytorch.org/whl/cuXXX` index. |
+| `pip` cannot resolve `svetlanna` | Python is older than 3.11. Check with `python --version`. |
+
+## What next?
+
+- [Installation](/docs/getting-started/installation) — GPU notes and dependency details
+- [Quickstart](/docs/getting-started/quickstart) — a complete optical system in five minutes
