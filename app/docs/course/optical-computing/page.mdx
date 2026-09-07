@@ -12,7 +12,8 @@ In this lecture, we reproduce the core D2NN architecture from [[1]](https://www.
 The goal is to understand how a conventional neural-network operation can be mapped
 to optical propagation and phase modulation.
 
-## Linear Diffractive Neural Network (D2NN)
+## Linear diffractive neural network (D2NN)
+
 ### Theory
 
 #### From conventional neural networks to optical layers
@@ -112,6 +113,7 @@ This is the core idea behind recurrent models.
 
 In a diffractive recurrent neural network (D-RNN), the optical layers are reused across time steps.
 The model maintains a hidden optical state $h_t$ that combines:
+
 - memory from the previous state $h_{t-1}$,
 - information from the current input $x_t$.
 
@@ -120,16 +122,17 @@ $$
 h_t = \lambda f_1(h_{t-1}) + (1-\lambda)f_2(x_t),
 $$
 where:
+
 - $f_1$ is the memory mapping,
 - $f_2$ is the input (read-in) mapping,
 - $\lambda \in (0,1)$ controls the memory-input tradeoff.
 
-Before the detectors, a read-out mapping is applied:
+Before the detectors, a readout mapping is applied:
 $$
 y = f_3(h_t).
 $$
 
-In our optical implementation, $f_1$, $f_2$, and $f_3$ are realized using diffractive layers
+In our optical implementation, $f_1$, $f_2$, and $f_3$ are implemented using diffractive layers
 and free-space propagation.
 
 For three time steps, the computation is:
@@ -156,7 +159,7 @@ To implement the D-RNN from [[1]](https://www.nature.com/articles/s41566-021-007
 1. Prepare the Weizmann dataset and convert videos into short frame sequences.
 1. Build the optical model in SVETlANNa:
      - define detector regions at the output plane (one region per class),
-     - implement read-in, memory, and read-out diffractive mappings.
+     - implement read-in, memory, and readout diffractive mappings.
 1. Define the training pipeline for sequence-wise forward passes and loss computation.
 1. Train, validate, and visualize classification performance and optical fields.
 
@@ -167,8 +170,8 @@ Key settings reported by the authors in [[1]](https://www.nature.com/articles/s4
 - Input masks were extracted by background subtraction; provided mask data include both original and aligned masks.
 - Mask resolution: $64 \times 64$.
 - Data split: six subjects ($60$ videos) for training and three subjects ($30$ videos) for testing.
-- Sequence construction: each video is split into sub-sequences of three frames with a frame interval of two.
-- Number of detector regions equals number of classes:
+- Sequence construction: each video is split into subsequences of three frames with a frame interval of two.
+- The number of detector regions equals the number of classes:
     - ten regions for MNIST, Fashion-MNIST, and Weizmann,
     - six regions for KTH,
     - each output region has width $0.46\,\text{mm}$.
@@ -181,9 +184,9 @@ and $\lambda \in (0,1)$ controlling the relative contribution of memory and curr
 
 These settings provide a practical baseline for reproducing D-RNN experiments in SVETlANNa.
 
-## Convolutional Diffractive Network
+## Convolutional diffractive network
 
-In this lecture, we implement the Convolutional Diffractive Network introduced in
+In this lecture, we implement the convolutional diffractive network introduced in
 "Optical Diffractive Convolutional Neural Networks Implemented in an All-Optical Way"
 [[1]](https://www.mdpi.com/1424-8220/23/12/5749).
 
@@ -200,6 +203,7 @@ where $\mathcal{F}$ denotes the Fourier transform.
 
 This identity is especially useful in optics because a lens can perform a Fourier transform.
 In a 4f optical setup:
+
 1. The first lens transforms the input field $g$ into $\mathcal{F}(g)$.
 1. A filter in the Fourier plane applies multiplication by $\mathcal{F}(f)$.
 1. The second lens performs the inverse transform, producing the convolution result.
@@ -232,12 +236,19 @@ To implement the convolutional diffractive architecture from
 
 ### Parameters Used in This Lecture
 
-Paper [[1]](https://www.mdpi.com/1424-8220/23/12/5749) does not provide all low-level
+The paper [[1]](https://www.mdpi.com/1424-8220/23/12/5749) does not provide all the low-level
 physical parameters needed for a full implementation. For reproducibility in SVETlANNa,
 we reuse compatible physical settings from [[2]](https://ieeexplore.ieee.org/abstract/document/8732486),
 as in previous lectures.
 
-One important preprocessing detail is:
+One important preprocessing detail is the following:
+
 - the input image of size $28 \times 28$ is zero-padded to $200 \times 200$.
+
+## References
+
+- Xing Lin et al., “All-Optical Machine Learning Using Diffractive Deep Neural Networks,” *Science* 361(6406), 1004–1008, 2018.
+- Tiankuang Zhou et al., “Large-Scale Neuromorphic Optoelectronic Computing with a Reconfigurable Diffractive Processing Unit,” *Nature Photonics* 15, 367–373, 2021.
+- Yaze Yu and Yang Cao, “Optical Diffractive Convolutional Neural Networks Implemented in an All-Optical Way,” *Sensors* 23(12), 5749, 2023.
 
 <Comments />

@@ -1,0 +1,125 @@
+import { TrackBadges } from '../TrackBadges'
+import { Comments } from '../Comments'
+
+# Discrete Fourier Transform and FFT
+
+<TrackBadges slug="matrix" />
+
+In Fourier optics, a field is represented by a finite array of samples. Therefore, a numerical propagation algorithm does not use the continuous Fourier transform directly: it uses the **discrete Fourier transform** (DFT). This lecture introduces the DFT as a matrix operation, explains how the fast Fourier transform evaluates it efficiently, and shows why FFT-based propagation is inherently cyclic.
+
+## The DFT as a matrix operation
+
+Let $x_0,\ldots,x_{N-1}$ be $N$ samples of a signal. Its DFT is
+
+$$
+X_k = \sum_{n=0}^{N-1} x_n \exp\left(-\frac{2\pi i}{N}kn\right),
+\qquad k=0,\ldots,N-1.
+$$
+
+The inverse transform reconstructs the samples:
+
+$$
+x_n = \frac{1}{N}\sum_{k=0}^{N-1} X_k
+\exp\left(\frac{2\pi i}{N}kn\right).
+$$
+
+With $\omega_N=\exp(-2\pi i/N)$, the transform can be written as a dense matrix-vector product,
+
+$$
+\boldsymbol{X}=F_N\boldsymbol{x},
+\qquad
+(F_N)_{kn}=\omega_N^{kn}.
+$$
+
+The columns of $F_N$ are mutually orthogonal and
+
+$$
+F_N^*F_N=NI,
+\qquad
+F_N^{-1}=\frac{1}{N}F_N^*.
+$$
+
+This viewpoint makes the DFT easy to understand, but a direct multiplication by the dense matrix requires $O(N^2)$ arithmetic operations.
+
+For a sampled two-dimensional optical field $U\in\mathbb{C}^{N_y\times N_x}$, the transform is separable:
+
+$$
+\widehat U=F_{N_y}UF_{N_x}^{\mathsf T}.
+$$
+
+In other words, the one-dimensional DFT is applied independently along both axes.
+
+## The fast Fourier transform
+
+The **fast Fourier transform** (FFT) is not a different transform. It is an algorithm that computes exactly the same DFT while exploiting the structure of $F_N$.
+
+For an even $N$, split the input into samples with even and odd indices. If $E_k$ and $O_k$ are their DFTs of length $N/2$, then
+
+$$
+X_k=E_k+\omega_N^k O_k,
+\qquad
+X_{k+N/2}=E_k-\omega_N^k O_k,
+$$
+
+for $k=0,\ldots,N/2-1$. Thus, one transform of length $N$ is reduced to two transforms of length $N/2$ plus $O(N)$ combinations. Applying this factorization recursively gives
+
+$$
+T(N)=2T(N/2)+O(N)=O(N\log N),
+$$
+
+instead of $O(N^2)$. In two dimensions, the cost is approximately
+$O\!\left(N_xN_y(\log N_x+\log N_y)\right)$, which is why FFT-based propagation is practical for large optical grids.
+
+## Why an FFT calculation is cyclic
+
+The DFT contains only $N$ samples, so it treats them as one period of a periodic signal:
+
+$$
+x_{n+N}=x_n.
+$$
+
+This assumption appears directly in the convolution theorem. Multiplication in the DFT domain produces **circular convolution** in the sample domain:
+
+$$
+\operatorname{IDFT}\!\left(\operatorname{DFT}(x)\operatorname{DFT}(h)\right)_n
+=\sum_{m=0}^{N-1}x_mh_{(n-m)\bmod N}.
+$$
+
+By contrast, the linear convolution of arrays of lengths $N_x$ and $N_h$ has length $N_x+N_h-1$. If an $N$-point FFT is used without enough empty space, the samples beyond the right boundary wrap around and are added at the left boundary. Zero-padding both arrays to a length
+
+$$
+M\geq N_x+N_h-1
+$$
+
+prevents this overlap, so the circular convolution of the padded arrays contains the desired linear convolution.
+
+## From circular convolution to `zpASM`
+
+The angular spectrum method has the same computational form:
+
+$$
+u_z=\operatorname{IFFT}\!\left(\operatorname{FFT}(u_0)H_z\right),
+$$
+
+where $H_z$ is the free-space transfer function. Because the FFT regards the computational window as periodic, a wave leaving one side of the grid can re-enter from the opposite side. The result may contain replicas and bright edge artifacts that are not part of free-space propagation.
+
+In SVETlANNa, the `ASM` method performs propagation on the original grid. The `zpASM` method adds zero-padding before the FFT-based propagation and crops the result back to the original grid. The larger intermediate window separates the field from its periodic copies and therefore suppresses wrap-around artifacts. Padding does not restore information already lost through insufficient sampling or a physically truncated input window, but it addresses the cyclicity introduced by the finite DFT.
+
+```python
+from svetlanna.elements import FreeSpace
+
+propagation = FreeSpace(
+    simulation_parameters=params,
+    distance=z,
+    method="zpASM",
+)
+```
+
+The companion notebook makes this wrap-around visible and verifies the result numerically: [FFT cyclicity with and without padding](./fft_circularity.notebook).
+
+## References
+
+- Gene H. Golub and Charles F. Van Loan, *Matrix Computations*, 4th ed., Johns Hopkins University Press, 2013.
+- J. W. Cooley and J. W. Tukey, “An Algorithm for the Machine Calculation of Complex Fourier Series,” *Mathematics of Computation* 19 (1965), 297–301.
+
+<Comments />
